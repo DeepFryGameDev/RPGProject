@@ -55,7 +55,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     //for showing damage
     public GameObject damageText;
     float damageTextDistance = .75f;
-    float damageDisplayTime = 1.5f;
+    public float damageDisplayTime = 1.5f;
 
     //for victory screen
     public GameObject victoryCanvas;
@@ -81,6 +81,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     public List<GameObject> targets = new List<GameObject>();
     public bool choosingTarget;
+    public GameObject chosenTarget;
     List<Tile> tilesInRange = new List<Tile>();
 
     private List<GameObject> atkBtns = new List<GameObject>();
@@ -264,9 +265,9 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
                 ClearThreatBars();
 
-                HeroesToManage[0].GetComponent<HeroStateMachine>().ProcessStatusEffects();
-
                 HeroInputDone();
+
+                //HeroesToManage[0].GetComponent<HeroStateMachine>().ProcessStatusEffects();
             break;
 
         }
@@ -277,60 +278,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     public void CollectActions(HandleTurn input)
     {
         PerformList.Add(input); //used by enemy state machine to add enemy's chosen attack to the perform list
-    }
-
-    public void EnemyButtons()
-    {
-        //clean up
-        /*foreach(GameObject enemyBtn in enemyBtns) //for each enemy button already added
-        {
-            Destroy(enemyBtn); //destroy the game object so it doesn't appear as potential enemy to attack
-        }
-        enemyBtns.Clear(); //clears the enemy buttons list
-        
-        foreach (GameObject obj in GetTargetsInRange(HeroChoice.chosenAttack.rangeIndex, "Enemy")) {
-            GameObject newButton = Instantiate(EnemyButton) as GameObject; //creates new enemy button (to select as a target for attack) for each enemy still in battle
-            EnemySelectButton button = newButton.GetComponent<EnemySelectButton>(); //initialize enemy select button variable for the current enemy in the loop
-
-            EnemyStateMachine cur_enemy = obj.GetComponent<EnemyStateMachine>(); //initialize enemy state machine for current enemy to be manipulated below
-
-            Text buttonText = newButton.GetComponentInChildren<Text>(); //initialize text as the button's text object
-            buttonText.text = cur_enemy.enemy._Name; //changes the button's text to the current enemy's name
-
-            button.EnemyPrefab = obj; //sets the enemy select button's attached enemy to the current enemy
-
-            newButton.transform.SetParent(EnemySelectSpacer, false);  //sets the parent of the new enemy button to the spacer for the enemy button panel
-            enemyBtns.Add(newButton); //adds the enemy select variable to the enemy buttons list
-        }
-
-        foreach (GameObject obj in GetTargetsInRange(HeroChoice.chosenAttack.rangeIndex, "Hero"))
-        {
-            GameObject newButton = Instantiate(HeroButton) as GameObject; //creates new enemy button (to select as a target for attack) for each enemy still in battle
-            HeroSelectButton button = newButton.GetComponent<HeroSelectButton>(); //initialize enemy select button variable for the current enemy in the loop
-
-            HeroStateMachine cur_hero = obj.GetComponent<HeroStateMachine>(); //initialize enemy state machine for current enemy to be manipulated below
-
-            Text buttonText = newButton.GetComponentInChildren<Text>(); //initialize text as the button's text object
-            buttonText.text = cur_hero.hero._Name; //changes the button's text to the current enemy's name
-
-            button.HeroPrefab = obj; //sets the enemy select button's attached enemy to the current enemy
-
-            newButton.transform.SetParent(EnemySelectSpacer, false);  //sets the parent of the new enemy button to the spacer for the enemy button panel
-            enemyBtns.Add(newButton); //adds the enemy select variable to the enemy buttons list
-        }
-
-        ShowTilesInRange(HeroChoice.chosenAttack.rangeIndex);
-
-        if (GetTargetsInRange(HeroChoice.chosenAttack.rangeIndex, "Enemy").Count == 0)
-        {
-            Debug.Log("no enemies in range");
-        }
-
-        if (GetTargetsInRange(HeroChoice.chosenAttack.rangeIndex, "Hero").Count == 0)
-        {
-            Debug.Log("no heroes in range");
-        }
-        */
     }
 
     void HeroInputDone() 
@@ -397,39 +344,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         DefendButton.GetComponent<Button>().onClick.AddListener(() => DefendInput()); //assigns action when clicking the button to MagicInput() function
         DefendButton.transform.SetParent(moveActionSpacer, false); //sets the parent of this button to the action panel spacer
         atkBtns.Add(DefendButton); //adds the magic button to atkBtns list for organizational purposes
-    }
-
-    public void ActionInput()
-    {
-        SetCancelButton(0);
-        actionPanel.SetActive(true); //enables actionPanel (attack, magic, etc)
-        moveActionPanel.SetActive(false);
-        //GetButtonsByRange();
-        HeroesToManage[0].GetComponent<PlayerMove>().RemoveSelectableTiles();
-        HeroesToManage[0].GetComponent<PlayerMove>().canMove = false;
-    }
-
-    public void DefendInput()
-    {
-        //add defend method to reduce incoming damage by 50%
-
-        ClearMoveActionPanel();
-        ClearActionLists();
-        ClearThreatBars();
-
-        HeroesToManage[0].GetComponent<HeroStateMachine>().ProcessStatusEffects();
-
-        HeroesToManage[0].GetComponent<HeroStateMachine>().RecoverMPAfterTurn(); //slowly recover MP based on spirit value
-
-        pendingTurn = false;
-
-        HeroesToManage[0].GetComponent<HeroStateMachine>().heroTurn++;
-        HeroesToManage[0].GetComponent<HeroStateMachine>().cur_cooldown = 0f; //reset the hero's ATB gauge to 0
-        HeroesToManage[0].GetComponent<PlayerMove>().EndTurn();
-        HeroesToManage[0].GetComponent<HeroStateMachine>().currentState = HeroStateMachine.TurnState.PROCESSING; //starts the turn over back to filling up the ATB gauge
-        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false); //hides the current hero making selection's selector cursor
-        HeroesToManage.RemoveAt(0); //removes the hero making selection from the heroesToManage list
-        HeroInput = HeroGUI.ACTIVATE; //resets the HeroGUI switch back to the beginning to await the next hero's choice
     }
 
     void GetButtonsByRange()
@@ -551,7 +465,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     int GetRangeFromTarget(GameObject target)
     {
-        Debug.Log("poop");
         HeroesToManage[0].GetComponent<PlayerMove>().GetCurrentTile();
 
         Tile targetTile = HeroesToManage[0].GetComponent<PlayerMove>().GetTargetTile(target);
@@ -565,90 +478,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         //Debug.Log("Range from target " + target.name + ": " + range);
 
         return range;
-    }
-
-    List<GameObject> GetTargetsInRange(int range, string tag)
-    {
-        //Debug.Log("trying to get targets in range: " + range + ", " + tag);
-        List<GameObject> possibleTargets = new List<GameObject>();
-
-        RaycastHit2D[] upHits = Physics2D.RaycastAll(HeroesToManage[0].transform.position, Vector2.up, range);
-        foreach (RaycastHit2D hit in upHits)
-        {
-            if (hit.collider.gameObject.tag == tag && hit.collider.gameObject != HeroesToManage[0])
-            {
-                if (!possibleTargets.Contains(hit.collider.gameObject))
-                {
-                    possibleTargets.Add(hit.collider.gameObject);
-                }
-            }
-            if (hit.collider.gameObject.tag == "Tile")
-            {
-                tilesInRange.Add(hit.collider.gameObject.GetComponent<Tile>());
-                hit.collider.gameObject.GetComponent<Tile>().inRange = true;
-            }
-        }
-
-        RaycastHit2D[] downHits = Physics2D.RaycastAll(HeroesToManage[0].transform.position, Vector2.down, range);
-
-        foreach (RaycastHit2D hit in downHits)
-        {
-            if (hit.collider.gameObject.tag == tag && hit.collider.gameObject != HeroesToManage[0])
-            {
-                if (!possibleTargets.Contains(hit.collider.gameObject))
-                {
-                    possibleTargets.Add(hit.collider.gameObject);
-                }
-            }
-            if (hit.collider.gameObject.tag == "Tile")
-            {
-                tilesInRange.Add(hit.collider.gameObject.GetComponent<Tile>());
-                hit.collider.gameObject.GetComponent<Tile>().inRange = true;
-            }
-        }
-
-        RaycastHit2D[] leftHits = Physics2D.RaycastAll(HeroesToManage[0].transform.position, Vector2.left, range);
-
-        foreach (RaycastHit2D hit in leftHits)
-        {
-            if (hit.collider.gameObject.tag == tag && hit.collider.gameObject != HeroesToManage[0])
-            {
-                if (!possibleTargets.Contains(hit.collider.gameObject))
-                {
-                    possibleTargets.Add(hit.collider.gameObject);
-                }
-            }
-            if (hit.collider.gameObject.tag == "Tile")
-            {
-                tilesInRange.Add(hit.collider.gameObject.GetComponent<Tile>());
-                hit.collider.gameObject.GetComponent<Tile>().inRange = true;
-            }
-        }
-
-        RaycastHit2D[] rightHits = Physics2D.RaycastAll(HeroesToManage[0].transform.position, Vector2.right, range);
-
-        foreach (RaycastHit2D hit in rightHits)
-        {
-            if (hit.collider.gameObject.tag == tag && hit.collider.gameObject != HeroesToManage[0])
-            {
-                if (!possibleTargets.Contains(hit.collider.gameObject))
-                {
-                    possibleTargets.Add(hit.collider.gameObject);
-                }
-            }
-            if (hit.collider.gameObject.tag == "Tile")
-            {
-                tilesInRange.Add(hit.collider.gameObject.GetComponent<Tile>());
-                hit.collider.gameObject.GetComponent<Tile>().inRange = true;
-            }
-        }
-
-        /*foreach (GameObject obj in possibleTargets)
-        {
-            Debug.Log("GetTargetsInRange: " + obj.name);
-        }*/
-
-        return possibleTargets;
     }
 
     string[] GetTileCoordinates(Tile tile)
@@ -780,7 +609,13 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     void ShowRange()
     {
-        ShowTilesInRange(HeroChoice.chosenAttack.rangeIndex);
+        if (HeroChoice.chosenItem != null)
+        {
+            ShowTilesInRange(0); //shows tiles 1 space away, and current tile
+        } else
+        {
+            ShowTilesInRange(HeroChoice.chosenAttack.rangeIndex);
+        }
     }
 
     IEnumerator ChooseTarget() //gets target by which gameObject is clicked (enemy or hero)
@@ -792,7 +627,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         choosingTarget = true; //to ensure clicking on gameObjects are only processed when choosing target
         //Debug.Log(choosingTarget);
 
-        while (targets.Count == 0)
+        while (HeroesToManage[0].GetComponent<HeroStateMachine>().targets.Count == 0)
         {
             if (cancelledEnemySelect) //if choosing enemy is cancelled
             {
@@ -904,7 +739,48 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         StartCoroutine(ChooseTarget());
         SetCancelButton(5);
     }
-    
+
+    public void ActionInput()
+    {
+        SetCancelButton(0);
+        actionPanel.SetActive(true); //enables actionPanel (attack, magic, etc)
+        moveActionPanel.SetActive(false);
+        //GetButtonsByRange();
+        HeroesToManage[0].GetComponent<PlayerMove>().RemoveSelectableTiles();
+        HeroesToManage[0].GetComponent<PlayerMove>().canMove = false;
+    }
+
+    public void DefendInput()
+    {
+        //add defend method to reduce incoming damage by 50%
+
+        ClearMoveActionPanel();
+        ClearActionLists();
+        ClearThreatBars();
+
+        HeroStateMachine HSM = HeroesToManage[0].GetComponent<HeroStateMachine>();
+
+        //HSM.ProcessStatusEffects();
+
+        //HSM.RecoverMPAfterTurn(); //slowly recover MP based on spirit value
+
+        pendingTurn = false;
+
+        HSM.heroTurn++;
+        HSM.cur_cooldown = 0f; //reset the hero's ATB gauge to 0
+        HeroesToManage[0].GetComponent<PlayerMove>().EndTurn();
+
+        if (HSM.activeStatusEffects.Count > 0)
+        {
+            HSM.ProcessStatusEffects();
+        }
+
+        HSM.currentState = HeroStateMachine.TurnState.PROCESSING; //starts the turn over back to filling up the ATB gauge
+        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false); //hides the current hero making selection's selector cursor
+        HeroesToManage.RemoveAt(0); //removes the hero making selection from the heroesToManage list
+        HeroInput = HeroGUI.ACTIVATE; //resets the HeroGUI switch back to the beginning to await the next hero's choice
+    }
+
     public void AttackInput() //when clicking 'attack' in actionPanel
     {
         HeroChoice.Attacker = HeroesToManage[0].name; //sets heroChoice attacker to current hero making selection
@@ -1008,7 +884,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         if (Input.GetButtonDown("Cancel") && !buttonPressed)
         {
-            if (moveMenuCancel)
+            if (moveMenuCancel) //in movement phase
             {
                 actionPanel.SetActive(false);
                 moveActionPanel.SetActive(true);
@@ -1049,6 +925,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             {
                 ItemPanel.SetActive(true); //shows the item panel
                 EnemySelectPanel.SetActive(false); //hides the enemy select panel
+                HeroChoice.chosenItem = null;
                 cancelledEnemySelect = true;
                 SetCancelButton(4);
             }
@@ -1172,24 +1049,75 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         damageText.transform.position = new Vector2(target.transform.position.x, target.transform.position.y + damageTextDistance);
         damageText.transform.GetComponent<TextMeshPro>().color = Color.red;
         damageText.transform.GetComponent<TextMeshPro>().text = damage.ToString();
+        
+        damageText.gameObject.tag = "DamageText";
+
         yield return new WaitForSeconds(damageDisplayTime);
         PauseATBWhileDamageFinishes(false);
-        Destroy(damageText);
+        //Destroy(damageText);
+        DestroyDamageTexts();
+    }
+
+    public IEnumerator ShowElementalDamage(int damage, GameObject target, Color color)
+    {
+        PauseATBWhileDamageFinishes(true);
+        Debug.Log("ShowElementalDamage: " + damage + ", " + target.name + ", Color: " + color.ToString());
+        damageText = Instantiate(PrefabManager.Instance.damagePrefab);
+        damageText.transform.position = new Vector2(target.transform.position.x, target.transform.position.y + damageTextDistance);
+        damageText.transform.GetComponent<TextMeshPro>().color = color;
+        damageText.transform.GetComponent<TextMeshPro>().text = damage.ToString();
+
+        damageText.gameObject.tag = "DamageText";
+
+        yield return new WaitForSeconds(damageDisplayTime);
+        PauseATBWhileDamageFinishes(false);
+        //Destroy(damageText);
+        DestroyDamageTexts();
     }
 
     public IEnumerator ShowCrit(int damage, GameObject target)
     {
         PauseATBWhileDamageFinishes(true);
-        Debug.Log("ShowDamage: " + damage + ", " + target.name);
+        Debug.Log("ShowCritDamage: " + damage + ", " + target.name);
         damageText = Instantiate(PrefabManager.Instance.damagePrefab);
         damageText.transform.position = new Vector2(target.transform.position.x, target.transform.position.y + damageTextDistance);
         damageText.transform.GetComponent<TextMeshPro>().color = Color.red;
         damageText.transform.GetComponent<TextMeshPro>().fontStyle = FontStyles.Bold;
         damageText.transform.GetComponent<TextMeshPro>().fontSize = 8f;
         damageText.transform.GetComponent<TextMeshPro>().text = damage.ToString();
+
+        damageText.gameObject.tag = "DamageText";
+
         yield return new WaitForSeconds(damageDisplayTime);
         PauseATBWhileDamageFinishes(false);
-        Destroy(damageText);
+        //Destroy(damageText);
+        DestroyDamageTexts();
+    }
+
+    public IEnumerator ShowHeal(int healVal, GameObject target)
+    {
+        PauseATBWhileDamageFinishes(true);
+        Debug.Log("ShowHeal: " + healVal + ", " + target.name);
+        damageText = Instantiate(PrefabManager.Instance.damagePrefab);
+        damageText.transform.position = new Vector2(target.transform.position.x, target.transform.position.y + damageTextDistance);
+        damageText.transform.GetComponent<TextMeshPro>().color = Color.blue;
+        damageText.transform.GetComponent<TextMeshPro>().text = healVal.ToString();
+
+        damageText.gameObject.tag = "DamageText";
+
+        yield return new WaitForSeconds(damageDisplayTime);
+        PauseATBWhileDamageFinishes(false);
+        //Destroy(damageText);
+        DestroyDamageTexts();
+    }
+
+    void DestroyDamageTexts()
+    {
+        GameObject[] toDestroy = GameObject.FindGameObjectsWithTag("DamageText");
+        foreach (GameObject obj in toDestroy)
+        {
+            Destroy(obj);
+        }
     }
 
     public IEnumerator ShowMiss(GameObject target)

@@ -7,6 +7,10 @@ public class BaseItemScript
 {
     public string scriptToRun = ""; //to be set in hero/enemy state manager to determine which item workflow should be run
 
+    public EnemyBehavior eb;
+    public HeroStateMachine hsm;
+    int adjValue;
+
     public void ProcessItemToHero(BaseHero hero) //used by hero/enemy state manager to process the item workflow
     {
         if (scriptToRun == "Potion")
@@ -18,11 +22,15 @@ public class BaseItemScript
         {
             EtherToHero(hero);
         }
+
+        SetValue();
     }
 
     void PotionToHero(BaseHero hero)
     {
-        hero.curHP += 20;
+        adjValue = 20;
+
+        hero.curHP += adjValue;
 
         if (hero.curHP > hero.maxHP)
         {
@@ -33,7 +41,9 @@ public class BaseItemScript
 
     void EtherToHero(BaseHero hero)
     {
-        hero.curMP += 10;
+        adjValue = 10;
+
+        hero.curMP += adjValue;
 
         if (hero.curMP > hero.maxMP)
         {
@@ -53,11 +63,14 @@ public class BaseItemScript
         {
             EtherToEnemy(enemy);
         }
+
+        SetValue();
     }
 
     void PotionToEnemy(BaseEnemy enemy)
     {
-        enemy.curHP += 20;
+        adjValue = 20;
+        enemy.curHP += adjValue;
 
         if (enemy.curHP > enemy.baseHP)
         {
@@ -68,13 +81,25 @@ public class BaseItemScript
 
     void EtherToEnemy(BaseEnemy enemy)
     {
-        enemy.curMP += 10;
+        adjValue = 10;
+        enemy.curMP += adjValue;
 
         if (enemy.curMP > enemy.baseMP)
         {
             enemy.curMP = enemy.baseMP;
         }
         Debug.Log("Recovering " + enemy._Name + "'s MP by 10!");
+    }
+
+    void SetValue()
+    {
+        if (eb != null)
+        {
+            eb.itemDamage = adjValue;
+        } else if (hsm != null)
+        {
+            hsm.itemDamage = adjValue;
+        }
     }
 
 }

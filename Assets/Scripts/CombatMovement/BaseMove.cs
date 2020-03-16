@@ -25,12 +25,15 @@ public class BaseMove : MonoBehaviour
     
     protected int turn;
 
+    BattleStateMachine theBSM;
+
     public void InitMove()
     {
         tiles = GameObject.FindGameObjectsWithTag("Tile");
 
         halfHeight = GetComponent<BoxCollider2D>().bounds.extents.z;
 
+        theBSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         turn = 0;
     }
 
@@ -38,6 +41,7 @@ public class BaseMove : MonoBehaviour
     {
         currentTile = GetTargetTile(gameObject);
         currentTile.current = true;
+        //Debug.Log("GetCurrentTile: " + currentTile.gameObject);
     }
 
     public Tile GetTargetTile (GameObject target)
@@ -56,8 +60,6 @@ public class BaseMove : MonoBehaviour
 
     public void ComputeAdjacencyLists(Tile target)
     {
-        //tiles = GameObject.FindGameObjectsWithTag("Tile");
-
         foreach (GameObject tile in tiles)
         {
             Tile t = tile.GetComponent<Tile>();
@@ -112,6 +114,7 @@ public class BaseMove : MonoBehaviour
 
         foreach (Tile t in list)
         {
+            Debug.Log("FindLowestF: " + t);
             if (t.f < lowest.f)
             {
                 lowest = t;
@@ -152,9 +155,10 @@ public class BaseMove : MonoBehaviour
     {
         ComputeAdjacencyLists(target);
         GetCurrentTile();
-
-        List<Tile> openList = new List<Tile>();
-        List<Tile> closedList = new List<Tile>();
+        
+        List<Tile> openList = new List<Tile>(); //any tile that has not been processed
+        List<Tile> closedList = new List<Tile>(); //any tile that has been processed
+        //when the target tile is added to the closedList, we have found the closest path to the target tile
 
         openList.Add(currentTile);
         //currentTile.parent = ??
@@ -164,27 +168,38 @@ public class BaseMove : MonoBehaviour
         while (openList.Count > 0)
         {
             Tile t = FindLowestF(openList);
-
+            //Debug.Log("1: " + t.gameObject.name);
             closedList.Add(t);
-
-            if (t == target)
+            foreach (Tile tile in closedList)
             {
+                //Debug.Log(tile.gameObject.name);
+            }
+            Debug.Log("t: " + t.gameObject.name);
+            Debug.Log("target: " + target.gameObject.name);
+            if (t == target) //<---- t is never the target tile
+            {
+                Debug.Log("if t == target: true");
                 actualTargetTile = FindEndTile(t);
+                //Debug.Log("actual target file: " + actualTargetTile.gameObject.name);
                 MoveToTile(actualTargetTile);
                 return;
             }
 
             foreach (Tile tile in t.adjecencyList)
             {
+                //Debug.Log("in foreach loop: " + tile.gameObject.name);
                 if (closedList.Contains(tile))
                 {
+                    //Debug.Log("do nothing");
                     //do nothing, already processed
                 } else if (openList.Contains(tile))
                 {
+                    //Debug.Log("if openlist contains tile in adjecency list");
                     float tempG = t.g + Vector3.Distance(tile.transform.position, t.transform.position);
-
+                    //Debug.Log("tempG: " + tempG);
                     if (tempG < tile.g) //found quicker way to target
                     {
+                        Debug.Log("tempG < tile.g");
                         tile.parent = t;
 
                         tile.g = tempG;
@@ -192,6 +207,7 @@ public class BaseMove : MonoBehaviour
                     }
                 } else //never processed the tile
                 {
+                    //Debug.Log("never processed the tile");
                     tile.parent = t;
 
                     tile.g = t.g + Vector3.Distance(tile.transform.position, t.transform.position);
@@ -204,9 +220,8 @@ public class BaseMove : MonoBehaviour
 
         }
 
-        //todo: what do you do if there is no path to the target tile?
+        //todo: what do you do if there is no path to the target tile?  Likely just skip turn I'm thinking
         Debug.Log("Path not found");
-
     }
 
     public void BeginTurn()
@@ -216,10 +231,34 @@ public class BaseMove : MonoBehaviour
         //Debug.Log(transform.gameObject.name + " starting turn " + turn);
     }
 
+    public void EndTurn(HeroStateMachine HSM)
+    {
+        RemoveSelectableTiles();
+        canMove = false;
+        
+        HSM.ProcessStatusEffects(); //when adding ability for spells that affect allies, - MOVE THIS TO BASE MAGIC SCRIPT
+
+        theBSM.PerformList.RemoveAt(0); //remove this performer from the list in BSM
+
+        HSM.RecoverMPAfterTurn(); //slowly recover MP based on spirit value
+
+        theBSM.pendingTurn = false;
+
+        HSM.heroTurn++;
+
+        HSM.targets.Clear();
+
+        theBSM.chosenTarget = null;
+
+        HSM.ActionTarget = null;
+
+        theBSM.battleStates = BattleStateMachine.PerformAction.WAIT;
+        //Debug.Log(transform.gameObject.name + " ending turn " + turn);
+    }
+
     public void EndTurn()
     {
         RemoveSelectableTiles();
         canMove = false;
-        //Debug.Log(transform.gameObject.name + " ending turn " + turn);
     }
 }

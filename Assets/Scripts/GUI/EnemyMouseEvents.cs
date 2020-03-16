@@ -27,7 +27,7 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (BSM.choosingTarget)
         {
-            //BSM.target = this.gameObject; //sets BSM target to this gameObject
+            BSM.chosenTarget = this.gameObject; //sets BSM target to this gameObject
             this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //hides selector after being chosen
             detailsText.GetComponent<Text>().text = "";
         }

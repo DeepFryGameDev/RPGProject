@@ -45,7 +45,9 @@ public class DebugEnemy1 : EnemyBehavior
                 {
                     if (foundTarget)
                     {
-                        //Debug.Log("moving enemy");
+                        //Debug.Log("attack not in range, moving enemy");
+                        Debug.Log("chosen action: " + chosenAttack);
+                        Debug.Log("chosen target: " + chosenTarget);
                         MoveEnemy();
                     }
                 } else

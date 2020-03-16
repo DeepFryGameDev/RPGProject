@@ -27,8 +27,6 @@ public class HeroStateMachine : MonoBehaviour
     private Image ProgressBar;
     public GameObject Selector;
 
-    public int magicDamage;
-
     public GameObject ActionTarget; //target to be actioned on
     private bool actionStarted = false;
     [HideInInspector] public Vector2 startPosition; //starting position before running to target
@@ -43,11 +41,19 @@ public class HeroStateMachine : MonoBehaviour
 
     public List<BaseEffect> activeStatusEffects = new List<BaseEffect>();
     public int effectDamage;
+    public int magicDamage;
+    public int itemDamage;
 
     private PlayerMove playerMove;
     private bool calculatedTilesToMove;
 
     public int heroTurn;
+
+    protected List<GameObject> targetsInRange = new List<GameObject>();
+    Pattern pattern = new Pattern();
+    public List<GameObject> targets = new List<GameObject>();
+    public bool choosingTarget;
+    List<Tile> tilesInRange = new List<Tile>();
 
     void Start()
     {
@@ -173,24 +179,73 @@ public class HeroStateMachine : MonoBehaviour
         HeroPanel.transform.SetParent(HeroPanelSpacer, false); //sets the hero panel to the hero panel's spacer for vertical layout group
     }
 
-    void UpgradeProgressBar()
+    List<GameObject> GetTargetsInAffect(int affectIndex, GameObject targetChoice)
     {
-        cur_cooldown = (cur_cooldown + (Time.deltaTime / 1f)) + (hero.currentDexterity * .000055955f); //increases ATB gauge, first float dictates how slowly gauge fills (default 1f), while second float dictates how effective dexterity is
-        float calc_cooldown = cur_cooldown / max_cooldown; //does math of % of ATB gauge to be filled each frame
-        ProgressBar.transform.localScale = new Vector2(Mathf.Clamp(calc_cooldown, 0, 1), ProgressBar.transform.localScale.y); //shows graphic of ATB gauge increasing
-        if (cur_cooldown >= max_cooldown) //if hero turn is ready
+        GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
+        
+        RaycastHit2D[] tileHits = Physics2D.RaycastAll(targetChoice.transform.position, Vector3.back, 1);
+
+        foreach (RaycastHit2D tile in tileHits)
         {
-            BSM.pendingTurn = true;
-            calculatedTilesToMove = false;
-            currentState = TurnState.ADDTOLIST;
+            if (tile.collider.gameObject.tag == "Tile")
+            {
+                Tile t = tile.collider.gameObject.GetComponent<Tile>();
+                pattern.GetAffectPattern(t, affectIndex);
+                tilesInRange = pattern.pattern;
+                break;
+            }
+        }
+
+        foreach (Tile t in tilesInRange)
+        {
+            RaycastHit2D[] tilesHit = Physics2D.RaycastAll(t.transform.position, Vector3.forward, 1);
+            foreach (RaycastHit2D target in tilesHit)
+            {
+                Debug.Log(target.collider.gameObject.name);
+                if (!targets.Contains(target.collider.gameObject) && target.collider.gameObject.tag != "Tile")
+                {
+                    Debug.Log("adding " + target.collider.gameObject + " to targets");
+                    targets.Add(target.collider.gameObject); //adds all objects inside target range to targets list to be affected
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    void ShowAffectPattern(BaseAttack attack, Tile parentTile)
+    {
+        List<Tile> affectPattern = pattern.GetAffectPattern(parentTile, attack.patternIndex);
+
+        foreach (Tile rangeTile in affectPattern.ToArray())
+        {
+            rangeTile.inAffect = true;
+        }
+    }
+
+    void ShowRangePattern(BaseAttack attack, Tile parentTile)
+    {
+        List<Tile> rangePattern = pattern.GetRangePattern(parentTile, attack.rangeIndex);
+
+        foreach (Tile rangeTile in rangePattern.ToArray())
+        {
+            rangeTile.inRange = true;
+        }
+    }
+
+    void ClearTiles()
+    {
+        GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (GameObject tileObj in tiles)
+        {
+            Tile tile = tileObj.GetComponent<Tile>();
+            tile.inAffect = false;
+            tile.inRange = false;
         }
     }
 
     private void TimeForAction()
     {
-        playerMove.EndTurn();
-        
-        
         if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ATTACK)
         {
             StartCoroutine(AttackAnimation());
@@ -199,42 +254,23 @@ public class HeroStateMachine : MonoBehaviour
         if (BSM.PerformList[0].actionType == HandleTurn.ActionType.MAGIC)
         {
             StartCoroutine(MagicAnimation());
-            ReduceMP(); //reduce MP by attack cost
         }
 
         if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ITEM)
         {
-            PerformItem(); //process the item
+            StartCoroutine(ItemAnimation());
         }
-
-        GetStatusEffectsFromCurrentAttack(); //when adding ability for spells that affect allies, - MOVE THIS TO BASE MAGIC SCRIPT
-
-        if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ITEM)
-        {
-            BSM.ResetItemList();
-        }
-
-        BSM.PerformList.RemoveAt(0); //remove this performer from the list in BSM
-
-        RecoverMPAfterTurn(); //slowly recover MP based on spirit value
-        
-        BSM.pendingTurn = false;
-
-        heroTurn++;
         
         if (BSM.battleStates != BattleStateMachine.PerformAction.WIN && BSM.battleStates != BattleStateMachine.PerformAction.LOSE) //if the battle is still going (didn't win or lose)
         {
             BSM.battleStates = BattleStateMachine.PerformAction.WAIT; //sets battle state machine back to WAIT
-            
+
             cur_cooldown = 0f; //reset the hero's ATB gauge to 0
             currentState = TurnState.PROCESSING; //starts the turn over back to filling up the ATB gauge
         } else
         {
             currentState = TurnState.WAITING; //if the battle is in win or lose state, turns the hero back to WAITING (idle) state
         }
-
-        playerMove.EndTurn();
-        BSM.targets.Clear();
     }
 
     public IEnumerator AttackAnimation()
@@ -252,7 +288,7 @@ public class HeroStateMachine : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f); //wait a bit
 
-        foreach (GameObject target in BSM.targets)
+        foreach (GameObject target in targets)
         {
             int hitRoll = GetRandomInt(0, 100);
             if (hitRoll <= hero.GetHitChance(hero.currentHitRating, hero.currentAgility))
@@ -283,7 +319,9 @@ public class HeroStateMachine : MonoBehaviour
         //animate the enemy back to start position
         Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
         while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position     
-       //end coroutine
+
+        PostAnimationCleanup();
+
         actionStarted = false;
     }
 
@@ -302,31 +340,76 @@ public class HeroStateMachine : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f); //wait a bit
 
-        BaseMagicScript magicScript = new BaseMagicScript();
-        magicScript.spell = BSM.HeroChoice.chosenAttack;
-        magicScript.enemyPerformingAction = gameObject.GetComponent<EnemyStateMachine>().enemy;
-        magicScript.hsm = this;
-
-        foreach (GameObject target in BSM.targets)
+        foreach (GameObject target in targets)
         {
-            if (target.tag == "Hero")
-            {
-                magicScript.heroReceivingAction = target.GetComponent<HeroStateMachine>().hero;
-                magicScript.ProcessMagicEnemyToHero();
-
-            }
-            else if (target.tag == "Enemy")
-            {
-                magicScript.enemyReceivingAction = target.GetComponent<EnemyStateMachine>().enemy;
-                magicScript.ProcessMagicEnemyToEnemy();
-            }
+            DoDamage(target, false);
         }
 
         //animate the enemy back to start position
         Vector2 firstPosition = startPosition; //changes the first position of the animation back to the starting position of the enemy
         while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
-        //end coroutine
+        
+        foreach (GameObject target in targets)
+        {
+            if (BSM.PerformList[0].chosenAttack.magicClass == BaseAttack.MagicClass.WHITE)
+            {
+                StartCoroutine(BSM.ShowHeal(magicDamage, target));
+            } else
+            {
+                StartCoroutine(BSM.ShowDamage(magicDamage, target));
+            }
+        }
+
+        yield return new WaitForSeconds(BSM.damageDisplayTime);
+
+        PostAnimationCleanup();
+
         actionStarted = false;
+    }
+
+    public IEnumerator ItemAnimation()
+    {
+        if (actionStarted)
+        {
+            yield break; //breaks from the IEnumerator if we have gone through it already
+        }
+
+        actionStarted = true;
+
+        //animate the hero to the enemy (this is where attack animations will go)
+        Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
+        while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
+
+        yield return new WaitForSeconds(0.5f); //wait a bit
+
+        PerformItem(); //process the item
+
+        //animate the enemy back to start position
+        Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
+        while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position
+
+        foreach (GameObject target in targets)
+        {
+            if (BSM.PerformList[0].chosenItem.type == Item.Types.RESTORATIVE)
+            {
+                StartCoroutine(BSM.ShowHeal(itemDamage, target));
+            }
+        }
+        
+        BSM.ResetItemList();
+
+        PostAnimationCleanup();
+
+        actionStarted = false;
+    }
+
+    void PostAnimationCleanup()
+    {
+        GetStatusEffectsFromCurrentAttack();
+
+        UpdateHeroStats();
+
+        playerMove.EndTurn(this);
     }
 
     private bool MoveToTarget(Vector3 target)
@@ -345,7 +428,7 @@ public class HeroStateMachine : MonoBehaviour
         UpdateHeroStats(); //updates UI to show current HP and MP
     }
 
-    void IncreaseThreat(GameObject enemy, BaseHero hero, float threat)
+    public void IncreaseThreat(GameObject enemy, BaseHero hero, float threat)
     {
         EnemyBehavior eb = enemy.GetComponent<EnemyBehavior>();
         foreach (BaseThreat t in eb.threatList)
@@ -403,7 +486,12 @@ public class HeroStateMachine : MonoBehaviour
                 magicScript.spell = BSM.PerformList[0].chosenAttack; //sets the spell to be cast by the chosen spell
                 magicScript.heroPerformingAction = hero; //sets hero performing action to this hero
                 magicScript.enemyReceivingAction = target.GetComponent<EnemyStateMachine>().enemy; //sets the enemy receiving action to the target's enemy
+                magicScript.hsm = this;
                 magicScript.ProcessMagicHeroToEnemy(); //actually process the magic to enemy
+
+                float calc_threat = (((magicDamage / 2) + hero.currentThreatRating) * BSM.PerformList[0].chosenAttack.threatMultiplier);
+                IncreaseThreat(target, hero, calc_threat);
+                //StartCoroutine(BSM.ShowDamage(magicDamage, target));
             }
             else //if attack type not found
             {
@@ -415,6 +503,7 @@ public class HeroStateMachine : MonoBehaviour
                 Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<EnemyStateMachine>().enemy._Name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
             }
             target.GetComponent<EnemyStateMachine>().enemyBehavior.TakeDamage(calc_damage); //processes enemy take damage by above value
+            
         }
         if (target.tag == "Hero")
         {
@@ -446,7 +535,9 @@ public class HeroStateMachine : MonoBehaviour
                 magicScript.spell = BSM.PerformList[0].chosenAttack; //sets the spell to be cast by the chosen spell
                 magicScript.heroPerformingAction = hero; //sets hero performing action to this hero
                 magicScript.heroReceivingAction = target.GetComponent<HeroStateMachine>().hero; //sets the hero receiving action to the target's hero
+                magicScript.hsm = this;
                 magicScript.ProcessMagicHeroToHero(); //actually process the magic to hero
+                //StartCoroutine(BSM.ShowDamage(magicDamage, target));
             }
             else //if attack type not found
             {
@@ -468,34 +559,39 @@ public class HeroStateMachine : MonoBehaviour
 
         BaseItemScript itemScript = new BaseItemScript();
         itemScript.scriptToRun = BSM.PerformList[0].chosenItem.name; //sets which item script to be run
-        if (BSM.PerformList[0].targetType == HandleTurn.Types.HERO)
+        itemScript.hsm = this;
+        foreach (GameObject target in targets)
         {
-            itemScript.ProcessItemToHero(BSM.PerformList[0].AttackersTarget.GetComponent<HeroStateMachine>().hero);
+            if (target.tag == "Hero")
+            {
+                itemScript.ProcessItemToHero(target.GetComponent<HeroStateMachine>().hero);
+            }
+            if (target.tag == "Enemy")
+            {
+                itemScript.ProcessItemToEnemy(target.GetComponent<EnemyStateMachine>().enemy);
+            }
         }
-        if (BSM.PerformList[0].targetType == HandleTurn.Types.ENEMY)
-        {
-            itemScript.ProcessItemToEnemy(BSM.PerformList[0].AttackersTarget.GetComponent<EnemyStateMachine>().enemy);
-        }
+        
         Inventory.instance.Remove(BSM.PerformList[0].chosenItem);
     }
-
-    void ReduceMP() //after casting magic
-    {
-        hero.curMP -= BSM.PerformList[0].chosenAttack.MPCost; //remove MP of chosen attack from hero
-        UpdateHeroStats(); //update the UI to show missing MP
-    }
-
+    
     //Update stats on damage / heal
     public void UpdateHeroStats() //can maybe make this public to process when losing MP
     {
-        stats.HeroHP.text = "HP: " + hero.curHP + "/" + hero.maxHP;
-        stats.HeroMP.text = "MP: " + hero.curMP + "/" + hero.maxMP;
-
-        for (int i=0; i < GameManager.instance.activeHeroes.Count; i++)
+        GameObject[] heroes = GameObject.FindGameObjectsWithTag("Hero");
+        foreach (GameObject heroObj in heroes)
         {
-            if (GameManager.instance.activeHeroes[i]._Name == hero._Name) {
-                GameManager.instance.activeHeroes[i].curHP = hero.curHP;
-                GameManager.instance.activeHeroes[i].curMP = hero.curMP;
+            HeroStateMachine heroHSM = heroObj.GetComponent<HeroStateMachine>();
+            heroHSM.stats.HeroHP.text = "HP: " + heroHSM.hero.curHP + "/" + heroHSM.hero.maxHP;
+            heroHSM.stats.HeroMP.text = "MP: " + heroHSM.hero.curMP + "/" + heroHSM.hero.maxMP;
+
+            foreach (BaseHero hero in GameManager.instance.activeHeroes)
+            {
+                if (hero._Name == heroHSM.hero._Name)
+                {
+                    hero.curHP = heroHSM.hero.curHP;
+                    hero.curMP = heroHSM.hero.curMP;
+                }
             }
         }
     }
@@ -515,91 +611,61 @@ public class HeroStateMachine : MonoBehaviour
         UpdateHeroStats();
     }
 
-    void GetStatusEffectsFromCurrentAttack() //gets status effects to be processed from chosen attack
+    public void GetStatusEffectsFromCurrentAttack() //gets status effects to be processed from chosen attack
     {
         //if target is ally, add to ally's active status effects. if target is enemy, add to enemy's list
-        if (BSM.PerformList[0].targetType == HandleTurn.Types.ENEMY)
-        {
-            if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ATTACK)
-            {
-                foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
-                {
-                    foreach (GameObject target in BSM.targets)
-                    {
-                        BaseEffect effectToApply = new BaseEffect();
-                        effectToApply.effectName = statusEffect._Name;
-                        effectToApply.effectType = statusEffect.effectType.ToString();
-                        effectToApply.turnsRemaining = statusEffect.turnsApplied;
-                        effectToApply.baseValue = statusEffect.baseValue + hero.baseMATK;
-                        Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + target.name);
-                        target.GetComponent<EnemyStateMachine>().enemyBehavior.activeStatusEffects.Add(effectToApply);
-                    }
-                }
-            }
-            if (BSM.PerformList[0].actionType == HandleTurn.ActionType.MAGIC)
-            {
-                foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
-                {
-                    foreach (GameObject target in BSM.targets)
-                    {
-                        BaseEffect effectToApply = new BaseEffect();
-                        effectToApply.effectName = statusEffect._Name;
-                        effectToApply.effectType = statusEffect.effectType.ToString();
-                        effectToApply.turnsRemaining = statusEffect.turnsApplied;
-                        effectToApply.baseValue = statusEffect.baseValue + hero.baseMATK;
-                        Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + target.name);
-                        target.GetComponent<EnemyStateMachine>().enemyBehavior.activeStatusEffects.Add(effectToApply);
-                    }
-                }
-            }
-        }
 
-        if (BSM.PerformList[0].targetType == HandleTurn.Types.HERO)
+        if (BSM.PerformList[0].chosenAttack != null && BSM.PerformList[0].chosenAttack.statusEffects.Count > 0)
         {
-            if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ATTACK)
+            foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
             {
-                foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
+                foreach (GameObject target in targets)
                 {
-                    foreach (GameObject target in BSM.targets)
+                    BaseEffect effectToApply = new BaseEffect();
+                    effectToApply.effectName = statusEffect._Name;
+                    effectToApply.effectType = statusEffect.effectType.ToString();
+                    effectToApply.turnsRemaining = statusEffect.turnsApplied;
+                    effectToApply.baseValue = statusEffect.baseValue;
+                    Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + target.name);
+                    if (target.tag == "Enemy")
                     {
-                        BaseEffect effectToApply = new BaseEffect();
-                        effectToApply.effectName = statusEffect._Name;
-                        effectToApply.effectType = statusEffect.effectType.ToString();
-                        effectToApply.turnsRemaining = statusEffect.turnsApplied;
-                        effectToApply.baseValue = statusEffect.baseValue + hero.baseMATK;
-                        Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + target.name);
+                        target.GetComponent<EnemyBehavior>().activeStatusEffects.Add(effectToApply);
+                    }
+                    else if (target.tag == "Hero")
+                    {
                         target.GetComponent<HeroStateMachine>().activeStatusEffects.Add(effectToApply);
                     }
+
                 }
             }
-            if (BSM.PerformList[0].actionType == HandleTurn.ActionType.MAGIC)
+        } else if (BSM.PerformList[0].chosenItem != null && BSM.PerformList[0].chosenItem.statusEffects.Count > 0)
+        {
+            foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenItem.statusEffects)
             {
-                foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
+                foreach (GameObject target in targets)
                 {
-                    foreach (GameObject target in BSM.targets)
+                    BaseEffect effectToApply = new BaseEffect();
+                    effectToApply.effectName = statusEffect._Name;
+                    effectToApply.effectType = statusEffect.effectType.ToString();
+                    effectToApply.turnsRemaining = statusEffect.turnsApplied;
+                    effectToApply.baseValue = statusEffect.baseValue;
+                    Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + target.name);
+                    if (target.tag == "Enemy")
                     {
-                        BaseEffect effectToApply = new BaseEffect();
-                        effectToApply.effectName = statusEffect._Name;
-                        effectToApply.effectType = statusEffect.effectType.ToString();
-                        effectToApply.turnsRemaining = statusEffect.turnsApplied;
-                        effectToApply.baseValue = statusEffect.baseValue + hero.baseMATK;
-                        Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + target.name);
+                        target.GetComponent<EnemyBehavior>().activeStatusEffects.Add(effectToApply);
+                    }
+                    else if (target.tag == "Hero")
+                    {
                         target.GetComponent<HeroStateMachine>().activeStatusEffects.Add(effectToApply);
                     }
+
                 }
             }
         }
-
-        if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ITEM)
-        {
-            Debug.Log("do status effects from items here");
-        }
-        ProcessStatusEffects();
     }
 
     public void ProcessStatusEffects()
     {
-        Debug.Log(activeStatusEffects.Count);
         for (int i = 0; i < activeStatusEffects.Count; i++)
         {
             StatusEffect effectToProcess = new StatusEffect();
@@ -608,7 +674,10 @@ public class HeroStateMachine : MonoBehaviour
 
             effectToProcess.ProcessEffect(activeStatusEffects[i].effectName, activeStatusEffects[i].effectType, activeStatusEffects[i].baseValue, this.gameObject);
             
-            StartCoroutine(BSM.ShowDamage(effectDamage, this.gameObject));
+            if (effectDamage > 0)
+            {
+                StartCoroutine(BSM.ShowElementalDamage(effectDamage, this.gameObject, effectToProcess.elementColor));
+            }
 
             activeStatusEffects[i].turnsRemaining--; //lowers turns remaining by 1
 
@@ -627,5 +696,18 @@ public class HeroStateMachine : MonoBehaviour
         Random.InitState(System.DateTime.Now.Millisecond);
         int rand = Random.Range(min, max);
         return rand;
+    }
+
+    void UpgradeProgressBar()
+    {
+        cur_cooldown = (cur_cooldown + (Time.deltaTime / 1f)) + (hero.currentDexterity * .000055955f); //increases ATB gauge, first float dictates how slowly gauge fills (default 1f), while second float dictates how effective dexterity is
+        float calc_cooldown = cur_cooldown / max_cooldown; //does math of % of ATB gauge to be filled each frame
+        ProgressBar.transform.localScale = new Vector2(Mathf.Clamp(calc_cooldown, 0, 1), ProgressBar.transform.localScale.y); //shows graphic of ATB gauge increasing
+        if (cur_cooldown >= max_cooldown) //if hero turn is ready
+        {
+            BSM.pendingTurn = true;
+            calculatedTilesToMove = false;
+            currentState = TurnState.ADDTOLIST;
+        }
     }
 }

@@ -9,6 +9,8 @@ public class StatusEffect
     public EnemyBehavior eb;
     public HeroStateMachine hsm;
 
+    public Color elementColor;
+
     public void ProcessEffect(string effectName, string effectType, int baseVal, GameObject thisObject)
     {
 
@@ -57,6 +59,7 @@ public class StatusEffect
         Debug.Log(thisObject.GetComponent<HeroStateMachine>().hero._Name + " HP: " + thisObject.GetComponent<HeroStateMachine>().hero.curHP + " / " + thisObject.GetComponent<HeroStateMachine>().hero.baseHP);
         }
 
+        elementColor = new Color(0, 0.75f, 0);
         SetDamage(baseVal);
     }
 

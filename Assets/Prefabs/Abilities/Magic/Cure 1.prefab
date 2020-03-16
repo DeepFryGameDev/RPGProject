@@ -50,10 +50,10 @@ MonoBehaviour:
   cooldown: 0
   patternIndex: 1
   rangeIndex: 0
-  threatMultiplier: 1
+  threatMultiplier: 1.2
   type: 1
   statusEffects: []
   magicClass: 0
   useState: 0
   usableInMenu: 1
-  enoughMP: 0
+  enoughMP: 1

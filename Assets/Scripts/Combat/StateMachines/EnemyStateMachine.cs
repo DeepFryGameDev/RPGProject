@@ -121,7 +121,6 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                     
                     this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change the color to gray. later play death animation
                     alive = false; //set alive to false to exit out of the turn state
-                    BSM.EnemyButtons(); //reset enemy buttons for all alive enemies
                     BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE; //changes battle state to check alive
                 }
             break;

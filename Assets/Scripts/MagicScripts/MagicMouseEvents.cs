@@ -113,8 +113,8 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         {
             GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(1).GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
             GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(3).GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].baseHP); //HP text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(8).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].baseMP); //MP text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(8).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
         }
     }
 
@@ -274,7 +274,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     float GetProgressBarValuesHP(BaseHero hero)
     {
         float heroHP = hero.curHP;
-        float heroBaseHP = hero.baseHP;
+        float heroBaseHP = hero.maxHP;
         float calc_HP;
 
         calc_HP = heroHP / heroBaseHP;
@@ -285,7 +285,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     float GetProgressBarValuesMP(BaseHero hero)
     {
         float heroMP = hero.curMP;
-        float heroBaseMP = hero.baseMP;
+        float heroBaseMP = hero.maxMP;
         float calc_MP;
 
         calc_MP = heroMP / heroBaseMP;

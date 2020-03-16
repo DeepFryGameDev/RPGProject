@@ -8,6 +8,7 @@ public class MagicAttackButton : MonoBehaviour
 
     public void CastMagicAttack() //used by battle state machine to perform casting magic attack
     {
+        //Debug.Log("chose magic " + magicAttackToPerform.name);
         GameObject.Find("BattleManager").GetComponent<BattleStateMachine>().SetChosenMagic(magicAttackToPerform);
     }
 }

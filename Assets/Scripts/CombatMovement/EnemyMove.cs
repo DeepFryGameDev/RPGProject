@@ -22,6 +22,7 @@ public class EnemyMove : BaseMove
 
     public void Move()
     {
+        //Debug.Log("Path count " + path.Count);
         if (path.Count > 0)
         {
             //Debug.Log("found path");
@@ -63,6 +64,7 @@ public class EnemyMove : BaseMove
 
     public void FindSelectableTiles()
     {
+        //GetWalkableTiles();
         ComputeAdjacencyLists(null);
         GetCurrentTile();
 
@@ -85,8 +87,10 @@ public class EnemyMove : BaseMove
             {
                 foreach (Tile tile in t.adjecencyList)
                 {
+                    //Debug.Log("adjencencyList - " + tile);
                     if (!tile.visited)
                     {
+                        //Debug.Log("tile not visited");
                         tile.parent = t;
                         tile.visited = true;
                         tile.distance = 1 + t.distance;
@@ -97,9 +101,30 @@ public class EnemyMove : BaseMove
         }
     }
 
+    void GetWalkableTiles()
+    {
+        GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (GameObject obj in tiles)
+        {
+            RaycastHit2D[] selectableHits = Physics2D.RaycastAll(obj.transform.position, Vector3.forward, 1);
+            foreach (RaycastHit2D hit in selectableHits)
+            {
+                if (hit.collider.gameObject.tag == "Hero" || hit.collider.gameObject.tag == "Enemy")
+                {
+                    obj.GetComponent<Tile>().walkable = false;
+                    break;
+                } else if (hit.collider.gameObject.tag == "Tile")
+                {
+                    obj.GetComponent<Tile>().walkable = true;
+                }
+            }
+        }
+    }
+
     protected void CalculatePath()
     {
         Tile targetTile = GetTargetTile(target);
+        Debug.Log("Calculate path target: " + targetTile.gameObject.name);
         FindPath(targetTile);
     }
 }

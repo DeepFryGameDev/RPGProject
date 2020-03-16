@@ -45,15 +45,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Fire 1
   description: Basic fireball which burns a lil bit
-  damage: 20
-  MPCost: 10
+  damage: 30
+  MPCost: 20
   cooldown: 0
   patternIndex: 1
   rangeIndex: 0
-  threatMultiplier: 1
+  threatMultiplier: 1.1
   type: 1
   statusEffects: []
   magicClass: 2
   useState: 0
   usableInMenu: 0
-  enoughMP: 0
+  enoughMP: 1

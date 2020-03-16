@@ -22,8 +22,6 @@ public class EnemyBehavior : EnemyMove
     protected GameObject actionTarget;
     protected List<GameObject> targets = new List<GameObject>();
 
-    public int magicDamage;
-
     //for MP calculations
     [HideInInspector] public List<BaseAttack> attacksWithinMPThreshold = new List<BaseAttack>();
 
@@ -38,6 +36,8 @@ public class EnemyBehavior : EnemyMove
     //for status effects
     public List<BaseEffect> activeStatusEffects = new List<BaseEffect>();
     public int effectDamage;
+    public int magicDamage;
+    public int itemDamage;
 
     //for threat
     public List<BaseThreat> threatList = new List<BaseThreat>();
@@ -250,6 +250,20 @@ public class EnemyBehavior : EnemyMove
         Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
         while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
 
+        foreach (GameObject target in targets)
+        {
+            if (chosenAttack.magicClass == BaseAttack.MagicClass.WHITE)
+            {
+                StartCoroutine(BSM.ShowHeal(magicDamage, target));
+            }
+            else
+            {
+                StartCoroutine(BSM.ShowDamage(magicDamage, target));
+            }
+        }
+
+        yield return new WaitForSeconds(BSM.damageDisplayTime);
+
         FinishAction();
     }
 
@@ -419,12 +433,6 @@ public class EnemyBehavior : EnemyMove
         Random.InitState(System.DateTime.Now.Millisecond);
         int rand = Random.Range(min, max);
         return rand;
-    }
-
-    protected void MoveEnemy()
-    {
-        Move();
-        GetComponent<EnemyStateMachine>().startPosition = transform.position;
     }
 
     public void BeginEnemyTurn()
@@ -612,10 +620,26 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
-    protected void CalculateEnemyMove() 
+    protected void MoveEnemy()
     {
+        Move();
+        GetComponent<EnemyStateMachine>().startPosition = transform.position;
+    }
+
+    protected void CalculateEnemyMove() //<----- the problem
+    {
+        /*if (chosenTarget != null)
+        {
+            actualTargetTile = GetTargetTile(chosenTarget);
+            target = chosenTarget;
+        }*/
+
+        //actualTargetTile = GetTargetTile(target);
+        
         CalculatePath();
         FindSelectableTiles();
+
+        //Debug.Log(actualTargetTile);
         actualTargetTile.target = true;
     }
 
@@ -687,6 +711,7 @@ public class EnemyBehavior : EnemyMove
             target = FindNearestTarget();
         } else
         {
+            Debug.Log("Highest threat target is " + highestThreatTarget);
             target = highestThreatTarget;
         }
 

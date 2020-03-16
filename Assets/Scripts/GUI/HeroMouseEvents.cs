@@ -10,6 +10,8 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     HeroStateMachine HSM;
     public Text detailsText;
 
+    //likely not using
+
     void Start()
     {
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
@@ -18,10 +20,10 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData) //sets target to hero if clicked
     {
-        //if (BSM.choosingTarget)
-        //{
-            //BSM.target = this.gameObject;
-        //}
+        if (BSM.choosingTarget)
+        {
+            BSM.chosenTarget = this.gameObject; //sets BSM target to this gameObject
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData) //shows border around hero panel in battle if hero is being hovered over

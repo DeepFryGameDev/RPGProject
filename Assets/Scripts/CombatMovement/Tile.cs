@@ -21,9 +21,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     [HideInInspector] public int distance = 0;
 
     //For A*
-    [HideInInspector] public float f = 0;
-    [HideInInspector] public float g = 0;
-    [HideInInspector] public float h = 0;
+    [HideInInspector] public float f = 0; //g + h
+    [HideInInspector] public float g = 0; //cost from parent to current tile
+    [HideInInspector] public float h = 0; //heuristic cost (cost from processed tile to destination)
 
     [HideInInspector] public Color selectableColor = Color.red;
     [HideInInspector] public Color pathableColor = Color.red;
@@ -164,7 +164,13 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     {
         if (BSM.choosingTarget)
         {
-            pattern.GetAffectPattern(this, BSM.HeroChoice.chosenAttack.patternIndex);
+            if (BSM.HeroChoice.chosenItem != null)
+            {
+                pattern.GetAffectPattern(this, 0);
+            } else
+            {
+                pattern.GetAffectPattern(this, BSM.HeroChoice.chosenAttack.patternIndex);
+            }
             tilesInRange = pattern.pattern;
             foreach (Tile tile in tilesInRange)
             {
@@ -214,15 +220,32 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                                     if ((target.collider.gameObject.tag == "Enemy" || target.collider.gameObject.tag == "Hero") && !BSM.targets.Contains(target.collider.gameObject))
                                     {
                                         //Debug.Log("adding " + target.collider.gameObject + " to targets");
-                                        BSM.targets.Add(target.collider.gameObject); //adds all objects inside target range to targets list to be affected
+                                        //BSM.targets.Add(target.collider.gameObject); //adds all objects inside target range to targets list to be affected
+                                        BSM.HeroesToManage[0].GetComponent<HeroStateMachine>().targets.Add(target.collider.gameObject);
                                     }
                                 }
                             }
-                            tilesInRange.Clear();
+
+                            if (BSM.HeroesToManage[0].GetComponent<HeroStateMachine>().targets.Count > 0)
+                            {
+                                tilesInRange.Clear();
+                                ClearTiles();
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+
+    void ClearTiles()
+    {
+        GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (GameObject tileObj in tiles)
+        {
+            Tile tile = tileObj.GetComponent<Tile>();
+            tile.inAffect = false;
+            tile.inRange = false;
         }
     }
 }

@@ -78,7 +78,7 @@ public class PlayerMove : BaseMove
             {
                 ignoreMoveOnce = false;
                 readyForMove = false;
-                EndTurn();
+                //EndTurn();
             }
         }
     }

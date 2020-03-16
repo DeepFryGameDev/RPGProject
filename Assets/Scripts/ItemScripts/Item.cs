@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Item", menuName = "Inventory/Item")] //to create scriptable object for items. used to display in menus
 public class Item : ScriptableObject
@@ -7,6 +8,7 @@ public class Item : ScriptableObject
     new public string name = "New Item";
     public string description = "Item Description";
     public bool usableInMenu;
+    public List<BaseStatusEffect> statusEffects = new List<BaseStatusEffect>(); 
 
     public enum UseStates
     {
@@ -17,6 +19,16 @@ public class Item : ScriptableObject
     }
 
     public UseStates useState;
+
+    public enum Types
+    {
+        RESTORATIVE,
+        DAMAGE,
+        HEALSTATUS,
+        INFLICTSTATUS
+    }
+
+    public Types type;
 
     public void RemoveFromInventory()
     {

@@ -15,6 +15,8 @@ public class BaseMagicScript //for processing magic - need to add status effects
     public HeroStateMachine hsm;
     public EnemyBehavior eb;
 
+    int adjDamage;
+
     //---PROCESSING MAGIC FROM HERO
     public void ProcessMagicHeroToHero()
     {
@@ -31,6 +33,9 @@ public class BaseMagicScript //for processing magic - need to add status effects
             Fire1HeroToHero();
         }
 
+        SetDamage();
+
+        HPBaseline(heroReceivingAction, null);
         SpendMP();
     }
 
@@ -49,6 +54,9 @@ public class BaseMagicScript //for processing magic - need to add status effects
             Fire1HeroToEnemy();
         }
 
+        SetDamage();
+
+        HPBaseline(null, enemyReceivingAction);
         SpendMP();
     }
 
@@ -58,10 +66,8 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         heroReceivingAction.curHP += spell.damage;
 
-        if (heroReceivingAction.curHP > heroReceivingAction.baseHP)
-        {
-            heroReceivingAction.curHP = heroReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Cure 1 on " + heroReceivingAction._Name + "!");
     }
 
@@ -69,10 +75,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         heroReceivingAction.curHP -= spell.damage;
 
-        if (heroReceivingAction.curHP > heroReceivingAction.baseHP)
-        {
-            heroReceivingAction.curHP = heroReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
 
         Debug.Log("Casting Bio 1 on " + heroReceivingAction._Name + "!");
     }
@@ -81,10 +84,8 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         heroReceivingAction.curHP -= spell.damage;
 
-        if (heroReceivingAction.curHP > heroReceivingAction.baseHP)
-        {
-            heroReceivingAction.curHP = heroReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Fire 1 on " + heroReceivingAction._Name + "!");
     }
     #endregion
@@ -95,10 +96,8 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         enemyReceivingAction.curHP += spell.damage;
 
-        if (enemyReceivingAction.curHP > enemyReceivingAction.baseHP)
-        {
-            enemyReceivingAction.curHP = enemyReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Cure 1 on " + enemyReceivingAction._Name + "!");
     }
 
@@ -106,29 +105,23 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         enemyReceivingAction.curHP -= spell.damage;
 
-        if (enemyReceivingAction.curHP > enemyReceivingAction.baseHP)
-        {
-            enemyReceivingAction.curHP = enemyReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
 
         Debug.Log("Casting Bio 1 on " + enemyReceivingAction._Name + "!");
     }
 
     void Fire1HeroToEnemy()
     {
-
         enemyReceivingAction.curHP -= spell.damage;
 
-        if (enemyReceivingAction.curHP > enemyReceivingAction.baseHP)
-        {
-            enemyReceivingAction.curHP = enemyReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Fire 1 on " + enemyReceivingAction._Name + "!");
     }
     #endregion
-    
+
     //---PROCESSING MAGIC FROM ENEMY
-    
+
     public void ProcessMagicEnemyToEnemy()
     {
         if (spell.name == "Cure 1")
@@ -144,6 +137,9 @@ public class BaseMagicScript //for processing magic - need to add status effects
             Fire1EnemyToEnemy();
         }
 
+        SetDamage();
+
+        HPBaseline(null, enemyReceivingAction);
         SpendMP();
     }
 
@@ -162,6 +158,9 @@ public class BaseMagicScript //for processing magic - need to add status effects
             Fire1EnemyToHero();
         }
 
+        SetDamage();
+
+        HPBaseline(heroReceivingAction, null);
         SpendMP();
     }
 
@@ -171,10 +170,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         heroReceivingAction.curHP += spell.damage;
 
-        if (heroReceivingAction.curHP > heroReceivingAction.baseHP)
-        {
-            heroReceivingAction.curHP = heroReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
 
         Debug.Log("Casting Cure 1 on " + heroReceivingAction._Name + "!");
     }
@@ -183,12 +179,16 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         heroReceivingAction.curHP -= spell.damage; //need to add damage calculation
 
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Bio 1 on " + heroReceivingAction._Name + "!");
     }
 
     void Fire1EnemyToHero()
     {
         heroReceivingAction.curHP -= spell.damage;
+
+        adjDamage = spell.damage;
 
         Debug.Log("Casting Fire 1 on " + heroReceivingAction._Name + "!");
     }
@@ -200,10 +200,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         enemyReceivingAction.curHP += spell.damage; //need to add healing calculation
 
-        if (enemyReceivingAction.curHP > enemyReceivingAction.baseHP)
-        {
-            enemyReceivingAction.curHP = enemyReceivingAction.baseHP;
-        }
+        adjDamage = spell.damage;
 
         Debug.Log("Casting Cure 1 on " + enemyReceivingAction._Name + "!");
     }
@@ -212,14 +209,17 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         enemyReceivingAction.curHP -= spell.damage;
 
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Bio 1 on " + enemyReceivingAction._Name + "!");
     }
 
     void Fire1EnemyToEnemy()
     {
-
         enemyReceivingAction.curHP -= spell.damage;
-        
+
+        adjDamage = spell.damage;
+
         Debug.Log("Casting Fire 1 on " + enemyReceivingAction._Name + "!");
     }
     #endregion
@@ -229,7 +229,8 @@ public class BaseMagicScript //for processing magic - need to add status effects
         if (heroPerformingAction != null)
         {
             heroPerformingAction.curMP -= spell.MPCost;
-        } else if (enemyPerformingAction != null)
+        }
+        else if (enemyPerformingAction != null)
         {
             enemyPerformingAction.curMP -= spell.MPCost;
         }
@@ -239,11 +240,47 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         if (hsm != null) //hero casting spell
         {
-
-        } else if (eb != null) //enemy casting spell
-        {
-
+            hsm.magicDamage = adjDamage;
         }
+        else if (eb != null) //enemy casting spell
+        {
+            eb.magicDamage = adjDamage;
+        }
+    }
 
+    void HPBaseline(BaseHero hero, BaseEnemy enemy)
+    {
+        if (hero != null)
+        {
+            if (hero.curHP > hero.maxHP)
+            {
+                hero.curHP = hero.maxHP;
+            }
+        }
+        else if (enemy != null)
+        {
+            if (enemy.curHP > enemy.baseHP)
+            {
+                enemy.curHP = enemy.baseHP;
+            }
+        }
+    }
+
+    void MPBaseline(BaseHero hero, BaseEnemy enemy)
+    {
+        if (hero != null)
+        {
+            if (hero.curMP > hero.maxMP)
+            {
+                hero.curMP = hero.maxMP;
+            }
+        }
+        else if (enemy != null)
+        {
+            if (enemy.curMP > enemy.baseMP)
+            {
+                enemy.curMP = enemy.baseMP;
+            }
+        }
     }
 }

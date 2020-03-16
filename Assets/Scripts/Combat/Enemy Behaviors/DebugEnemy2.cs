@@ -77,7 +77,7 @@ public class DebugEnemy2 : EnemyBehavior
                 if (chosenAttack == ESM.enemy.attacks[0])
                 {
                     //Debug.Log("run attack");
-                    RunAction(chosenAttack, GetTargetsInAffect(chosenAttack.patternIndex,"Hero",chosenTarget));
+                    RunAction(chosenAttack, GetTargetsInAffect(chosenAttack.patternIndex, "Hero", chosenTarget));
                 }
 
                 Debug.Log("changing back to idle");
@@ -90,6 +90,8 @@ public class DebugEnemy2 : EnemyBehavior
     void GetChosenAction()
     {
         chosenAttack = ESM.enemy.attacks[0]; //chooses attack
+        Debug.Log("Chosen attack: " + chosenAttack);
         chosenTarget = GetHeroWithHighestThreat(); //chooses target
+        Debug.Log("Chosen target: " + chosenTarget);
     }
 }
