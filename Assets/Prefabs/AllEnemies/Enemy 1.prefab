@@ -277,6 +277,9 @@ MonoBehaviour:
   readyToAnimateAction: 0
   HeroToAttack: {fileID: 0}
   attacksWithinMPThreshold: []
+  effectDamage: 0
+  magicDamage: 0
+  itemDamage: 0
   maxThreat: 0
   threatBar: {fileID: 8014757414088050372}
 --- !u!114 &1969741401569731859

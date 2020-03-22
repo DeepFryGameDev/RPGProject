@@ -114,7 +114,7 @@ public class BaseMove : MonoBehaviour
 
         foreach (Tile t in list)
         {
-            Debug.Log("FindLowestF: " + t);
+            //Debug.Log("FindLowestF: " + t);
             if (t.f < lowest.f)
             {
                 lowest = t;
@@ -174,11 +174,11 @@ public class BaseMove : MonoBehaviour
             {
                 //Debug.Log(tile.gameObject.name);
             }
-            Debug.Log("t: " + t.gameObject.name);
-            Debug.Log("target: " + target.gameObject.name);
+            //Debug.Log("t: " + t.gameObject.name);
+            //Debug.Log("target: " + target.gameObject.name);
             if (t == target) //<---- t is never the target tile
             {
-                Debug.Log("if t == target: true");
+                //Debug.Log("if t == target: true");
                 actualTargetTile = FindEndTile(t);
                 //Debug.Log("actual target file: " + actualTargetTile.gameObject.name);
                 MoveToTile(actualTargetTile);

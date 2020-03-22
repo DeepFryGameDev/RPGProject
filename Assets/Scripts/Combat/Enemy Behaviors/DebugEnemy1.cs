@@ -20,8 +20,9 @@ public class DebugEnemy1 : EnemyBehavior
             break;
 
             case (BehaviorStates.CHOOSEACTION):
-
+                Debug.Log("Building action lists");
                 BuildActionLists();
+                Debug.Log("getting action");
                 GetChosenAction();
                 behaviorStates = BehaviorStates.BEFOREMOVE;
 
@@ -31,10 +32,12 @@ public class DebugEnemy1 : EnemyBehavior
                 
                 if (AttackInRangeOfTarget(chosenTarget, chosenAttack))
                 {
+                    Debug.Log("Attack is in range");
                     behaviorStates = BehaviorStates.ACTION;
                 }
                 else
                 {
+                    Debug.Log("attack is NOT in range. moving");
                     behaviorStates = BehaviorStates.MOVE;
                 }
 
@@ -45,7 +48,7 @@ public class DebugEnemy1 : EnemyBehavior
                 {
                     if (foundTarget)
                     {
-                        //Debug.Log("attack not in range, moving enemy");
+                        Debug.Log("attack not in range, moving enemy");
                         Debug.Log("chosen action: " + chosenAttack);
                         Debug.Log("chosen target: " + chosenTarget);
                         MoveEnemy();
@@ -97,11 +100,13 @@ public class DebugEnemy1 : EnemyBehavior
     {
         // 1) Check HP of all allies - if lowest ally is < 50% hp, cast cure 1 on them.
         chosenAttack = ESM.enemy.attacks[1];
-
+        Debug.Log("Chosen attack: " + chosenAttack);
         GameObject lowestHPAlly = GetLowestHPPercent("Enemy");
         chosenTarget = lowestHPAlly;
+        Debug.Log("Chosen target: " + chosenTarget);
 
         float lowestHPPercent = GetHPPercent(lowestHPAlly);
+        Debug.Log("lowestHPPercent: " + lowestHPPercent);
 
         if (lowestHPPercent <= 99.0f && HasEnoughMP(chosenAttack))
         {

@@ -130,7 +130,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
                 foreach (RaycastHit2D checkIfWalkable in walkableHits)
                 {
-                    if (checkIfWalkable.collider.gameObject.tag == "Enemy")
+                    if (checkIfWalkable.collider.gameObject.tag == "Enemy" && BSM.HeroesToManage.Count > 0)
                     {
                         tile.walkable = false;
                     }

@@ -25,7 +25,7 @@ public class EnemyMove : BaseMove
         //Debug.Log("Path count " + path.Count);
         if (path.Count > 0)
         {
-            //Debug.Log("found path");
+            Debug.Log("found path");
             Tile t = path.Peek();
             Vector3 target = t.transform.position;
             target.z = 1;
@@ -33,6 +33,8 @@ public class EnemyMove : BaseMove
             //Debug.Log("transform position: " + transform.position);
             //Debug.Log("target position: " + target);
             //calculate the unit's position on top of the target tile
+            //target.z = target.z + t.GetComponent<Collider>().bounds.extents.z;
+
             if (Vector2.Distance(transform.position, target) >= 0.05f)
             {
                 //Debug.Log("need to move");
@@ -40,7 +42,7 @@ public class EnemyMove : BaseMove
                 SetHorizontalVelocity();
 
                 transform.forward = heading;
-                transform.rotation = Quaternion.Euler(Vector3.zero);
+                transform.rotation = Quaternion.Euler(Vector3.zero); //fixes weird rotation behavior
                 transform.position += velocity * Time.deltaTime;
             }
             else
@@ -53,7 +55,7 @@ public class EnemyMove : BaseMove
         }
         else
         {
-            //Debug.Log("end of path");
+            Debug.Log("end of path");
             readyForMove = false;
             EndTurn();
             //GetComponent<EnemyBehavior>().ChooseAction(); //enemy chooses random attack from their available attacks (this is where enemy behavior will likely need to go)
@@ -80,8 +82,6 @@ public class EnemyMove : BaseMove
 
             selectableTiles.Add(t);
             t.pathable = true;
-
-            RaycastHit2D[] selectableHits = Physics2D.RaycastAll(t.transform.position, Vector3.forward, 1);
             
             if (t.distance < move)
             {

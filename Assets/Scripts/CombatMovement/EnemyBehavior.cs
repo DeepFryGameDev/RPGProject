@@ -626,7 +626,7 @@ public class EnemyBehavior : EnemyMove
         GetComponent<EnemyStateMachine>().startPosition = transform.position;
     }
 
-    protected void CalculateEnemyMove() //<----- the problem
+    protected void CalculateEnemyMove()
     {
         /*if (chosenTarget != null)
         {

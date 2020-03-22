@@ -191,6 +191,9 @@ MonoBehaviour:
   readyToAnimateAction: 0
   HeroToAttack: {fileID: 0}
   attacksWithinMPThreshold: []
+  effectDamage: 0
+  magicDamage: 0
+  itemDamage: 0
   maxThreat: 0
   threatBar: {fileID: 5920510810164654950}
 --- !u!114 &8285240672625080310
@@ -242,6 +245,7 @@ MonoBehaviour:
     - item: {fileID: 11400000, guid: 57e6d789f4a7ba74881a9f7bf0fc2aec, type: 2}
       dropChance: 100
   enemyBehavior: {fileID: 0}
+  waitForDamageToFinish: 0
   currentState: 0
   cur_cooldown: 0
   startPosition: {x: 0, y: 0}
