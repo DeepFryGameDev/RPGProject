@@ -15,6 +15,7 @@ TagManager:
   - Item
   - Tile
   - DamageText
+  - HeroSpawnPoint
   layers:
   - Default
   - TransparentFX

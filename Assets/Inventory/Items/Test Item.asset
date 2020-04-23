@@ -16,4 +16,7 @@ MonoBehaviour:
   name: Potion
   description: Restores 20 HP
   usableInMenu: 1
+  sellValue: 10
+  statusEffects: []
   useState: 0
+  type: 0

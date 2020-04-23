@@ -53,13 +53,13 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         {
             GetComponent<SpriteRenderer>().material.color = inRangeColor;
         }
-        else if (inRange && inAffect)
-        {
-            GetComponent<SpriteRenderer>().material.color = attackableColor;
-        }
+        //else if (inRange && inAffect)
+        //{
+        //    GetComponent<SpriteRenderer>().material.color = attackableColor;
+        //}
         else if (inAffect)
         {
-            GetComponent<SpriteRenderer>().material.color = emptyAffectColor;
+            GetComponent<SpriteRenderer>().material.color = attackableColor; //set back to emptyAffectColor if needed
         }
         else if (current)
         {
@@ -92,7 +92,6 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         current = false;
         target = false;
         selectable = false;
-        pathable = false;
 
         inAffect = false;
         inRange = false;
@@ -102,6 +101,11 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         distance = 0;
 
         f = g = h = 0;
+    }
+
+    public void ClearPathable()
+    {
+        pathable = false;
     }
 
     public void FindNeighbors(Tile target)

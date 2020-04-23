@@ -7,5 +7,5 @@ public class BaseTroop //troops are enemy groups that can be called when initiat
 {
     public string _Name; //to identify each troop
     public float encounterChance; //not yet implemented - chance to encounter from region
-    public List<GameObject> enemies = new List<GameObject>(); //which enemies
+    public List<EnemySpawnPoints> enemies = new List<EnemySpawnPoints>(); //which enemies
 }

@@ -27,10 +27,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Display Item Menu")] //displays item menu canvas in Unity editor
@@ -42,10 +42,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Display Magic Menu")] //displays magic menu canvas in Unity editor
@@ -57,10 +57,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Display Equip Menu")] //displays equip menu canvas in Unity editor
@@ -72,10 +72,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Display Status Menu")] //displays status menu canvas in Unity editor
@@ -87,10 +87,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Display Party Menu")] //displays party menu canvas in Unity editor
@@ -102,14 +102,14 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
-    [MenuItem("Dev Tools/Menu Canvas/Display Order Menu")] //displays order menu canvas in Unity editor
-    public static void DisplayOrderMenuCanvas()
+    [MenuItem("Dev Tools/Menu Canvas/Display Talents Menu")] //displays order menu canvas in Unity editor
+    public static void DisplayTalentsMenuCanvas()
     {
         GameObject.Find("MainMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("ItemMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
@@ -117,10 +117,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Display Grid Menu")] //displays grid menu canvas in Unity editor
@@ -132,14 +132,14 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
-    [MenuItem("Dev Tools/Menu Canvas/Display Config Menu")] //displays config menu canvas in Unity editor
-    public static void DisplayConfigMenuCanvas()
+    [MenuItem("Dev Tools/Menu Canvas/Display Quests Menu")] //displays config menu canvas in Unity editor
+    public static void DisplayQuestsMenuCanvas()
     {
         GameObject.Find("MainMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("ItemMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
@@ -147,13 +147,13 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
-    [MenuItem("Dev Tools/Menu Canvas/Display Quit Menu")] //displays quit menu canvas in Unity editor
+    [MenuItem("Dev Tools/Menu Canvas/Display Bestiary Menu")] //displays quit menu canvas in Unity editor
     public static void DisplayQuitMenuCanvas()
     {
         GameObject.Find("MainMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
@@ -162,10 +162,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 1;
     }
 
     [MenuItem("Dev Tools/Menu Canvas/Hide Menus")] //hides menu canvases in Unity editor
@@ -177,10 +177,10 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("EquipMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("StatusMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("PartyMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("OrderMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("TalentsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GridMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("ConfigMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("QuitMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("QuestsMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
 

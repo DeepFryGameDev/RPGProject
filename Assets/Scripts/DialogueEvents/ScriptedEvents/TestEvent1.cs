@@ -4,14 +4,8 @@ using UnityEngine;
 
 public class TestEvent1 : BaseScriptedEvent
 {
-    public void TestMethod()
+    public void ItemShopTest()
     {
-        //StartCoroutine(StartMoving());
-        //Debug.Log("TestEvent1");
-    }
-
-    IEnumerator StartMoving()
-    {
-        yield return (StartCoroutine(MoveRight(this.gameObject, .5f, 1)));
+        Debug.Log("Fuck yeah!");
     }
 }

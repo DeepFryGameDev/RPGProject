@@ -16,8 +16,12 @@ MonoBehaviour:
   name: Test Helmet
   description: It's just a test helmet.
   usableInMenu: 0
+  sellValue: 8
+  statusEffects: []
   useState: 0
+  type: 0
   equipmentSlot: 0
+  equippableByPlayers: 
   Strength: 0
   Stamina: 0
   Agility: 0
@@ -32,6 +36,7 @@ MonoBehaviour:
   hit: 0
   crit: 0
   move: 0
+  regen: 0
   dodge: 0
   parry: 0
   block: 0

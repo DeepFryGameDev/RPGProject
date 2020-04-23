@@ -47,7 +47,7 @@ public class DebugEnemy2 : EnemyBehavior
                     if (foundTarget)
                     {
                         //Debug.Log("moving enemy");
-                        MoveEnemy();
+                        MoveEnemy(false);
                     }
                 } else
                 {
@@ -77,7 +77,7 @@ public class DebugEnemy2 : EnemyBehavior
                 if (chosenAttack == ESM.enemy.attacks[0])
                 {
                     //Debug.Log("run attack");
-                    RunAction(chosenAttack, GetTargetsInAffect(chosenAttack.patternIndex, "Hero", chosenTarget));
+                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero", chosenTarget));
                 }
 
                 Debug.Log("changing back to idle");

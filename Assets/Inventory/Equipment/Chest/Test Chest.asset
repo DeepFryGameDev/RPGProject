@@ -16,7 +16,10 @@ MonoBehaviour:
   name: Test Chest
   description: It's just a test chest.
   usableInMenu: 0
+  sellValue: 10
+  statusEffects: []
   useState: 0
+  type: 0
   equipmentSlot: 1
   equippableByPlayers: 
   Strength: 0
@@ -33,6 +36,7 @@ MonoBehaviour:
   hit: 0
   crit: 0
   move: 0
+  regen: 0
   dodge: 0
   parry: 0
   block: 0

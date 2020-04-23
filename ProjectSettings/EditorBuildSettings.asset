@@ -6,12 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Test Town.unity
+    path: Assets/Scenes/Debug Land/Test Town.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/Fight Zone.unity
+    path: Assets/Scenes/Debug Land/Fight Zone.unity
     guid: ea1e9df9e8b9658449f89ffb78646c43
   - enabled: 1
-    path: Assets/Scenes/Battle.unity
+    path: Assets/Scenes/Debug Land/Battle.unity
     guid: 1ec1d712c8cc6d844b60196c776546bc
+  - enabled: 1
+    path: Assets/Scenes/Debug Land/Test Shop.unity
+    guid: 769189b2b84a0e24ba0ca49c04bb7fef
   m_configObjects: {}

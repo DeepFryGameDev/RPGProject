@@ -88,11 +88,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     //enemy buttons
     private List<GameObject> enemyBtns = new List<GameObject>();
-
-    //SPAWN POINTS
-    public List<Transform> enemySpawnPoints = new List<Transform>();
-    public List<Transform> heroSpawnPoints = new List<Transform>();
-
+    
     //for adding EXP after battle
     public int expPool;
 
@@ -127,12 +123,15 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++)
         {
-            GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], heroSpawnPoints[i].position, Quaternion.identity) as GameObject;
+            //GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], heroSpawnPoints[i].position, Quaternion.identity) as GameObject;
+            GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], GetHeroSpawnPoint(GameManager.instance.heroesToBattle[i]).transform.position, Quaternion.identity) as GameObject;
             //NewHero.AddComponent<PlayerMove>();
         }
         for(int i=0; i < GameManager.instance.enemyAmount; i++)
         {
-            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], enemySpawnPoints[i].position, Quaternion.identity) as GameObject; //uses enemy prefabs in Encounter region list and creates them as gameobjects
+            string spawnPoint = (GameManager.instance.enemySpawnPoints[i]);  //need to set spawn point by troop and use it below
+            GameObject spawnPointObject = GameObject.Find("EnemySpawnPoints/EnemySP" + spawnPoint);
+            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], spawnPointObject.transform.position, Quaternion.identity) as GameObject; //uses enemy prefabs in Encounter region list and creates them as gameobjects
             if (i == 0)
             {
                 NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy._Name; //sets the created enemy's name based on prefab enemy's name
@@ -144,6 +143,33 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             EnemiesInBattle.Add(NewEnemy); //adds the created enemy to enemies in battle list
             GameObject.Find("GameManager").GetComponent<GameMenu>().disableMenu = true;
         }
+    }
+
+    GameObject GetHeroSpawnPoint(GameObject heroObj)
+    {
+        BaseHero checkID = heroObj.GetComponent<HeroStateMachine>().hero;
+        BaseHero heroToCheck = null;
+
+        foreach (BaseHero hero in GameManager.instance.activeHeroes)
+        {
+            if (checkID.heroID == hero.heroID)
+            {
+                heroToCheck = hero;
+                break;
+            }
+        }
+
+        GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("HeroSpawnPoint");
+        
+        foreach (GameObject spawnPoint in spawnPoints)
+        {
+            string spawnPointName = "SP" + heroToCheck.spawnPoint;
+            if (spawnPointName == spawnPoint.name)
+            {
+                return spawnPoint;
+            }
+        }
+        return null;
     }
 
     void Start()
@@ -1164,11 +1190,17 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
+            DrawHeroFace(GameManager.instance.activeHeroes[i].heroID, GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(0).GetComponent<Image>());
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(1).GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(3).GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp.ToString()); //Exp text
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(8).GetComponent<Text>().text = (GameManager.instance.toLevelUp[(GameManager.instance.activeHeroes[i].currentLevel - 1)] - (GameManager.instance.activeHeroes[i].currentExp)).ToString(); //Exp text
         }
+    }
+
+    void DrawHeroFace(int ID, Image faceImage)
+    {
+        faceImage.sprite = GameManager.instance.activeHeroes[ID].faceImage;
     }
 
     //POST BATTLE METHODS

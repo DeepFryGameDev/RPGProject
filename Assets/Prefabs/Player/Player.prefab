@@ -404,18 +404,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: rb
-      value: 
-      objectReference: {fileID: 6095701524426483625}
-    - target: {fileID: 0}
-      propertyPath: animator
-      value: 
-      objectReference: {fileID: 6158787405512505389}
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1000013879534528, guid: e446022a0ebf3d940997d2b5df9aac31, type: 3}
       propertyPath: m_Name
       value: Player
@@ -539,18 +527,6 @@ PrefabInstance:
 --- !u!4 &6064061163673717945 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4000012711448386, guid: e446022a0ebf3d940997d2b5df9aac31,
-    type: 3}
-  m_PrefabInstance: {fileID: 6064636219139081211}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &6158787405512505389 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 95000010868407254, guid: e446022a0ebf3d940997d2b5df9aac31,
-    type: 3}
-  m_PrefabInstance: {fileID: 6064636219139081211}
-  m_PrefabAsset: {fileID: 0}
---- !u!50 &6095701524426483625 stripped
-Rigidbody2D:
-  m_CorrespondingSourceObject: {fileID: 50000012536423506, guid: e446022a0ebf3d940997d2b5df9aac31,
     type: 3}
   m_PrefabInstance: {fileID: 6064636219139081211}
   m_PrefabAsset: {fileID: 0}

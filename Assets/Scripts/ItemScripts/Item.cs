@@ -8,6 +8,8 @@ public class Item : ScriptableObject
     new public string name = "New Item";
     public string description = "Item Description";
     public bool usableInMenu;
+    public int sellValue;
+
     public List<BaseStatusEffect> statusEffects = new List<BaseStatusEffect>(); 
 
     public enum UseStates

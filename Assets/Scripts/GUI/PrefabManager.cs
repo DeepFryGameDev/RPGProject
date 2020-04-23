@@ -3,11 +3,19 @@
 public class PrefabManager : MonoBehaviour //fixes a prefab destroyed bug (when clearing lists)
 {
     // Assign the prefab in the inspector
-    public GameObject itemPrefab; //for the items in item list in battle and menu
+    public GameObject itemPrefab; //for the items in item list in battle, menu, and shop
     public GameObject magicPrefab; //for magic listed in menu
     public GameObject equipPrefab;
     public GameObject damagePrefab;
     public GameObject itemVictoryPrefab;
+
+    public GameObject shopBuyItemPrefab;
+    public GameObject shopSellItemPrefab;
+    public GameObject shopBuyEquipPrefab;
+    public GameObject shopSellEquipPrefab;
+
+    public GameObject inactiveHeroButton;
+
     //Singleton
     private static PrefabManager m_Instance = null;
     public static PrefabManager Instance

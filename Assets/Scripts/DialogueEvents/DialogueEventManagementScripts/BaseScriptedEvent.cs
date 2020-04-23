@@ -23,6 +23,15 @@ public class BaseScriptedEvent : MonoBehaviour
     [System.NonSerialized] public bool otherEventRunning = false;
     [System.NonSerialized] public bool inMenu = false;
 
+    //For Dialog Choice
+    public delegate void RunDialogueChoice();
+    GameObject DialogueChoicePanel;
+    Button Choice1Button;
+    Button Choice2Button;
+    Button Choice3Button;
+    Button Choice4Button;
+    string choiceMade;
+
     private void Start()
     {
         thisGameObject = this.gameObject; //sets thisGameObject to game object this script is attached to
@@ -31,7 +40,6 @@ public class BaseScriptedEvent : MonoBehaviour
         playerTransform = playerGameObject.transform; //sets playerTransform to transform of gameobject of player
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>(); //sets gameManager to the game manager object in scene
     }
-
 
     //DIFFERENT FUNCTIONS THAT CAN BE RUN BY ANY EVENT SCRIPT
 
@@ -53,7 +61,8 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
-    //----MOVEMENT---- (Needs animation to be built in)
+    #region ---MOVEMENT---
+
     public IEnumerator MoveLeft(GameObject GO, float timeToMove, float spacesToMove) //moves object left
     {
         TurnLeft(GO);
@@ -881,13 +890,11 @@ public class BaseScriptedEvent : MonoBehaviour
         thePosition.Scene = SceneManager.GetActiveScene().name;
         GameManager.instance.positionSaves.Add(thePosition);
         Debug.Log("Position saved: " + thePosition._Name);
-    } 
+    }
 
+    #endregion
 
-    //----------------
-
-
-    //----BATTLE MANAGEMENT----
+    #region ---BATTLE MANAGEMENT---
 
     public void CallBattle(int troopIndex, string scene) //calls battle from script using the troop index and battle scene to be loaded
     {
@@ -905,14 +912,29 @@ public class BaseScriptedEvent : MonoBehaviour
         region.GetComponent<RegionData>().troopEncounters[index].encounterChance = newEncounterChance;
     }
 
-    //----------------
+    #endregion
 
-
-    //----SCENE MANAGEMENT----
+    #region ---SCENE MANAGEMENT---
 
     //void TransitionToScene
 
-    //void ShowShop
+    public void OpenItemShop()
+    {
+        ItemShop itemShop = GetComponent<ItemShop>();
+        GameManager.instance.itemShopList = itemShop.itemShopList;
+        itemShop.ShowItemListInBuyGUI();
+        itemShop.DisplayItemShopGUI();
+        DisablePlayerMovement();
+    }
+
+    public void OpenEquipShop()
+    {
+        EquipShop equipShop = GetComponent<EquipShop>();
+        GameManager.instance.equipShopList = equipShop.equipShopList;
+        equipShop.ShowEquipListInBuyGUI();
+        equipShop.DisplayEquipShopGUI();
+        DisablePlayerMovement();
+    }
 
     public void OpenMenu() //forces menu to be opened
     {
@@ -925,11 +947,10 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ReturnToTitle
 
-    //----------------
+    #endregion
 
+    #region ---GAME MANAGEMENT---
 
-    //----GAME MANAGEMENT----
-    
     public void ChangeSwitch(GameObject whichObject, int whichEvent, int whichSwitch, bool whichBool) //changes switch value
     {
         BaseDialogueEvent e = whichObject.GetComponent<DialogueEvents>().eventOrDialogue[whichEvent];
@@ -963,12 +984,11 @@ public class BaseScriptedEvent : MonoBehaviour
     public void ChangeGlobalBool(int index, bool boolean) //changes value of global event bools
     {
         GameManager.instance.globalBools[index] = boolean;
-    } 
+    }
 
-    //----------------
+    #endregion
 
-
-    //----MUSIC/SOUNDS----
+    #region ---MUSIC/SOUNDS---
 
     //void PlaySE
 
@@ -986,20 +1006,18 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void StopSE
 
-    //----------------
+    #endregion
 
-
-    //----TIMING----
+    #region ---TIMING---
 
     public IEnumerator WaitForSeconds(float waitTime) //pause for period of time
     {
         yield return new WaitForSeconds(waitTime);
     }
 
-    //----------------
+    #endregion
 
-
-    //----DIALOGUE----
+    #region ---DIALOGUE---
 
     public IEnumerator ShowMessage(string message, float textSpeed, bool waitForEnd, bool lockPlayerMovement) //Displays any custom message
     {
@@ -1023,8 +1041,9 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
-    public IEnumerator WriteToMessagePanel(string message, float textSpeed) //Tool for ShowMessage to facilitate dialogue operation
+    public IEnumerator ShowDialogueChoices(string message, string button1Text, RunDialogueChoice choice1, string button2Text, RunDialogueChoice choice2, string button3Text, RunDialogueChoice choice3, string button4Text, RunDialogueChoice choice4)
     {
+        DisablePlayerMovement();
         bool messageFinished;
         Text messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
         messageFinished = false; //starting the dialogue text, sets to true once all text is added
@@ -1033,12 +1052,11 @@ public class BaseScriptedEvent : MonoBehaviour
 
         GameManager.instance.DisplayPanel(true); //shows dialogue panel
 
-
         for (int i = 0; i < text.Length; i++) //for each letter in the text
         {
             fullText += text[i]; //adds current letter to fullText
             messageText.text = fullText; //sets dialogue UI text to the current fullText
-            yield return new WaitForSecondsRealtime(textSpeed);
+            yield return new WaitForSecondsRealtime(baseTextSpeed);
         }
 
         if (fullText == text) //if full message has been added to the dialogue text
@@ -1048,20 +1066,74 @@ public class BaseScriptedEvent : MonoBehaviour
 
         if (messageFinished)
         {
-            yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
+            choiceMade = "";
         }
+        
+        SetChoiceButtons(button1Text, button2Text, button3Text, button4Text);
 
+        yield return new WaitUntil(() => choiceMade != "");
+
+        DialogueChoicePanel.GetComponent<CanvasGroup>().alpha = 0;
         GameManager.instance.DisplayPanel(false); //hides dialogue panel
+
+        EnablePlayerMovement();
+        
+        if (choiceMade == "button1")
+        {
+            choice1();
+        } else if (choiceMade == "button2")
+        {
+            choice2();
+        } else if (choiceMade == "button3")
+        {
+            choice3();
+        } else if (choiceMade == "button4")
+        {
+            choice4();
+        }
     }
 
-    //void ShowChoices
+    public IEnumerator NumberInput()
+    {
+        DisablePlayerMovement();
+        DisplayInputPanel("Number");
+        GameObject.Find("GameManager/TextInputCanvas/NumberInputPanel/NumberEnteredPanel/NumberEnteredText").GetComponent<Text>().text = "0";
 
-    //void InputNumber
+        GameManager.instance.numberInput = 0;
 
-    //----------------
+        while (GameManager.instance.numberInput == 0)
+        {
+            yield return null;
+        }
+
+        EnablePlayerMovement();
+        HideInputPanels();
+    }
+
+    public IEnumerator TextInput()
+    {
+        DisablePlayerMovement();
+        DisplayInputPanel("Text");
+        GameObject.Find("GameManager/TextInputCanvas/TextInputPanel/TextEnteredPanel/TextEnteredText").GetComponent<Text>().text = "";
+
+        GameManager.instance.textInput = "";
+
+        TextResetCaps();
+
+        while (GameManager.instance.textInput == "")
+        {
+            yield return null;
+        }
+
+        EnablePlayerMovement();
+        HideInputPanels();
+    }
 
 
-    //----SYSTEM SETTINGS----
+
+    #endregion
+
+    #region ---SYSTEM SETTINGS---
 
     //void ChangeBattleBGM
 
@@ -1069,10 +1141,9 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ChangeMenuAccess
 
-    //----------------
+    #endregion
 
-
-    //----SPRITES----
+    #region ---SPRITES---
 
     //void ChangeGraphic
 
@@ -1082,10 +1153,18 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void RemoveSprite
 
-    //----------------
+    #endregion
 
+    #region ---ACTORS---
 
-    //----ACTORS----
+    public void FullHeal()
+    {
+        foreach (BaseHero hero in GameManager.instance.activeHeroes)
+        {
+            hero.curHP = hero.maxHP;
+            hero.curMP = hero.maxMP;
+        }
+    }
 
     //void ChangeHP
 
@@ -1105,14 +1184,37 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ChangeName
 
-    //void InputName
+    public IEnumerator NameInput(BaseHero hero)
+    {
+        DisablePlayerMovement();
+        DisplayInputPanel("Name");
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel/NameEnteredPanel/NameEnteredText").GetComponent<Text>().text = hero._Name;
 
-    //----------------
+        GameManager.instance.nameInput = "";
 
+        NameResetCaps();
 
-    //----PARTY----
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel/FacePanel").GetComponent<Image>().sprite = hero.faceImage;
 
-    //void ChangeGold
+        while (GameManager.instance.nameInput == "")
+        {
+            yield return null;
+        }
+
+        hero._Name = GameManager.instance.nameInput;
+
+        EnablePlayerMovement();
+        HideInputPanels();
+    }
+
+    #endregion
+
+    #region ---PARTY---
+
+    public void ChangeGold(int gold)
+    {
+        GameManager.instance.gold += gold;
+    }
 
     public void AddItem(Item item) //adds item to inventory
     {
@@ -1136,10 +1238,9 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ChangePartyMember
 
-    //----------------
+    #endregion
 
-
-    //----IMAGES----
+    #region ---IMAGES---
 
     //void ShowPicture
 
@@ -1151,10 +1252,9 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void RemovePicture
 
-    //----------------
+    #endregion
 
-
-    //----SCREEN EFFECTS/WEATHER----
+    #region ---WEATHER/EFFECTS---
 
     //void FadeInScreen
 
@@ -1166,14 +1266,323 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ShakeScreen
 
-    //----------------
+    #endregion
 
-    //----FOR EVENTS----
+    #region ---TOOLS FOR EVENTS---
+
     float GetBaseMoveSpeed(float spaces) //calculates move speed based on number of spaces to be moved, to keep base move speed consistent
     {
         float tempMoveSpeed = baseMoveSpeed * spaces;
         return tempMoveSpeed;
-    } 
+    }
+
+    public IEnumerator WriteToMessagePanel(string message, float textSpeed) //Tool for ShowMessage to facilitate dialogue operation
+    {
+        bool messageFinished;
+        Text messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
+        messageFinished = false; //starting the dialogue text, sets to true once all text is added
+        string text = message; //gets the text to be put in dialogue UI
+        string fullText = ""; //sets current fullText to blank as letters will be added individually
+
+        GameManager.instance.DisplayPanel(true); //shows dialogue panel
+
+        for (int i = 0; i < text.Length; i++) //for each letter in the text
+        {
+            fullText += text[i]; //adds current letter to fullText
+            messageText.text = fullText; //sets dialogue UI text to the current fullText
+            yield return new WaitForSecondsRealtime(textSpeed);
+        }
+
+        if (fullText == text) //if full message has been added to the dialogue text
+        {
+            messageFinished = true;
+        }
+
+        if (messageFinished)
+        {
+            yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
+        }
+
+        GameManager.instance.DisplayPanel(false); //hides dialogue panel
+    }
+
+    void DisableChoicePanels()
+    {
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel").GetComponent<CanvasGroup>().interactable = false;
+
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel").GetComponent<CanvasGroup>().alpha = 0;
+
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    void EnableChoicePanel(int choices)
+    {
+        if (choices == 2)
+        {
+            DialogueChoicePanel = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel");
+            Choice1Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel/Choice1Button").GetComponent<Button>();
+            Choice2Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel/Choice2Button").GetComponent<Button>();
+        }
+        else if (choices == 3)
+        {
+            DialogueChoicePanel = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel");
+            Choice1Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel/Choice1Button").GetComponent<Button>();
+            Choice2Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel/Choice2Button").GetComponent<Button>();
+            Choice3Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue3ChoicePanel/Choice3Button").GetComponent<Button>();
+        }
+        else if (choices == 4)
+        {
+            DialogueChoicePanel = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel");
+            Choice1Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel/Choice1Button").GetComponent<Button>();
+            Choice2Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel/Choice2Button").GetComponent<Button>();
+            Choice3Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel/Choice3Button").GetComponent<Button>();
+            Choice4Button = GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel/Choice4Button").GetComponent<Button>();
+        }
+
+        DialogueChoicePanel.GetComponent<CanvasGroup>().interactable = true;
+        DialogueChoicePanel.GetComponent<CanvasGroup>().alpha = 1;
+        DialogueChoicePanel.GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    void SetChoiceButtons(string button1txt, string button2txt, string button3txt, string button4txt)
+    {
+        DisableChoicePanels();
+
+        if (button4txt == null && button3txt == null)
+        {
+            EnableChoicePanel(2);
+        }
+        else if (button4txt == null)
+        {
+            EnableChoicePanel(3);
+        }
+        else
+        {
+            EnableChoicePanel(4);
+        }
+
+        //Should always have a minimum of 2 choices
+        Choice1Button.transform.Find("Text").GetComponent<Text>().text = button1txt;
+        Choice1Button.onClick.AddListener(delegate { Choice1ButtonClicked(); });
+
+        Choice2Button.transform.Find("Text").GetComponent<Text>().text = button2txt;
+        Choice2Button.onClick.AddListener(delegate { Choice2ButtonClicked(); });
+
+        if (button3txt != null)
+        {
+            Choice3Button.transform.Find("Text").GetComponent<Text>().text = button3txt;
+            Choice3Button.onClick.AddListener(delegate { Choice3ButtonClicked(); });
+        }
+        if (button4txt != null)
+        {
+            Choice4Button.transform.Find("Text").GetComponent<Text>().text = button4txt;
+            Choice4Button.onClick.AddListener(delegate { Choice4ButtonClicked(); });
+        }
+    }
+
+    public void Choice1ButtonClicked()
+    {
+        if (choiceMade == "")
+        {
+            Debug.Log("Choice 1 button clicked");
+            choiceMade = "button1";
+        }
+    }
+
+    public void Choice2ButtonClicked()
+    {
+        if (choiceMade == "")
+        {
+            Debug.Log("Choice 2 button clicked");
+            choiceMade = "button2";
+        }
+    }
+
+    public void Choice3ButtonClicked()
+    {
+        if (choiceMade == "")
+        {
+            Debug.Log("Choice 3 button clicked");
+            choiceMade = "button3";
+        }
+    }
+
+    public void Choice4ButtonClicked()
+    {
+        if (choiceMade == "")
+        {
+            Debug.Log("Choice 4 button clicked");
+            choiceMade = "button4";
+        }
+    }
+
+    void DisplayInputPanel(string option) //option should be 'Text', 'Name', or 'Number'
+    {
+        HideInputPanels();
+
+        GameObject.Find("GameManager/TextInputCanvas/" + option + "InputPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/TextInputCanvas/" + option + "InputPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/TextInputCanvas/" + option + "InputPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    void HideInputPanels()
+    {
+        GameObject.Find("GameManager/TextInputCanvas/TextInputPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/TextInputCanvas/TextInputPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/TextInputCanvas/TextInputPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/TextInputCanvas/NumberInputPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/TextInputCanvas/NumberInputPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/TextInputCanvas/NumberInputPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    void TextResetCaps()
+    {
+        GameManager.instance.capsOn = false;
+
+        GameObject panel = GameObject.Find("GameManager/TextInputCanvas/TextInputPanel/LetterButtonsPanel");
+
+        GameObject.Find("GameManager/TextInputCanvas/TextInputPanel/OptionsPanel/capsButton/capsText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        foreach (Transform childButton in panel.transform)
+        {
+            if (childButton.name != "1Button" && childButton.name != "2Button" && childButton.name != "3Button" && childButton.name != "4Button" && childButton.name != "5Button" &&
+                childButton.name != "6Button" && childButton.name != "7Button" && childButton.name != "8Button" && childButton.name != "9Button" && childButton.name != "0Button" &&
+                childButton.name != "char1Button" && childButton.name != "char2Button" && childButton.name != "spaceButton")
+            {
+                childButton.GetChild(0).GetComponent<Text>().text = childButton.GetChild(0).GetComponent<Text>().text.ToLower();
+            }
+            else
+            {
+                if (childButton.name == "1Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "1";
+                }
+                else if (childButton.name == "2Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "2";
+                }
+                else if (childButton.name == "3Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "3";
+                }
+                else if (childButton.name == "4Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "4";
+                }
+                else if (childButton.name == "5Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "5";
+                }
+                else if (childButton.name == "6Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "6";
+                }
+                else if (childButton.name == "7Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "7";
+                }
+                else if (childButton.name == "8Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "8";
+                }
+                else if (childButton.name == "9Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "9";
+                }
+                else if (childButton.name == "0Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "0";
+                }
+                else if (childButton.name == "char1Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "-";
+                }
+                else if (childButton.name == "char2Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "'";
+                }
+            }
+        }
+    }
+
+    void NameResetCaps()
+    {
+        GameManager.instance.capsOn = false;
+
+        GameObject panel = GameObject.Find("GameManager/TextInputCanvas/NameInputPanel/LetterButtonsPanel");
+
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel/OptionsPanel/capsButton/capsText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        foreach (Transform childButton in panel.transform)
+        {
+            if (childButton.name != "1Button" && childButton.name != "2Button" && childButton.name != "3Button" && childButton.name != "4Button" && childButton.name != "5Button" &&
+                childButton.name != "6Button" && childButton.name != "7Button" && childButton.name != "8Button" && childButton.name != "9Button" && childButton.name != "0Button" &&
+                childButton.name != "char1Button" && childButton.name != "char2Button" && childButton.name != "spaceButton")
+            {
+                childButton.GetChild(0).GetComponent<Text>().text = childButton.GetChild(0).GetComponent<Text>().text.ToLower();
+            }
+            else
+            {
+                if (childButton.name == "1Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "1";
+                }
+                else if (childButton.name == "2Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "2";
+                }
+                else if (childButton.name == "3Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "3";
+                }
+                else if (childButton.name == "4Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "4";
+                }
+                else if (childButton.name == "5Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "5";
+                }
+                else if (childButton.name == "6Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "6";
+                }
+                else if (childButton.name == "7Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "7";
+                }
+                else if (childButton.name == "8Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "8";
+                }
+                else if (childButton.name == "9Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "9";
+                }
+                else if (childButton.name == "0Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "0";
+                }
+                else if (childButton.name == "char1Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "-";
+                }
+                else if (childButton.name == "char2Button")
+                {
+                    childButton.GetChild(0).GetComponent<Text>().text = "'";
+                }
+            }
+        }
+    }
+
+    #endregion
 }
 
 

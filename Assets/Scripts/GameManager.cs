@@ -45,8 +45,20 @@ public class GameManager : MonoBehaviour
     //GOLD
     public int gold;
 
+    //TEMP OBJECTS FOR SHOPS
+    [HideInInspector] public List<BaseShopItem> itemShopList = new List<BaseShopItem>();
+    [HideInInspector] public Item itemShopItem;
+    [HideInInspector] public int itemShopCost;
+    [HideInInspector] public List<BaseShopEquipment> equipShopList = new List<BaseShopEquipment>();
+    [HideInInspector] public Equipment equipShopItem;
+    [HideInInspector] public int equipShopCost;
+    [HideInInspector] public bool inConfirmation;
+
     //ACTIVE HEROES
     public List<BaseHero> activeHeroes = new List<BaseHero>();
+
+    //INACTIVE HEROES
+    public List<BaseHero> inactiveHeroes = new List<BaseHero>();
 
     //LEVELING BASES
     public int[] toLevelUp;
@@ -67,6 +79,13 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public int seconds;
     [HideInInspector] public int minutes;
     [HideInInspector] public int hours;
+
+    //TEXT INPUTS
+    public string textInput;
+    public int numberInput;
+    public string nameInput;
+    public bool capsOn = false;
+    [HideInInspector] public bool letterButtonPressed = false;
     
 
     //ENUM
@@ -83,6 +102,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public List<GameObject> enemiesToBattle = new List<GameObject>(); //for adding enemies in encounter to the battle
     [HideInInspector] public List<GameObject> heroesToBattle = new List<GameObject>();
     [HideInInspector] public int enemyAmount; //for how many enemies can be encountered in one battle
+    [HideInInspector] public List<string> enemySpawnPoints = new List<string>();
     [HideInInspector] public int heroAmount;
 
     [HideInInspector] public bool startBattleFromScript; //if battle is being started from script
@@ -309,13 +329,15 @@ public class GameManager : MonoBehaviour
         if (display)
         {
             DialogueCanvas.GetComponent<CanvasGroup>().alpha = 1;
-            DialogueCanvas.SetActive(true);
+            DialogueCanvas.GetComponent<CanvasGroup>().interactable = true;
+            DialogueCanvas.GetComponent<CanvasGroup>().blocksRaycasts = true;
             //Debug.Log("displaying canvas");
         }
         else
         {
             DialogueCanvas.GetComponent<CanvasGroup>().alpha = 0;
-            DialogueCanvas.SetActive(false);
+            DialogueCanvas.GetComponent<CanvasGroup>().interactable = false;
+            DialogueCanvas.GetComponent<CanvasGroup>().blocksRaycasts = false;
             //Debug.Log("hiding canvas");
         }
     }
@@ -333,6 +355,9 @@ public class GameManager : MonoBehaviour
         int randomStart = Random.Range(0, curRegion.troopEncounters.Count);
         bool runRandomStartOnce = true;
         int whichTroop = 0;
+        enemiesToBattle.Clear();
+        enemySpawnPoints.Clear();
+
         while (!gotEncounterChance)
         {
             for (int i = 0; i < curRegion.troopEncounters.Count; i++)
@@ -360,9 +385,10 @@ public class GameManager : MonoBehaviour
             }
          }
         for (int i = 0; i < troops[whichTroop].enemies.Count; i++)
-            {
-                enemiesToBattle.Add(troops[whichTroop].enemies[i]);
-            }
+        {
+            enemiesToBattle.Add(troops[whichTroop].enemies[i].enemyObject);
+            enemySpawnPoints.Add(troops[whichTroop].enemies[i].spawnPoint);
+        }
         enemyAmount = troops[whichTroop].enemies.Count;
         }
 
@@ -370,7 +396,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < troops[troopIndex].enemies.Count; i++)
         {
-            enemiesToBattle.Add(troops[troopIndex].enemies[i]);
+            enemiesToBattle.Add(troops[troopIndex].enemies[i].enemyObject);
         }
         battleSceneFromScript = scene;
         enemyAmount = troops[troopIndex].enemies.Count;

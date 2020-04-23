@@ -108,10 +108,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canMove: 0
-  moving: 0
+  currentTile: {fileID: 0}
+  readyForMove: 0
   move: 3
   moveSpeed: 2
   actualTargetTile: {fileID: 0}
+  tilesToMove: 0
 --- !u!114 &5582548927720070606
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,6 +157,8 @@ MonoBehaviour:
     - {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea, type: 3}
     - {fileID: 5194423850133241829, guid: c801a3f77a2afbc46afc9799b93ce166, type: 3}
     heroPrefab: {fileID: 0}
+    faceImage: {fileID: 0}
+    heroID: 1
     strengthModifier: 0.18
     staminaModifier: 0.29
     intelligenceModifier: 0.19
@@ -195,11 +199,19 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
   currentState: 0
+  waitForDamageToFinish: 0
+  cur_cooldown: 0
   Selector: {fileID: 1249399334070302119}
   ActionTarget: {fileID: 0}
   startPosition: {x: 0, y: 0}
   HeroPanel: {fileID: 4321344632444923069, guid: 5962cba18b880764784f0f1402c544a4,
     type: 3}
+  effectDamage: 0
+  magicDamage: 0
+  itemDamage: 0
+  heroTurn: 0
+  targets: []
+  choosingTarget: 0
 --- !u!114 &7574572311038671974
 MonoBehaviour:
   m_ObjectHideFlags: 0

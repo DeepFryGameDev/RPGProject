@@ -97,15 +97,66 @@ public class GameMenu : MonoBehaviour
     public Image StatusPanelMPProgressBar;
     public Image StatusPanelEXPProgressBar;
 
+    //for grid menu objects
+    public GameObject Hero1GridPanel;
+    public GameObject Hero2GridPanel;
+    public GameObject Hero3GridPanel;
+    public GameObject Hero4GridPanel;
+    public GameObject Hero5GridPanel;
+    public Image Hero1GridMenuHPProgressBar;
+    public Image Hero1GridMenuMPProgressBar;
+    public Image Hero2GridMenuHPProgressBar;
+    public Image Hero2GridMenuMPProgressBar;
+    public Image Hero3GridMenuHPProgressBar;
+    public Image Hero3GridMenuMPProgressBar;
+    public Image Hero4GridMenuHPProgressBar;
+    public Image Hero4GridMenuMPProgressBar;
+    public Image Hero5GridMenuHPProgressBar;
+    public Image Hero5GridMenuMPProgressBar;
+    public bool gridChoosingTile;
+    public BaseHero gridMenuHero;
+    public Sprite gridBG;
+    public string gridTileChanging;
+
+    //for party menu objects
+    public GameObject Hero1PartyPanel;
+    public GameObject Hero2PartyPanel;
+    public GameObject Hero3PartyPanel;
+    public GameObject Hero4PartyPanel;
+    public GameObject Hero5PartyPanel;
+    public Image Hero1PartyMenuHPProgressBar;
+    public Image Hero1PartyMenuMPProgressBar;
+    public Image Hero2PartyMenuHPProgressBar;
+    public Image Hero2PartyMenuMPProgressBar;
+    public Image Hero3PartyMenuHPProgressBar;
+    public Image Hero3PartyMenuMPProgressBar;
+    public Image Hero4PartyMenuHPProgressBar;
+    public Image Hero4PartyMenuMPProgressBar;
+    public Image Hero5PartyMenuHPProgressBar;
+    public Image Hero5PartyMenuMPProgressBar;
+    private Transform PartyInactiveRow1Spacer;
+    private Transform PartyInactiveRow2Spacer;
+    private Transform PartyInactiveRow3Spacer;
+    public GameObject InactivePartyButton;
+    public BaseHero PartyHeroSelected = null;
+    public string PartySelectedHeroType;
+    int row1ChildCount;
+    int row2ChildCount;
+    int row3ChildCount;
+
+    //for talents menu objects
+    public Image TalentsPanelHPProgressBar;
+    public Image TalentsPanelMPProgressBar;
+
     //for menu buttons
     public Button ItemButton;
     public Button MagicButton;
     public Button EquipButton;
     public Button StatusButton;
     public Button PartyButton;
-    public Button OrderButton;
     public Button GridButton;
-    public Button ConfigButton;
+    public Button TalentsButton;
+    public Button QuestsButton;
     public Button QuitButton;
 
     //for menu canvases
@@ -115,9 +166,9 @@ public class GameMenu : MonoBehaviour
     public Canvas EquipMenuCanvas;
     public Canvas StatusMenuCanvas;
     public Canvas PartyMenuCanvas;
-    public Canvas OrderMenuCanvas;
     public Canvas GridMenuCanvas;
-    public Canvas ConfigMenuCanvas;
+    public Canvas TalentsMenuCanvas;
+    public Canvas QuestsMenuCanvas;
     public Canvas QuitMenuCanvas;
     
     [HideInInspector] public BaseHero HeroForMagicMenu; //hero to be set for entering magic menu
@@ -131,10 +182,10 @@ public class GameMenu : MonoBehaviour
         EQUIP,
         STATUS,
         PARTY,
-        ORDER,
         GRID,
-        CONFIG,
-        QUIT,
+        TALENTS,
+        QUESTS,
+        BESTIARY,
         IDLE
     }
     public MenuStates menuState; //for which menu is open
@@ -142,7 +193,7 @@ public class GameMenu : MonoBehaviour
     bool buttonPressed = false;
 
     GraphicRaycaster raycaster;
-    BaseHero heroToCheck;
+    [HideInInspector] public BaseHero heroToCheck;
 
     void Start()
     {
@@ -157,9 +208,9 @@ public class GameMenu : MonoBehaviour
         EquipMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
         StatusMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
         PartyMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
-        OrderMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
+        TalentsMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
         GridMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
-        ConfigMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
+        QuestsMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
         QuitMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
 
         //disables all menu canvases
@@ -173,9 +224,9 @@ public class GameMenu : MonoBehaviour
         EquipMenuCanvas.gameObject.SetActive(false);
         StatusMenuCanvas.gameObject.SetActive(false);
         PartyMenuCanvas.gameObject.SetActive(false);
-        OrderMenuCanvas.gameObject.SetActive(false);
+        TalentsMenuCanvas.gameObject.SetActive(false);
         GridMenuCanvas.gameObject.SetActive(false);
-        ConfigMenuCanvas.gameObject.SetActive(false);
+        QuestsMenuCanvas.gameObject.SetActive(false);
         QuitMenuCanvas.gameObject.SetActive(false);
 
         //sets spacers
@@ -184,8 +235,18 @@ public class GameMenu : MonoBehaviour
         BlackMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/BlackMagicListPanel/BlackMagicScroller/BlackMagicListSpacer").transform; //find spacer and make connection
         SorceryMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/SorceryMagicListPanel/SorceryMagicScroller/SorceryMagicListSpacer").transform; //find spacer and make connection
         EquipListSpacer = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform;
+        PartyInactiveRow1Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform;
+        PartyInactiveRow2Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow2Spacer").transform;
+        PartyInactiveRow3Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow3Spacer").transform;
+
+        //sets party spacer child counts
+        row1ChildCount = PartyInactiveRow1Spacer.childCount;
+        row2ChildCount = PartyInactiveRow2Spacer.childCount;
+        row3ChildCount = PartyInactiveRow3Spacer.childCount;
 
         equipMode = "";
+
+        PartyHeroSelected = null;
 
         menuState = MenuStates.IDLE; //sets menu state to idle as menu is closed
         this.raycaster = GetComponent<GraphicRaycaster>();
@@ -250,6 +311,24 @@ public class GameMenu : MonoBehaviour
             ShowMainMenu();
         }
 
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.GRID && !buttonPressed) //if cancel is pressed on status menu
+        {
+            HideGridMenu();
+            ShowMainMenu();
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.PARTY && !buttonPressed && (PartyHeroSelected == null)) //if cancel is pressed on status menu
+        {
+            HidePartyMenu();
+            ShowMainMenu();
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.TALENTS && !buttonPressed) //if cancel is pressed on status menu
+        {
+            HideTalentsMenu();
+            ShowMainMenu();
+        }
+
         CheckCancelPressed(); //makes sure cancel is only pressed once
     }
 
@@ -262,6 +341,7 @@ public class GameMenu : MonoBehaviour
         DrawHeroStats();
         DisplayLocation();
         DisplayGold();
+        heroToCheck = null;
     }
 
     void DrawHeroStats()
@@ -271,11 +351,13 @@ public class GameMenu : MonoBehaviour
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(1).GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(3).GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(8).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(11).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + GameManager.instance.toLevelUp[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
+            DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + GameManager.instance.toLevelUp[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
+            DrawHeroSpawnPoint(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("GridPanel").gameObject);
         }
     }
 
@@ -396,6 +478,17 @@ public class GameMenu : MonoBehaviour
 
     }
 
+    void DrawHeroSpawnPoint(BaseHero hero, GameObject panel)
+    {
+        foreach (Transform child in panel.transform)
+        {
+            child.gameObject.GetComponent<Image>().color = Color.white;
+        }
+
+        string spawnPoint = hero.spawnPoint;
+        panel.gameObject.transform.Find("Grid - " + spawnPoint).GetComponent<Image>().color = Color.black;
+    }
+
     void DisplayLocation() //draws location area (could be updated eventually so it's easier to update location being displayed)
     {
         string sector = SceneManager.GetActiveScene().name; //sector is the scene name
@@ -492,6 +585,8 @@ public class GameMenu : MonoBehaviour
 
     public void DrawItemList() //draws items in inventory to item list
     {
+        ResetItemList();
+
         List<Item> itemsAccountedFor = new List<Item>();
 
         foreach (Item item in Inventory.instance.items)
@@ -527,7 +622,7 @@ public class GameMenu : MonoBehaviour
 
     public void ResetItemList()
     {
-        foreach (Transform child in GameObject.Find("ItemListPanel/ItemScroller/ItemListSpacer").transform)
+        foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
         {
             Destroy(child.gameObject);
         }
@@ -540,10 +635,11 @@ public class GameMenu : MonoBehaviour
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
-            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel/Hero" + (i + 1) + "ItemPanel/NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
-            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel/Hero" + (i + 1) + "ItemPanel/LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel/Hero" + (i + 1) + "ItemPanel/HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel/Hero" + (i + 1) + "ItemPanel/MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
+            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
+            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
+            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
         }
     }
 
@@ -749,6 +845,7 @@ public class GameMenu : MonoBehaviour
 
     public void DrawMagicMenuStats(BaseHero hero)
     {
+        DrawHeroFace(hero, GameObject.Find("HeroMagicPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("HeroMagicPanel/NameText").GetComponent<Text>().text = hero._Name; //Name text
         GameObject.Find("HeroMagicPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
         GameObject.Find("HeroMagicPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
@@ -974,6 +1071,7 @@ public class GameMenu : MonoBehaviour
     void DrawEquipMenuStats(BaseHero hero)
     {
         //For HeroEquipPanel
+        DrawHeroFace(hero, GameObject.Find("HeroEquipPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("HeroEquipPanel/NameText").GetComponent<Text>().text = hero._Name; //Name text
         GameObject.Find("HeroEquipPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
         GameObject.Find("HeroEquipPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
@@ -2510,6 +2608,7 @@ public class GameMenu : MonoBehaviour
 
     void DrawStatusMenuBaseStats(BaseHero hero)
     {
+        DrawHeroFace(hero, GameObject.Find("StatusMenuPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/NameText").GetComponent<Text>().text = hero._Name; //Name text
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
@@ -2558,27 +2657,458 @@ public class GameMenu : MonoBehaviour
 
     //Party Menu
 
-    //--------------------
+    public void ShowPartyMenu()
+    {
+        DrawPartyMenu();
+    }
 
-    //Order Menu
+    void DrawPartyMenu()
+    {
+        MainMenuCanvas.gameObject.SetActive(false);
+        PartyMenuCanvas.gameObject.SetActive(true);
+        menuState = MenuStates.PARTY;
+
+        DrawPartyActiveHeroes();
+        DrawInactiveHeroButtons();
+    }
+
+    public void DrawPartyActiveHeroes()
+    {
+        int heroCount = GameManager.instance.activeHeroes.Count;
+        DrawHeroPartyMenuPanels(heroCount);
+
+        for (int i = 0; i < heroCount; i++) //Display hero stats
+        {
+            DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).name = "Active Hero Panel - ID " + GameManager.instance.activeHeroes[i].heroID; //rename Panel
+        }
+    }
+
+    void DrawHeroPartyMenuPanels(int count)
+    {
+        if (count == 1)
+        {
+            DrawActivePanel(Hero1PartyPanel);
+            DrawInactivePanel(Hero2PartyPanel);
+            DrawInactivePanel(Hero3PartyPanel);
+            DrawInactivePanel(Hero4PartyPanel);
+            DrawInactivePanel(Hero5PartyPanel);
+        }
+        else if (count == 2)
+        {
+            DrawActivePanel(Hero1PartyPanel);
+            DrawActivePanel(Hero2PartyPanel);
+            DrawInactivePanel(Hero3PartyPanel);
+            DrawInactivePanel(Hero4PartyPanel);
+            DrawInactivePanel(Hero5PartyPanel);
+        }
+        else if (count == 3)
+        {
+            DrawActivePanel(Hero1PartyPanel);
+            DrawActivePanel(Hero2PartyPanel);
+            DrawActivePanel(Hero3PartyPanel);
+            DrawInactivePanel(Hero4PartyPanel);
+            DrawInactivePanel(Hero5PartyPanel);
+        }
+        else if (count == 4)
+        {
+            DrawActivePanel(Hero1PartyPanel);
+            DrawActivePanel(Hero2PartyPanel);
+            DrawActivePanel(Hero3PartyPanel);
+            DrawActivePanel(Hero4PartyPanel);
+            DrawInactivePanel(Hero5PartyPanel);
+        }
+        else if (count == 5)
+        {
+            DrawActivePanel(Hero1PartyPanel);
+            DrawActivePanel(Hero2PartyPanel);
+            DrawActivePanel(Hero3PartyPanel);
+            DrawActivePanel(Hero4PartyPanel);
+            DrawActivePanel(Hero5PartyPanel);
+        }
+
+        DrawHeroPartyMenuPanelBars();
+    }
+
+    void DrawActivePanel(GameObject panel)
+    {
+        panel.transform.Find("FacePanel").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("NameText").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("LevelLabel").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("LevelText").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("HPLabel").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("HPText").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("HPProgressBarBG").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("MPLabel").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("MPText").GetComponent<CanvasGroup>().alpha = 1;
+        panel.transform.Find("MPProgressBarBG").GetComponent<CanvasGroup>().alpha = 1;
+    }
+
+    void DrawInactivePanel(GameObject panel)
+    {
+        panel.transform.Find("FacePanel").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("NameText").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("LevelLabel").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("LevelText").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("HPLabel").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("HPText").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("HPProgressBarBG").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("MPLabel").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("MPText").GetComponent<CanvasGroup>().alpha = 0;
+        panel.transform.Find("MPProgressBarBG").GetComponent<CanvasGroup>().alpha = 0;
+        panel.name = "Empty Hero Panel";
+    }
+
+    void DrawHeroPartyMenuPanelBars()
+    {
+        if (GameManager.instance.activeHeroes.Count == 1)
+        {
+            Hero1PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuHPProgressBar.transform.localScale.y);
+            Hero1PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 2)
+        {
+            Hero1PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuHPProgressBar.transform.localScale.y);
+            Hero1PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero2PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuHPProgressBar.transform.localScale.y);
+            Hero2PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 3)
+        {
+            Hero1PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuHPProgressBar.transform.localScale.y);
+            Hero1PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero2PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuHPProgressBar.transform.localScale.y);
+            Hero2PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero3PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3PartyMenuHPProgressBar.transform.localScale.y);
+            Hero3PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3PartyMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 4)
+        {
+            Hero1PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuHPProgressBar.transform.localScale.y);
+            Hero1PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero2PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuHPProgressBar.transform.localScale.y);
+            Hero2PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero3PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3PartyMenuHPProgressBar.transform.localScale.y);
+            Hero3PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero4PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4PartyMenuHPProgressBar.transform.localScale.y);
+            Hero4PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4PartyMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 5)
+        {
+            Hero1PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuHPProgressBar.transform.localScale.y);
+            Hero1PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero2PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuHPProgressBar.transform.localScale.y);
+            Hero2PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero3PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3PartyMenuHPProgressBar.transform.localScale.y);
+            Hero3PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero4PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4PartyMenuHPProgressBar.transform.localScale.y);
+            Hero4PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4PartyMenuMPProgressBar.transform.localScale.y);
+
+            Hero5PartyMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[4]), 0, 1), Hero5PartyMenuHPProgressBar.transform.localScale.y);
+            Hero5PartyMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[4]), 0, 1), Hero5PartyMenuMPProgressBar.transform.localScale.y);
+        }
+
+    }
+
+    public void DrawInactiveHeroButtons() //draws inactive hero buttons to panel
+    {
+        ResetInactiveHeroList();
+
+        foreach (BaseHero hero in GameManager.instance.inactiveHeroes)
+        {
+            //NewItemPanel = Instantiate(NewItemPanel) as GameObject; //creates gameobject of newItemPanel
+            InactivePartyButton = Instantiate(PrefabManager.Instance.inactiveHeroButton);
+            InactivePartyButton.transform.GetChild(0).GetComponent<Text>().text = hero._Name;
+            DrawHeroFace(hero, InactivePartyButton.transform.GetChild(1).GetComponent<Image>()); //Draws face graphic
+            InactivePartyButton.name = "Inactive Hero Button - ID " + hero.heroID;
+            
+            if (row1ChildCount <= 2)
+            {
+                InactivePartyButton.transform.SetParent(PartyInactiveRow1Spacer, false);
+                row1ChildCount++;
+            } else if (row2ChildCount <= 2)
+            {
+                InactivePartyButton.transform.SetParent(PartyInactiveRow2Spacer, false);
+                row2ChildCount++;
+            }
+            else if (row3ChildCount <= 2)
+            {
+                InactivePartyButton.transform.SetParent(PartyInactiveRow3Spacer, false);
+                row3ChildCount++;
+            }
+        }
+    }
+
+    public void ResetInactiveHeroList()
+    {
+        foreach (Transform child in PartyInactiveRow1Spacer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        foreach (Transform child in PartyInactiveRow2Spacer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        foreach (Transform child in PartyInactiveRow3Spacer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        row1ChildCount = 0;
+        row2ChildCount = 0;
+        row3ChildCount = 0;
+    }
+
+    void HidePartyMenu()
+    {
+        MainMenuCanvas.gameObject.SetActive(true);
+        PartyMenuCanvas.gameObject.SetActive(false);
+        menuState = MenuStates.MAIN;
+    }
 
     //--------------------
 
     //Grid Menu
 
+    public void ShowGridMenu() //displays grid menu
+    {
+        DrawGridMenu();
+        DrawHeroGridMenuStats();
+    }
+
+    void DrawGridMenu()
+    {
+        MainMenuCanvas.gameObject.SetActive(false);
+        GridMenuCanvas.gameObject.SetActive(true);
+        menuState = MenuStates.GRID;
+    }
+
+    void HideGridMenu()
+    {
+        ResetItemList();
+        MainMenuCanvas.gameObject.SetActive(true);
+        GridMenuCanvas.gameObject.SetActive(false);
+        menuState = MenuStates.MAIN;
+    }
+
+    public void DrawHeroGridMenuStats()
+    {
+        int heroCount = GameManager.instance.activeHeroes.Count;
+        DrawHeroGridMenuPanels(heroCount);
+
+        DrawGridFaces();
+
+        for (int i = 0; i < heroCount; i++) //Display hero stats
+        {
+            DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+        }
+    }
+
+    void DrawGridFaces()
+    {
+        foreach (BaseHero hero in GameManager.instance.activeHeroes)
+        {
+            GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + hero.spawnPoint).GetComponent<Image>().sprite = hero.faceImage;
+        }
+    }
+
+    void DrawHeroGridMenuPanels(int count)
+    {
+        if (count == 1)
+        {
+            Hero1GridPanel.SetActive(true);
+            Hero2GridPanel.SetActive(false);
+            Hero3GridPanel.SetActive(false);
+            Hero4GridPanel.SetActive(false);
+            Hero5GridPanel.SetActive(false);
+        }
+        else if (count == 2)
+        {
+            Hero1GridPanel.SetActive(true);
+            Hero2GridPanel.SetActive(true);
+            Hero3GridPanel.SetActive(false);
+            Hero4GridPanel.SetActive(false);
+            Hero5GridPanel.SetActive(false);
+        }
+        else if (count == 3)
+        {
+            Hero1GridPanel.SetActive(true);
+            Hero2GridPanel.SetActive(true);
+            Hero3GridPanel.SetActive(true);
+            Hero4GridPanel.SetActive(false);
+            Hero5GridPanel.SetActive(false);
+        }
+        else if (count == 4)
+        {
+            Hero1GridPanel.SetActive(true);
+            Hero2GridPanel.SetActive(true);
+            Hero3GridPanel.SetActive(true);
+            Hero4GridPanel.SetActive(true);
+            Hero5GridPanel.SetActive(false);
+        }
+        else if (count == 5)
+        {
+            Hero1GridPanel.SetActive(true);
+            Hero2GridPanel.SetActive(true);
+            Hero3GridPanel.SetActive(true);
+            Hero4GridPanel.SetActive(true);
+            Hero5GridPanel.SetActive(true);
+        }
+
+        DrawHeroGridMenuPanelBars();
+    }
+
+    void DrawHeroGridMenuPanelBars()
+    {
+        if (GameManager.instance.activeHeroes.Count == 1)
+        {
+            Hero1GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuHPProgressBar.transform.localScale.y);
+            Hero1GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 2)
+        {
+            Hero1GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuHPProgressBar.transform.localScale.y);
+            Hero1GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero2GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuHPProgressBar.transform.localScale.y);
+            Hero2GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 3)
+        {
+            Hero1GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuHPProgressBar.transform.localScale.y);
+            Hero1GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero2GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuHPProgressBar.transform.localScale.y);
+            Hero2GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero3GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3GridMenuHPProgressBar.transform.localScale.y);
+            Hero3GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3GridMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 4)
+        {
+            Hero1GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuHPProgressBar.transform.localScale.y);
+            Hero1GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero2GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuHPProgressBar.transform.localScale.y);
+            Hero2GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero3GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3GridMenuHPProgressBar.transform.localScale.y);
+            Hero3GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero4GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4GridMenuHPProgressBar.transform.localScale.y);
+            Hero4GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4GridMenuMPProgressBar.transform.localScale.y);
+        }
+        else if (GameManager.instance.activeHeroes.Count == 5)
+        {
+            Hero1GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuHPProgressBar.transform.localScale.y);
+            Hero1GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero2GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuHPProgressBar.transform.localScale.y);
+            Hero2GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero3GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3GridMenuHPProgressBar.transform.localScale.y);
+            Hero3GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero4GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4GridMenuHPProgressBar.transform.localScale.y);
+            Hero4GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4GridMenuMPProgressBar.transform.localScale.y);
+
+            Hero5GridMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GameManager.instance.activeHeroes[4]), 0, 1), Hero5GridMenuHPProgressBar.transform.localScale.y);
+            Hero5GridMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GameManager.instance.activeHeroes[4]), 0, 1), Hero5GridMenuMPProgressBar.transform.localScale.y);
+        }
+
+    }
+
     //--------------------
 
-    //Config Menu
+    //Talent Menu
+
+    public void ShowTalentsMenu()
+    {
+        StartCoroutine(ChooseHeroForTalentsMenu());
+    }
+
+    IEnumerator ChooseHeroForTalentsMenu()
+    {
+        while (heroToCheck == null)
+        {
+            GetHeroClicked();
+            yield return null;
+        }
+        DrawTalentsMenu(heroToCheck);
+        DrawHeroTalents(heroToCheck);
+    }
+
+    void DrawTalentsMenu(BaseHero hero)
+    {
+        MainMenuCanvas.gameObject.SetActive(false);
+        TalentsMenuCanvas.gameObject.SetActive(true);
+        menuState = MenuStates.TALENTS;
+
+        DrawTalentsMenuHeroPanel(hero);
+    }
+
+    void DrawTalentsMenuHeroPanel(BaseHero hero)
+    {
+        DrawHeroFace(hero, GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/NameText").GetComponent<Text>().text = hero._Name; //Name text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.maxMP.ToString()); //MP text
+
+        StatusPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), StatusPanelHPProgressBar.transform.localScale.y);
+        StatusPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), StatusPanelMPProgressBar.transform.localScale.y);
+
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
+    }
+
+    void DrawHeroTalents(BaseHero hero)
+    {
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent1Button/TalentIcon").GetComponent<Image>().sprite = hero.level1Talents[0].icon;
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent2Button/TalentIcon").GetComponent<Image>().sprite = hero.level1Talents[1].icon;
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent3Button/TalentIcon").GetComponent<Image>().sprite = hero.level1Talents[2].icon;
+    }
+
+    void HideTalentsMenu()
+    {
+        MainMenuCanvas.gameObject.SetActive(true);
+        TalentsMenuCanvas.gameObject.SetActive(false);
+        menuState = MenuStates.MAIN;
+        heroToCheck = null;
+    }
+   
 
     //--------------------
 
-    //Quit Menu
+    //Quest Menu
+
+    //--------------------
+
+    //Bestiary Menu
 
     //--------------------
 
     //Methods for running above menus
 
-    void PauseBackground(bool pause) //keeps background objects from processing while pause=true by enabling the script's inMenu
+    public void PauseBackground(bool pause) //keeps background objects from processing while pause=true by enabling the script's inMenu
     {
         GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
         player = GameObject.Find("Player");
@@ -2715,5 +3245,41 @@ public class GameMenu : MonoBehaviour
         float calcEXP = heroEXP / baseLineEXP;
 
         return calcEXP;
+    }
+
+    void DrawHeroFace(BaseHero hero, Image faceImage)
+    {
+        if (GameManager.instance.activeHeroes.Contains(hero))
+        {
+            int index = GameManager.instance.activeHeroes.IndexOf(hero);
+            faceImage.sprite = GameManager.instance.activeHeroes[index].faceImage;
+        }
+
+        if (GameManager.instance.inactiveHeroes.Contains(hero))
+        {
+            int index = GameManager.instance.inactiveHeroes.IndexOf(hero);
+            faceImage.sprite = GameManager.instance.inactiveHeroes[index].faceImage;
+        }
+    }
+
+    BaseHero GetHeroByID(int ID)
+    {
+        foreach (BaseHero hero in GameManager.instance.activeHeroes)
+        {
+            if (hero.heroID == ID)
+            {
+                return hero;
+            }
+        }
+
+        foreach (BaseHero hero in GameManager.instance.inactiveHeroes)
+        {
+            if (hero.heroID == ID)
+            {
+                return hero;
+            }
+        }
+
+        return null;
     }
 }

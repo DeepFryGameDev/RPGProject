@@ -16,4 +16,7 @@ MonoBehaviour:
   name: Ether
   description: Restores 10 MP
   usableInMenu: 1
+  sellValue: 50
+  statusEffects: []
   useState: 0
+  type: 0

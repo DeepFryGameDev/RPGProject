@@ -89,9 +89,12 @@ public class BaseMove : MonoBehaviour
             currentTile = null;
         }
 
+        Debug.Log("removing selectable tiles");
+
         foreach (Tile tile in selectableTiles)
         {
             tile.Reset();
+            tile.ClearPathable();
         }
 
         selectableTiles.Clear();
@@ -258,6 +261,7 @@ public class BaseMove : MonoBehaviour
 
     public void EndTurn()
     {
+        Debug.Log("ending turn");
         RemoveSelectableTiles();
         canMove = false;
     }

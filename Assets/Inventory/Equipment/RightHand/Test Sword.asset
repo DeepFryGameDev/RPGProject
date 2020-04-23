@@ -16,7 +16,10 @@ MonoBehaviour:
   name: Test Sword
   description: It's just a test sword
   usableInMenu: 0
+  sellValue: 35
+  statusEffects: []
   useState: 0
+  type: 0
   equipmentSlot: 6
   equippableByPlayers: 
   Strength: 2
@@ -33,6 +36,7 @@ MonoBehaviour:
   hit: 0
   crit: 0
   move: 0
+  regen: 0
   dodge: 0
   parry: 0
   block: 0

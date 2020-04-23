@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class BaseHero : BaseClass
@@ -8,8 +9,19 @@ public class BaseHero : BaseClass
     public List<BaseAttack> MagicAttacks = new List<BaseAttack>(); //unit's magic attacks
 
     public GameObject heroPrefab; //each hero needs its own prefab
-    //for calculating HP, ATB gauge fill speed, etc. not really used yet
-    
+    public Sprite faceImage;
+
+    public int heroID;
+
+    public string spawnPoint;
+
+    public BaseTalent[] level1Talents = new BaseTalent[3];
+    public BaseTalent[] level2Talents = new BaseTalent[3];
+    public BaseTalent[] level3Talents = new BaseTalent[3];
+    public BaseTalent[] level4Talents = new BaseTalent[3];
+    public BaseTalent[] level5Talents = new BaseTalent[3];
+    public BaseTalent[] level6Talents = new BaseTalent[3];
+
     //modifiers for leveling purposes.  The higher the modifier, the more effect they are at gaining that particular stat
     public float strengthModifier;
     public float staminaModifier;

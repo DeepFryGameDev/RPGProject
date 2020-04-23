@@ -16,7 +16,10 @@ MonoBehaviour:
   name: Test Shield
   description: It's just a test shield.
   usableInMenu: 0
+  sellValue: 12
+  statusEffects: []
   useState: 0
+  type: 0
   equipmentSlot: 7
   equippableByPlayers: 
   Strength: 0
@@ -33,6 +36,7 @@ MonoBehaviour:
   hit: 0
   crit: 0
   move: 0
+  regen: 0
   dodge: 0
   parry: 0
   block: 6

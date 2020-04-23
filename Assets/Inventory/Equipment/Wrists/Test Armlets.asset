@@ -16,7 +16,10 @@ MonoBehaviour:
   name: Test Armlets
   description: It's just test armlets
   usableInMenu: 0
+  sellValue: 5
+  statusEffects: []
   useState: 0
+  type: 0
   equipmentSlot: 2
   equippableByPlayers: 
   Strength: 0
@@ -33,6 +36,7 @@ MonoBehaviour:
   hit: 4
   crit: 8
   move: 0
+  regen: 0
   dodge: 0
   parry: 5
   block: 0
