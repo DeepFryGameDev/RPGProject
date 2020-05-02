@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class TestEvent1 : BaseScriptedEvent
 {
-    public void ItemShopTest()
+    public void BattleTest()
     {
-        Debug.Log("Fuck yeah!");
+        CallBattle(0, "Battle");
     }
 }

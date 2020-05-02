@@ -14,20 +14,20 @@ public class EquipShop : MonoBehaviour
     
     public void DisplayEquipShopGUI()
     {
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/ShopOptionsPanel/BuyOptionButton/BuyOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/ShopOptionsPanel/SellOptionButton/SellOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/ShopOptionsPanel/BuyOptionButton/BuyOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/ShopOptionsPanel/SellOptionButton/SellOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas").GetComponent<CanvasGroup>().blocksRaycasts = true;
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().interactable = false;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
         DisablePlayerInput();
 
@@ -39,17 +39,17 @@ public class EquipShop : MonoBehaviour
     {
         if (!GameManager.instance.inConfirmation)
         {
-            GameObject.Find("GameManager/Shops/EquipShopCanvas").GetComponent<CanvasGroup>().alpha = 0;
-            GameObject.Find("GameManager/Shops/EquipShopCanvas").GetComponent<CanvasGroup>().interactable = false;
-            GameObject.Find("GameManager/Shops/EquipShopCanvas").GetComponent<CanvasGroup>().blocksRaycasts = false;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas").GetComponent<CanvasGroup>().alpha = 0;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas").GetComponent<CanvasGroup>().interactable = false;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().alpha = 0;
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().interactable = false;
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().alpha = 0;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().interactable = false;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().alpha = 0;
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().interactable = false;
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().alpha = 0;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().interactable = false;
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
             EnablePlayerInput();
 
@@ -75,11 +75,11 @@ public class EquipShop : MonoBehaviour
         inShop = true;
 
         //set and show gold
-        goldText = GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>();
+        goldText = GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>();
         goldText.text = GameManager.instance.gold.ToString();
 
         //set and show number of items owned
-        numOwned = GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/OwnedText").GetComponent<Text>();
+        numOwned = GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/OwnedText").GetComponent<Text>();
         numOwned.text = "-";
 
         //generate item prefab for each item in item shop list
@@ -89,13 +89,13 @@ public class EquipShop : MonoBehaviour
             shopItemPanel.transform.GetChild(0).GetComponent<Text>().text = shopEquip.equipment.name;
             shopItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = shopEquip.equipment.icon;
             shopItemPanel.transform.GetChild(2).GetComponent<Text>().text = shopEquip.cost.ToString();
-            shopItemPanel.transform.SetParent(GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopEquipBuyListSpacer, false);
+            shopItemPanel.transform.SetParent(GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipBuyListSpacer, false);
         }
     }
 
     void ClearBuyList()
     {
-        foreach (Transform child in GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopEquipBuyListSpacer.transform)
+        foreach (Transform child in GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipBuyListSpacer.transform)
         {
             Destroy (child.gameObject);
         }

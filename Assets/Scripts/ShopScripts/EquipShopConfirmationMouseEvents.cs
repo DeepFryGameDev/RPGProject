@@ -71,7 +71,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
         if (mode == "Buy")
         {
-            int quantity = int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
+            int quantity = int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
 
             if (quantity < (99 - itemCount))
             {
@@ -80,7 +80,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
             if (HasEnoughGold(quantity))
             {
-                GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
+                GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
 
                 UpdateCost(quantity);
 
@@ -90,14 +90,14 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         } else if (mode == "Sell")
         {
 
-            int quantity = int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
+            int quantity = int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
 
             if (quantity < itemCount)
             {
                 quantity++;
             }
 
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
 
             UpdateSale(quantity);
 
@@ -109,13 +109,13 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
     {
         if (mode == "Buy")
         {
-            int quantity = int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
+            int quantity = int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
 
             if (quantity > 1)
             {
                 quantity--;
 
-                GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
+                GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
             }
 
             UpdateCost(quantity);
@@ -124,13 +124,13 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         }
         else if (mode == "Sell")
         {
-            int quantity = int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
+            int quantity = int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text);
 
             if (quantity > 1)
             {
                 quantity--;
 
-                GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
+                GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = quantity.ToString();
             }
 
             UpdateSale(quantity);
@@ -156,13 +156,13 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
     void UpdateCost(int quantity)
     {
         int total = (quantity * GameManager.instance.equipShopCost);
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = total.ToString();
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = total.ToString();
     }
 
     void UpdateSale(int quantity)
     {
         int total = (quantity * GameManager.instance.equipShopItem.sellValue);
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = total.ToString();
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = total.ToString();
     }
 
     void UpdateGoldRemaining(string mode)
@@ -170,14 +170,14 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         int totalGold = GameManager.instance.gold;
         if (mode == "Buy")
         {
-            int remaining = totalGold - int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text);
+            int remaining = totalGold - int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text);
 
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = remaining.ToString();
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = remaining.ToString();
         } else if (mode == "Sell")
         {
-            int remaining = totalGold + int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text);
+            int remaining = totalGold + int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text);
 
-            GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = remaining.ToString();
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = remaining.ToString();
         }
 
     }
@@ -190,28 +190,28 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
     void HideBuyConfirmationPanel()
     {
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = false;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = "00";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = "00";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = "00";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = "00";
 
         GameManager.instance.inConfirmation = false;
     }
 
     void ConfirmPurchase()
     {
-        if (HasEnoughGold(int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text)))
+        if (HasEnoughGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text)))
         {
             //play buy sound effect
 
             //subtract gold
-            SubtractGold(int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text));
+            SubtractGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text));
 
             //add items
-            AddItems(GameManager.instance.equipShopItem, int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text));
+            AddItems(GameManager.instance.equipShopItem, int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text));
 
             //hide confirmation panel
             HideBuyConfirmationPanel();
@@ -226,10 +226,10 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         //play buy sound effect
 
         //add gold
-        AddGold(int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text));
+        AddGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text));
 
         //remove items
-        RemoveItems(GameManager.instance.equipShopItem, int.Parse(GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text));
+        RemoveItems(GameManager.instance.equipShopItem, int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text));
 
         //Reset stat panel
         ResetEquipStatDetails();
@@ -249,28 +249,28 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
     void HideSellConfirmationPanel()
     {
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = false;
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
                                                                   
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = "00";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = "00";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = "00";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = "00";
         GameManager.instance.inConfirmation = false;
     }
 
     void UpdateBuyPanel()
     {
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/OwnedText").GetComponent<Text>().text = "-";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/AdditionalDetailsPanel/OwnedText").GetComponent<Text>().text = "-";
     }
 
     void UpdateSellPanel()
     {
         //set and show gold
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
 
         //generate item prefab for each item in item shop list
         ClearSellList();
@@ -304,7 +304,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
             }
         }
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
 
         itemsAccountedFor.Clear();
     }
@@ -345,35 +345,35 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
     void ResetEquipStatDetails()
     {
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/StrengthText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/StrengthText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/StrengthText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/StrengthText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/StaminaText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/StaminaText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/StaminaText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/StaminaText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/AgilityText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/AgilityText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/AgilityText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/AgilityText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/DexterityText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/DexterityText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/DexterityText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/DexterityText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/IntelligenceText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/IntelligenceText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/IntelligenceText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/IntelligenceText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/SpiritText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/SpiritText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/SpiritText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/SpiritText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/AttackText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/AttackText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/AttackText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/AttackText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/DefenseText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/DefenseText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/DefenseText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/DefenseText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/MagicAttackText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/MagicAttackText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/MagicAttackText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/MagicAttackText").GetComponent<Text>().text = "0";
 
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/MagicDefenseText").GetComponent<Text>().text = "0";
-        GameObject.Find("GameManager/Shops/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/MagicDefenseText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/EquipDetailsPanel/MagicDefenseText").GetComponent<Text>().text = "0";
+        GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/EquipDetailsPanel/MagicDefenseText").GetComponent<Text>().text = "0";
     }
 
 }

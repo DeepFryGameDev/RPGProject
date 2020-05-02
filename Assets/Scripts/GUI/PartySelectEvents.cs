@@ -271,7 +271,7 @@ public class PartySelectEvents : MonoBehaviour
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
         {
-            if (hero.heroID == ID)
+            if (hero.ID == ID)
             {
                 return hero;
             }
@@ -279,7 +279,7 @@ public class PartySelectEvents : MonoBehaviour
 
         foreach (BaseHero hero in GameManager.instance.inactiveHeroes)
         {
-            if (hero.heroID == ID)
+            if (hero.ID == ID)
             {
                 return hero;
             }

@@ -8,6 +8,7 @@ public class StartUpThings : BaseScriptedEvent
     {
         InitiateStats();
         SetRandomGridSpawnPoints();
+        AssignQuestIDs();
     }
 
     void InitiateStats()
@@ -60,6 +61,15 @@ public class StartUpThings : BaseScriptedEvent
                     Debug.Log("Setting random spawn point for " + hero._Name + " - " + spawnPoint);
                 }
             }
+        }
+    }
+
+    void AssignQuestIDs()
+    {
+        foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+        {
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests.IndexOf(quest) + " to quest " + quest.name);
+            quest.ID = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests.IndexOf(quest);
         }
     }
 }

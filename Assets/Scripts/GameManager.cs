@@ -45,6 +45,13 @@ public class GameManager : MonoBehaviour
     //GOLD
     public int gold;
 
+    //QUESTS
+    public List<BaseQuest> activeQuests = new List<BaseQuest>();
+    public List<BaseQuest> completedQuests = new List<BaseQuest>();
+
+    //BESTIARY
+    public List<BaseBestiaryEntry> bestiaryEntries = new List<BaseBestiaryEntry>();
+
     //TEMP OBJECTS FOR SHOPS
     [HideInInspector] public List<BaseShopItem> itemShopList = new List<BaseShopItem>();
     [HideInInspector] public Item itemShopItem;
@@ -264,6 +271,7 @@ public class GameManager : MonoBehaviour
             BaseHero heroToAdd = heroesToBattle[i].GetComponent<HeroStateMachine>().hero;
             BaseHero fromHero = activeHeroes[i];
             heroToAdd._Name = fromHero._Name;
+            heroToAdd.ID = fromHero.ID;
             heroToAdd.currentLevel = fromHero.currentLevel;
             heroToAdd.currentExp = fromHero.currentExp;
             heroToAdd.baseHP = fromHero.baseHP;
@@ -397,6 +405,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < troops[troopIndex].enemies.Count; i++)
         {
             enemiesToBattle.Add(troops[troopIndex].enemies[i].enemyObject);
+            enemySpawnPoints.Add(troops[troopIndex].enemies[i].spawnPoint);
         }
         battleSceneFromScript = scene;
         enemyAmount = troops[troopIndex].enemies.Count;

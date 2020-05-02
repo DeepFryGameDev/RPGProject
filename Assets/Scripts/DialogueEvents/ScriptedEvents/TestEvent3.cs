@@ -2,20 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TestEvent2 : BaseScriptedEvent
+public class TestEvent3 : BaseScriptedEvent
 {
     public void QuestTest()
     {
         if (IfQuestIsActive(GetQuest(2)))
         { 
-            if (QuestObjectivesFulfilled(GetActiveQuest(2)))
+            if (QuestBool(GetActiveQuest(2), 0))
             {
-                Debug.Log("Yay it's complete!");
-                CompleteQuest(GetActiveQuest(2));
-            }
-            else
+                Debug.Log("You already talked to me!");
+            } else
             {
-                Debug.Log("You still need to talk to the guy next to me!");
+                Debug.Log("Ayyyy! Poop! Poop is funny lol!");
+                MarkQuestBool(GetActiveQuest(2), 0, true);
             }
         } else
         {

@@ -16,6 +16,10 @@ public class PrefabManager : MonoBehaviour //fixes a prefab destroyed bug (when 
 
     public GameObject inactiveHeroButton;
 
+    public GameObject activeQuestListButton;
+
+    public GameObject bestiaryEntryButton;
+
     //Singleton
     private static PrefabManager m_Instance = null;
     public static PrefabManager Instance

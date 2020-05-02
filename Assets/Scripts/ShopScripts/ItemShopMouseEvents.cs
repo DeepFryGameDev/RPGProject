@@ -12,8 +12,8 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
     
     private void Start()
     {
-        itemDesc = GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>();
-        ownedText = GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/AdditionalDetailsPanel/OwnedText").GetComponent<Text>();
+        itemDesc = GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>();
+        ownedText = GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/AdditionalDetailsPanel/OwnedText").GetComponent<Text>();
         menu = GameObject.Find("GameManager").GetComponent<GameMenu>();
         itemDesc.text = "";
     }
@@ -53,9 +53,9 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
             if (CanMakeTransaction())
             {
-                GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
-                GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.itemShopCost.ToString();
-                GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold - int.Parse(GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
+                GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+                GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.itemShopCost.ToString();
+                GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold - int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
 
                 DisplayBuyConfirmationPanel();
                 GameManager.instance.inConfirmation = true;
@@ -68,9 +68,9 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
             GameManager.instance.itemShopItem = GetItem(eventData.pointerCurrentRaycast.gameObject.GetComponent<Text>().text);
             GameManager.instance.itemShopCost = GetItem(eventData.pointerCurrentRaycast.gameObject.GetComponent<Text>().text).sellValue;
 
-            GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
-            GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.itemShopCost.ToString();
-            GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold + int.Parse(GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
+            GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+            GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.itemShopCost.ToString();
+            GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold + int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
 
             DisplaySellConfirmationPanel();
             GameManager.instance.inConfirmation = true;
@@ -164,29 +164,29 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
     void UpdateGoldPanels()
     {
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
     }
 
     void DisplayBuyConfirmationPanel()
     {
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 
     void DisplaySellConfirmationPanel()
     {
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
 
     }
 
     public void ShowItemListInSellGUI()
     {
         //set and show gold
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/AdditionalDetailsPanel/GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
 
         //generate item prefab for each item in item shop list
         ClearSellList();
@@ -213,7 +213,7 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
                     shopItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
                     shopItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
                     shopItemPanel.transform.GetChild(2).GetComponent<Text>().text = itemCount.ToString();
-                    shopItemPanel.transform.SetParent(GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopItemSellListSpacer, false);
+                    shopItemPanel.transform.SetParent(GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopItemSellListSpacer, false);
 
                     itemsAccountedFor.Add(item);
                 }
@@ -223,7 +223,7 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
     void ClearSellList()
     {
-        foreach (Transform child in GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopItemSellListSpacer.transform)
+        foreach (Transform child in GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopItemSellListSpacer.transform)
         {
             Destroy(child.gameObject);
         }
@@ -233,12 +233,12 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void DisplayItemShopBuyGUI()
     {
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ShopOptionsPanel/BuyOptionButton/BuyOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ShopOptionsPanel/SellOptionButton/SellOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ShopOptionsPanel/BuyOptionButton/BuyOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ShopOptionsPanel/SellOptionButton/SellOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
 
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
 
         UpdateGoldPanels();
 
@@ -247,9 +247,9 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void HideItemShopBuyGUI()
     {
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().interactable = false;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
     }
 
@@ -257,12 +257,12 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
     {
         ShowItemListInSellGUI();
 
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ShopOptionsPanel/SellOptionButton/SellOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ShopOptionsPanel/BuyOptionButton/BuyOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ShopOptionsPanel/SellOptionButton/SellOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ShopOptionsPanel/BuyOptionButton/BuyOptionButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
 
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
 
         UpdateGoldPanels();
 
@@ -272,9 +272,9 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void HideItemShopSellGUI()
     {
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().alpha = 0;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().interactable = false;
-        GameObject.Find("GameManager/Shops/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
 
     }
 }

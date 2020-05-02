@@ -10,9 +10,7 @@ public class BaseHero : BaseClass
 
     public GameObject heroPrefab; //each hero needs its own prefab
     public Sprite faceImage;
-
-    public int heroID;
-
+    
     public string spawnPoint;
 
     public BaseTalent[] level1Talents = new BaseTalent[3];
@@ -69,8 +67,8 @@ public class BaseHero : BaseClass
         currentDexterity = baseDexterity;
         currentIntelligence = baseIntelligence;
         currentSpirit = baseSpirit;
-        maxHP = GetMaxHP(baseHP);
-        maxMP = GetMaxMP(baseMP);
+        maxHP = GetBaseMaxHP(baseHP);
+        maxMP = GetBaseMaxMP(baseMP);
         currentATK = baseATK;
         currentMATK = baseMATK;
         currentDEF = baseDEF;
@@ -169,8 +167,8 @@ public class BaseHero : BaseClass
         baseDEF = GetDEF(baseDEF);
         baseMDEF = GetMDEF(baseMDEF);
 
-        baseHP = GetMaxHP(baseHP);
-        baseMP = GetMaxMP(baseMP);
+        baseHP = GetBaseMaxHP(baseHP);
+        baseMP = GetBaseMaxMP(baseMP);
 
         curHP = baseHP; //if full heal should occur on levelup, using for debugging purposes for now
         curMP = baseMP; //if MP should be restored on levelup, using for debugging purposes for now
@@ -224,8 +222,8 @@ public class BaseHero : BaseClass
         currentIntelligence = baseIntelligence + tempIntelligence;
         currentSpirit = baseSpirit + tempSpirit;
 
-        maxHP = GetMaxHP(baseHP) + tempHP;
-        maxMP = GetMaxMP(baseMP) + tempMP;
+        maxHP = GetBaseMaxHP(baseHP) + tempHP;
+        maxMP = GetBaseMaxMP(baseMP) + tempMP;
 
         currentATK = baseATK + tempATK;
         currentMATK = baseMATK + tempMATK;
@@ -294,19 +292,34 @@ public class BaseHero : BaseClass
         return MDEF;
     }
 
-    public int GetMaxHP(int hp)
+    public int GetBaseMaxHP(int hp)
     {
         int HP = Mathf.RoundToInt(hp + (baseStamina * .75f));
 
         return HP;
     }
 
-    public int GetMaxMP(int mp)
+    public int GetMaxHP(int hp)
+    {
+        int HP = Mathf.RoundToInt(hp + (currentStamina * .75f));
+
+        return HP;
+    }
+
+    public int GetBaseMaxMP(int mp)
     {
         int MP = Mathf.RoundToInt(mp + (baseIntelligence * .5f));
 
         return MP;
     }
+
+    public int GetMaxMP(int mp)
+    {
+        int MP = Mathf.RoundToInt(mp + (currentIntelligence * .5f));
+
+        return MP;
+    }
+
 
     public int GetHitChance(int hitRating, int agility)
     {

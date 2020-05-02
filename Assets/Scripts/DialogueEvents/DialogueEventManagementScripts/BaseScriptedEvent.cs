@@ -1129,7 +1129,126 @@ public class BaseScriptedEvent : MonoBehaviour
         HideInputPanels();
     }
 
+    #endregion
 
+    #region ---QUESTS---
+
+    public void StartQuest(BaseQuest quest)
+    {
+        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().AddToActiveQuests(quest);
+    }
+
+    public bool QuestObjectivesFulfilled(BaseQuest quest)
+    {
+        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().UpdateQuestObjectives();
+
+        if (quest.fulfilled)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+    public void CompleteQuest(BaseQuest quest)
+    {
+        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().CompleteQuest(quest);
+    }
+
+    public void MarkQuestBool(BaseQuest quest, int index, bool value)
+    {
+        quest.boolReqs[index].objectiveFulfilled = value;
+    }
+
+    public bool QuestBool(BaseQuest quest, int index)
+    {
+        return quest.boolReqs[index].objectiveFulfilled;
+    }
+
+    /// <summary>
+    /// Returns Quest by ID   	
+    /// </summary>
+    /// <param name="type">Use DB, Active, or Complete</param>
+    /// <param name="ID">ID of quest</param>
+    public BaseQuest GetQuestByID(string type, int ID)
+    {
+        if (type == "DB")
+        {
+            foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+            {
+                if (quest.ID == ID)
+                {
+                    return quest;
+                }
+            }
+        }
+
+        if (type == "Active")
+        {
+            foreach (BaseQuest quest in GameManager.instance.activeQuests)
+            {
+                if (quest.ID == ID)
+                {
+                    return quest;
+                }
+            }
+        }
+
+        if (type == "Complete")
+        {
+            foreach (BaseQuest quest in GameManager.instance.completedQuests)
+            {
+                if (quest.ID == ID)
+                {
+                    return quest;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public BaseQuest GetQuest(int ID)
+    {
+        foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+        {
+            if (quest.ID == ID)
+            {
+                return quest;
+            }
+        }
+
+        return null;
+    }
+
+    public BaseQuest GetActiveQuest(int ID)
+    {
+        foreach (BaseQuest quest in GameManager.instance.activeQuests)
+        {
+            if (quest.ID == ID)
+            {
+                return quest;
+            }
+        }
+
+        return null;
+    }
+
+    public bool IfQuestIsActive(BaseQuest quest)
+    {
+        foreach (BaseQuest activeQuest in GameManager.instance.activeQuests)
+        {
+            if (activeQuest == quest)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+        return false;
+    }
 
     #endregion
 

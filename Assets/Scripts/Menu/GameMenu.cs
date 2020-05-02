@@ -148,6 +148,16 @@ public class GameMenu : MonoBehaviour
     public Image TalentsPanelHPProgressBar;
     public Image TalentsPanelMPProgressBar;
 
+    //for quest menu objects
+    public GameObject ActiveQuestListButton;
+    private Transform ActiveQuestListSpacer;
+    public bool QuestClicked;
+
+    //for bestiary menu objects
+    public GameObject BestiaryEntryButton;
+    private Transform BestiaryEnemyListSpacer;
+    public bool BestiaryEntryClicked;
+
     //for menu buttons
     public Button ItemButton;
     public Button MagicButton;
@@ -157,7 +167,7 @@ public class GameMenu : MonoBehaviour
     public Button GridButton;
     public Button TalentsButton;
     public Button QuestsButton;
-    public Button QuitButton;
+    public Button BestiaryButton;
 
     //for menu canvases
     public Canvas MainMenuCanvas;
@@ -169,7 +179,7 @@ public class GameMenu : MonoBehaviour
     public Canvas GridMenuCanvas;
     public Canvas TalentsMenuCanvas;
     public Canvas QuestsMenuCanvas;
-    public Canvas QuitMenuCanvas;
+    public Canvas BestiaryMenuCanvas;
     
     [HideInInspector] public BaseHero HeroForMagicMenu; //hero to be set for entering magic menu
     [HideInInspector] public BaseHero HeroForEquipMenu;
@@ -211,7 +221,7 @@ public class GameMenu : MonoBehaviour
         TalentsMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
         GridMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
         QuestsMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
-        QuitMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
+        BestiaryMenuCanvas.GetComponent<CanvasGroup>().alpha = 1;
 
         //disables all menu canvases
         mainMenuCanvasGroup.gameObject.SetActive(false);
@@ -227,7 +237,7 @@ public class GameMenu : MonoBehaviour
         TalentsMenuCanvas.gameObject.SetActive(false);
         GridMenuCanvas.gameObject.SetActive(false);
         QuestsMenuCanvas.gameObject.SetActive(false);
-        QuitMenuCanvas.gameObject.SetActive(false);
+        BestiaryMenuCanvas.gameObject.SetActive(false);
 
         //sets spacers
         ItemListSpacer = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform; //find spacer and make connection
@@ -238,6 +248,8 @@ public class GameMenu : MonoBehaviour
         PartyInactiveRow1Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform;
         PartyInactiveRow2Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow2Spacer").transform;
         PartyInactiveRow3Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow3Spacer").transform;
+        ActiveQuestListSpacer = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform;
+        BestiaryEnemyListSpacer = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform;
 
         //sets party spacer child counts
         row1ChildCount = PartyInactiveRow1Spacer.childCount;
@@ -311,22 +323,39 @@ public class GameMenu : MonoBehaviour
             ShowMainMenu();
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.GRID && !buttonPressed) //if cancel is pressed on status menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.GRID && !buttonPressed) //if cancel is pressed on grid menu
         {
             HideGridMenu();
             ShowMainMenu();
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.PARTY && !buttonPressed && (PartyHeroSelected == null)) //if cancel is pressed on status menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.PARTY && !buttonPressed && (PartyHeroSelected == null)) //if cancel is pressed on party menu
         {
             HidePartyMenu();
             ShowMainMenu();
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.TALENTS && !buttonPressed) //if cancel is pressed on status menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.TALENTS && !buttonPressed) //if cancel is pressed on talents menu
         {
             HideTalentsMenu();
             ShowMainMenu();
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.QUESTS && !buttonPressed && !QuestClicked) //if cancel is pressed on quests menu
+        {
+            HideQuestMenu();
+            ShowMainMenu();
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.BESTIARY && !buttonPressed) //if cancel is pressed on quests menu
+        {
+            HideBestiaryMenu();
+            ShowMainMenu();
+        }
+
+        if (Input.GetButtonDown("Cancel") && !buttonPressed && QuestClicked)
+        {
+            CancelQuestSelect();
         }
 
         CheckCancelPressed(); //makes sure cancel is only pressed once
@@ -1799,8 +1828,8 @@ public class GameMenu : MonoBehaviour
         HeroForEquipMenu.currentIntelligence = HeroForEquipMenu.baseIntelligence + tempIntelligence;
         HeroForEquipMenu.currentSpirit = HeroForEquipMenu.baseSpirit + tempSpirit;
 
-        HeroForEquipMenu.maxHP = HeroForEquipMenu.GetMaxHP(HeroForEquipMenu.baseHP) + tempHP;
-        HeroForEquipMenu.maxMP = HeroForEquipMenu.GetMaxMP(HeroForEquipMenu.baseMP) + tempMP;
+        HeroForEquipMenu.maxHP = HeroForEquipMenu.GetMaxHP(HeroForEquipMenu.maxHP) + tempHP;
+        HeroForEquipMenu.maxMP = HeroForEquipMenu.GetMaxMP(HeroForEquipMenu.maxMP) + tempMP;
 
         HeroForEquipMenu.currentATK = HeroForEquipMenu.baseATK + tempATK;
         HeroForEquipMenu.currentMATK = HeroForEquipMenu.baseMATK + tempMATK;
@@ -1847,7 +1876,7 @@ public class GameMenu : MonoBehaviour
     {
         int tempStrength = HeroForEquipMenu.baseStrength, tempStamina = HeroForEquipMenu.baseStamina, tempAgility = HeroForEquipMenu.baseAgility, 
             tempDexterity = HeroForEquipMenu.baseDexterity, tempIntelligence = HeroForEquipMenu.baseIntelligence, tempSpirit = HeroForEquipMenu.baseSpirit;
-        int tempHP = HeroForEquipMenu.GetMaxHP(HeroForEquipMenu.baseHP), tempMP = HeroForEquipMenu.GetMaxMP(HeroForEquipMenu.baseMP);
+        int tempHP = HeroForEquipMenu.GetBaseMaxHP(HeroForEquipMenu.baseHP), tempMP = HeroForEquipMenu.GetBaseMaxMP(HeroForEquipMenu.baseMP);
         int tempATK = HeroForEquipMenu.baseATK, tempMATK = HeroForEquipMenu.baseMATK, tempDEF = HeroForEquipMenu.baseDEF, tempMDEF = HeroForEquipMenu.baseMDEF;
         int tempHit = HeroForEquipMenu.baseHitRating, tempCrit = HeroForEquipMenu.baseCritRating, tempMove = HeroForEquipMenu.baseMoveRating, tempRegen = HeroForEquipMenu.baseRegenRating;
         int tempDodge = HeroForEquipMenu.baseDodgeRating, tempBlock = HeroForEquipMenu.baseBlockRating, tempParry = HeroForEquipMenu.baseParryRating, tempThreat = HeroForEquipMenu.baseThreatRating;
@@ -2685,7 +2714,7 @@ public class GameMenu : MonoBehaviour
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
 
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).name = "Active Hero Panel - ID " + GameManager.instance.activeHeroes[i].heroID; //rename Panel
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).name = "Active Hero Panel - ID " + GameManager.instance.activeHeroes[i].ID; //rename Panel
         }
     }
 
@@ -2834,7 +2863,7 @@ public class GameMenu : MonoBehaviour
             InactivePartyButton = Instantiate(PrefabManager.Instance.inactiveHeroButton);
             InactivePartyButton.transform.GetChild(0).GetComponent<Text>().text = hero._Name;
             DrawHeroFace(hero, InactivePartyButton.transform.GetChild(1).GetComponent<Image>()); //Draws face graphic
-            InactivePartyButton.name = "Inactive Hero Button - ID " + hero.heroID;
+            InactivePartyButton.name = "Inactive Hero Button - ID " + hero.ID;
             
             if (row1ChildCount <= 2)
             {
@@ -3063,9 +3092,11 @@ public class GameMenu : MonoBehaviour
         menuState = MenuStates.TALENTS;
 
         DrawTalentsMenuHeroPanel(hero);
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
     }
 
-    void DrawTalentsMenuHeroPanel(BaseHero hero)
+    public void DrawTalentsMenuHeroPanel(BaseHero hero)
     {
         DrawHeroFace(hero, GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/NameText").GetComponent<Text>().text = hero._Name; //Name text
@@ -3075,16 +3106,55 @@ public class GameMenu : MonoBehaviour
 
         StatusPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), StatusPanelHPProgressBar.transform.localScale.y);
         StatusPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), StatusPanelMPProgressBar.transform.localScale.y);
-
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
     }
 
     void DrawHeroTalents(BaseHero hero)
     {
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent1Button/TalentIcon").GetComponent<Image>().sprite = hero.level1Talents[0].icon;
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent2Button/TalentIcon").GetComponent<Image>().sprite = hero.level1Talents[1].icon;
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent3Button/TalentIcon").GetComponent<Image>().sprite = hero.level1Talents[2].icon;
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent1Button/TalentIcon"), hero.level1Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent2Button/TalentIcon"), hero.level1Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent3Button/TalentIcon"), hero.level1Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent1Button/TalentIcon"), hero.level2Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent2Button/TalentIcon"), hero.level2Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent3Button/TalentIcon"), hero.level2Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent1Button/TalentIcon"), hero.level3Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent2Button/TalentIcon"), hero.level3Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent3Button/TalentIcon"), hero.level3Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent1Button/TalentIcon"), hero.level4Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent2Button/TalentIcon"), hero.level4Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent3Button/TalentIcon"), hero.level4Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent1Button/TalentIcon"), hero.level5Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent2Button/TalentIcon"), hero.level5Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent3Button/TalentIcon"), hero.level5Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent1Button/TalentIcon"), hero.level6Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent2Button/TalentIcon"), hero.level6Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent3Button/TalentIcon"), hero.level6Talents[2]);
+    }
+
+    void DrawTalentIcon(GameObject obj, BaseTalent talent)
+    {
+        obj.GetComponent<Image>().sprite = talent.icon;
+        if (talent.isActive)
+        {
+            DrawActiveTalent(obj.GetComponent<Image>());
+        } else
+        {
+            DrawInactiveTalent(obj.GetComponent<Image>());
+        }
+    }
+
+    void DrawInactiveTalent(Image icon)
+    {
+        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, .25f);
+    }
+
+    void DrawActiveTalent(Image icon)
+    {
+        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, 1f);
     }
 
     void HideTalentsMenu()
@@ -3094,15 +3164,143 @@ public class GameMenu : MonoBehaviour
         menuState = MenuStates.MAIN;
         heroToCheck = null;
     }
-   
+
 
     //--------------------
 
     //Quest Menu
 
+    public void ShowQuestMenu() //displays item menu
+    {
+        DrawQuestMenu();
+    }
+
+    void DrawQuestMenu()
+    {
+        MainMenuCanvas.gameObject.SetActive(false);
+        QuestsMenuCanvas.gameObject.SetActive(true);
+        menuState = MenuStates.QUESTS;
+
+        DrawActiveQuestList();
+        ClearQuestMenuFields();
+    }
+
+    void HideQuestMenu()
+    {
+        ResetActiveQuestList();
+        MainMenuCanvas.gameObject.SetActive(true);
+        QuestsMenuCanvas.gameObject.SetActive(false);
+        menuState = MenuStates.MAIN;
+    }
+
+    public void DrawActiveQuestList() //draws quest to active quest list
+    {
+        ResetActiveQuestList();
+
+        foreach (BaseQuest quest in GameManager.instance.activeQuests)
+        {
+            ActiveQuestListButton = Instantiate(PrefabManager.Instance.activeQuestListButton);
+            ActiveQuestListButton.transform.Find("QuestNameText").GetComponent<Text>().text = quest.name;
+            ActiveQuestListButton.transform.Find("QuestLevelText").GetComponent<Text>().text = quest.level.ToString();
+            ActiveQuestListButton.name = "ActiveQuestListButton - ID " + quest.ID.ToString();
+
+            ActiveQuestListButton.transform.SetParent(ActiveQuestListSpacer, false);
+        }
+    }
+
+    public void ClearQuestMenuFields()
+    {
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestNamePanel/QuestNameText").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestLevelText").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq2").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq3").GetComponent<Text>().text = "";
+
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestDetailsPanel/QuestDescriptionText").GetComponent<Text>().text = "";
+
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/GoldText").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ExpText").GetComponent<Text>().text = "";
+
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color = new Color(GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.r, 
+            GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.g, 
+            GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.b, 0f);
+
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemText").GetComponent<Text>().text = "";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemDescription").GetComponent<Text>().text = "";
+    }
+
+    public void ResetActiveQuestList()
+    {
+        foreach (Transform child in ActiveQuestListSpacer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    void CancelQuestSelect()
+    {
+        QuestClicked = false;
+
+        foreach (Transform child in GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform)
+        {
+            child.Find("QuestNameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+            child.Find("QuestLevelText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        }
+        ClearQuestMenuFields();
+    }
+
     //--------------------
 
     //Bestiary Menu
+
+    public void ShowBestiaryMenu() //displays item menu
+    {
+        DrawBestiaryMenu();
+    }
+
+    void DrawBestiaryMenu()
+    {
+        MainMenuCanvas.gameObject.SetActive(false);
+        BestiaryMenuCanvas.gameObject.SetActive(true);
+        menuState = MenuStates.BESTIARY;
+
+        DrawBestiaryEntryList();
+    }
+
+    public void DrawBestiaryEntryList() //draws quest to active quest list
+    {
+        ResetBestiaryList();
+
+        foreach (BaseBestiaryEntry entry in GameManager.instance.bestiaryEntries)
+        {
+            BestiaryEntryButton = Instantiate(PrefabManager.Instance.bestiaryEntryButton);
+            BestiaryEntryButton.transform.Find("EnemyNameText").GetComponent<Text>().text = entry.enemy._Name;
+            BestiaryEntryButton.name = "BestiaryEnemyEntryButton - ID " + entry.enemy.ID.ToString();
+
+            BestiaryEntryButton.transform.SetParent(BestiaryEnemyListSpacer, false);
+        }
+    }
+
+    public void ClearBestiaryMenuFields()
+    {
+
+    }
+
+    public void ResetBestiaryList()
+    {
+        foreach (Transform child in BestiaryEnemyListSpacer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    void HideBestiaryMenu()
+    {
+        ResetActiveQuestList();
+        MainMenuCanvas.gameObject.SetActive(true);
+        BestiaryMenuCanvas.gameObject.SetActive(false);
+        menuState = MenuStates.MAIN;
+    }
 
     //--------------------
 
@@ -3266,7 +3464,7 @@ public class GameMenu : MonoBehaviour
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
         {
-            if (hero.heroID == ID)
+            if (hero.ID == ID)
             {
                 return hero;
             }
@@ -3274,7 +3472,7 @@ public class GameMenu : MonoBehaviour
 
         foreach (BaseHero hero in GameManager.instance.inactiveHeroes)
         {
-            if (hero.heroID == ID)
+            if (hero.ID == ID)
             {
                 return hero;
             }

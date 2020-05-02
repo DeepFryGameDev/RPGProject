@@ -9,4 +9,6 @@ public class BaseTalent
     public string name;
     public string description;
     public Sprite icon;
+    public string effect;
+    public bool isActive;
 }

@@ -68,14 +68,44 @@ public class DebugStuff : BaseScriptedEvent
 
         StartCoroutine(ShowDialogueChoices(
             "WHATCHU WANT??",
-            "Re-name characters", RenameCharacters,
-            "Do a test text input", TestTextInput,
-            "Do a test number input", TestNumberInput,
+            "Start Gather Quest", QuestTest1,
+            "Start Kill Quest", QuestTest2,
+            "Start Bool Quest", QuestTest3,
             "Nothing", DoNothing
             ));
 
 
         //OpenMenu();
+    }
+
+    public void QuestTest1()
+    {
+        BaseQuest questToStart = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests[0];
+
+        StartCoroutine(ShowMessage("Go forth and bring me 5 potions!", baseTextSpeed, true, true));
+
+        Debug.Log("Quest started!");
+        StartQuest(questToStart);
+    }
+
+    public void QuestTest2()
+    {
+        BaseQuest questToStart = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests[1];
+
+        StartCoroutine(ShowMessage("Go forth and kill 1 test enemy!", baseTextSpeed, true, true));
+
+        Debug.Log("Quest started!");
+        StartQuest(questToStart);
+    }
+
+    public void QuestTest3()
+    {
+        BaseQuest questToStart = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests[2];
+
+        StartCoroutine(ShowMessage("Go talk to that guy over there!", baseTextSpeed, true, true));
+
+        Debug.Log("Quest started!");
+        StartQuest(questToStart);
     }
 
     void RenameCharacters()

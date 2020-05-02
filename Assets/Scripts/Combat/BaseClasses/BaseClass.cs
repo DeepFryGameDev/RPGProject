@@ -6,6 +6,7 @@ public class BaseClass
 {
     //all heros and enemies use these values
     public string _Name; //name contains underscore as to not conflict with Unity code using 'name'
+    public int ID;
 
     public int baseHP; //max HP
     public int curHP; //current HP

@@ -152,7 +152,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
         {
-            if (checkID.heroID == hero.heroID)
+            if (checkID.ID == hero.ID)
             {
                 heroToCheck = hero;
                 break;
@@ -1190,7 +1190,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
-            DrawHeroFace(GameManager.instance.activeHeroes[i].heroID, GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(0).GetComponent<Image>());
+            DrawHeroFace(GameManager.instance.activeHeroes[i].ID, GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(0).GetComponent<Image>());
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(1).GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(3).GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
             GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp.ToString()); //Exp text
@@ -1346,6 +1346,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
             yield return TallyEXP();
 
+            //show quests completed graphic here
+
+            UpdateQuests();
+
+            UpdateBestiary();
+
             Debug.Log("ready to leave victory screen");
 
             while (!victoryConfirmButtonPressed)
@@ -1358,6 +1364,55 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
             BattleFinished();
         }
+    }
+
+    void UpdateBestiary()
+    {
+        bool found;
+        foreach (GameObject enemyObj in GameManager.instance.enemiesToBattle)
+        {
+            found = false;
+            foreach (BaseBestiaryEntry entry in GameManager.instance.bestiaryEntries)
+            {
+                if (entry.enemy == enemyObj.GetComponent<EnemyStateMachine>().enemy)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                Debug.Log("Enemy not found, adding to bestiary");
+                BaseBestiaryEntry newEntry = new BaseBestiaryEntry();
+                newEntry.enemy = enemyObj.GetComponent<EnemyStateMachine>().enemy;
+                newEntry.scanned = false; //change later when we add 'scan' ability
+                GameManager.instance.bestiaryEntries.Add(newEntry);
+            }
+        }
+    }
+
+    void UpdateQuests()
+    {
+        foreach (BaseQuest quest in GameManager.instance.activeQuests)
+        {
+            if (quest.type == BaseQuest.types.KILLTARGETS)
+            {
+                foreach (GameObject enemy in GameManager.instance.enemiesToBattle)
+                {
+                    foreach (BaseQuestKillRequirement killReq in quest.killReqs)
+                    {
+                        int enemyCount = 0;
+                        if (killReq.target == enemy)
+                        {
+                            enemyCount++;
+                        }
+                        killReq.targetsKilled = killReq.targetsKilled + enemyCount;
+                    }
+                }
+            }
+        }
+
+        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().UpdateQuestObjectives();
     }
 
     void ShowPostBattleGains()
