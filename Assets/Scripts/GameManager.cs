@@ -18,39 +18,39 @@ public class GameManager : MonoBehaviour
     //-----------------------------------
     public static GameManager instance;
 
-    public RegionData curRegion; //region of encounter zone
+    //HERO
+    public GameObject heroCharacter;
+
+    //GOLD
+    public int gold;
+
+    [ReadOnly] public RegionData curRegion; //region of encounter zone
 
     [HideInInspector] public GameObject DialogueCanvas;
 
     //SPAWN POINTS
     [HideInInspector] public string nextSpawnPoint;
 
-    //HERO
-    public GameObject heroCharacter;
-
     //POSITIONS
-    public Vector2 nextHeroPosition; //is set for loading player after battle
-    public Vector2 lastHeroPosition; //is set for loading player after battle
+    [ReadOnly] public Vector2 nextHeroPosition; //is set for loading player after battle
+    [ReadOnly] public Vector2 lastHeroPosition; //is set for loading player after battle
 
     //SCENES
-    public string sceneToLoad; //to load on collisions
-    public string lastScene; //to load after battle
+    [ReadOnly] public string sceneToLoad; //to load on collisions
+    [ReadOnly] public string lastScene; //to load after battle
+
+    //TEXT INPUTS
+    [ReadOnly] public string textInput;
+    [ReadOnly] public int numberInput;
+    [ReadOnly] public string nameInput;
+    [ReadOnly] public bool capsOn = false;
+    [HideInInspector] public bool letterButtonPressed = false;
 
     //BOOLS
-    public bool isWalking = false; //if player is currently walking
-    public bool canGetEncounter = false; //if player is able to encounter enemies
+    [ReadOnly] public bool isWalking = false; //if player is currently walking
+    [ReadOnly] public bool canGetEncounter = false; //if player is able to encounter enemies
     [HideInInspector] public bool gotAttacked = false; //if player actually enters combat
-    bool receivedAllExp = false;
-
-    //GOLD
-    public int gold;
-
-    //QUESTS
-    public List<BaseQuest> activeQuests = new List<BaseQuest>();
-    public List<BaseQuest> completedQuests = new List<BaseQuest>();
-
-    //BESTIARY
-    public List<BaseBestiaryEntry> bestiaryEntries = new List<BaseBestiaryEntry>();
+    [ReadOnly] bool receivedAllExp = false;
 
     //TEMP OBJECTS FOR SHOPS
     [HideInInspector] public List<BaseShopItem> itemShopList = new List<BaseShopItem>();
@@ -62,23 +62,18 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public bool inConfirmation;
 
     //ACTIVE HEROES
-    public List<BaseHero> activeHeroes = new List<BaseHero>();
+    [ReadOnly] public List<BaseHero> activeHeroes = new List<BaseHero>();
 
     //INACTIVE HEROES
-    public List<BaseHero> inactiveHeroes = new List<BaseHero>();
+    [ReadOnly] public List<BaseHero> inactiveHeroes = new List<BaseHero>();
 
-    //LEVELING BASES
-    public int[] toLevelUp;
-
-    //Global Game Bools
-    public List<bool> globalBools = new List<bool>();
+    //QUESTS
+    [ReadOnly] public List<BaseQuest> activeQuests = new List<BaseQuest>();
+    [ReadOnly] public List<BaseQuest> completedQuests = new List<BaseQuest>();
 
     //POSITION SAVES
     [HideInInspector] public List<BasePositionSave> positionSaves = new List<BasePositionSave>();
-
-    //TROOPS
-    public List<BaseTroop> troops = new List<BaseTroop>();
-
+    
     //FROM SCRIPT STUFF
     [HideInInspector] public string battleSceneFromScript;
 
@@ -87,14 +82,9 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public int minutes;
     [HideInInspector] public int hours;
 
-    //TEXT INPUTS
-    public string textInput;
-    public int numberInput;
-    public string nameInput;
-    public bool capsOn = false;
-    [HideInInspector] public bool letterButtonPressed = false;
+    //BESTIARY
+    [ReadOnly] public List<BaseBestiaryEntry> bestiaryEntries = new List<BaseBestiaryEntry>();
     
-
     //ENUM
     public enum GameStates
     {
@@ -104,9 +94,8 @@ public class GameManager : MonoBehaviour
         IDLE
     }
     public GameStates gameState;
-
     
-    [HideInInspector] public List<GameObject> enemiesToBattle = new List<GameObject>(); //for adding enemies in encounter to the battle
+    [HideInInspector] public List<BaseBattleEnemy> enemiesToBattle = new List<BaseBattleEnemy>(); //for adding enemies in encounter to the battle
     [HideInInspector] public List<GameObject> heroesToBattle = new List<GameObject>();
     [HideInInspector] public int enemyAmount; //for how many enemies can be encountered in one battle
     [HideInInspector] public List<string> enemySpawnPoints = new List<string>();
@@ -120,7 +109,6 @@ public class GameManager : MonoBehaviour
         GameObject.Find("DebugCamera").SetActive(false); //Disable debugging camera so main camera attached to player can be used
         DialogueCanvas = GameObject.Find("DialogueCanvas");
         DialogueCanvas.GetComponent<CanvasGroup>().alpha = 0; //hides dialogue UI upon starting
-        
         
         if (instance == null) //check if instance exists
         {
@@ -152,7 +140,7 @@ public class GameManager : MonoBehaviour
             {
                 for (int i = 0; i < instance.positionSaves.Count; i++)
                 {
-                    if (instance.positionSaves[i]._Name == allObjects[j].name && instance.positionSaves[i].Scene == SceneManager.GetActiveScene().name) //if gameobject name matches positionSave name, and scene from positionSave is same as current scene
+                    if (instance.positionSaves[i].name == allObjects[j].name && instance.positionSaves[i].Scene == SceneManager.GetActiveScene().name) //if gameobject name matches positionSave name, and scene from positionSave is same as current scene
                     {
                         allObjects[j].transform.position = instance.positionSaves[i].newPosition; //sets the gameobject's position to the saved position
                         break;
@@ -270,7 +258,7 @@ public class GameManager : MonoBehaviour
         {
             BaseHero heroToAdd = heroesToBattle[i].GetComponent<HeroStateMachine>().hero;
             BaseHero fromHero = activeHeroes[i];
-            heroToAdd._Name = fromHero._Name;
+            heroToAdd.name = fromHero.name;
             heroToAdd.ID = fromHero.ID;
             heroToAdd.currentLevel = fromHero.currentLevel;
             heroToAdd.currentExp = fromHero.currentExp;
@@ -286,28 +274,28 @@ public class GameManager : MonoBehaviour
             heroToAdd.currentMATK = fromHero.currentMATK;
             heroToAdd.baseDEF = fromHero.baseDEF;
             heroToAdd.currentDEF = fromHero.currentDEF;
-            heroToAdd.baseStrength = fromHero.baseStrength;
-            heroToAdd.baseStamina = fromHero.baseStamina;
-            heroToAdd.baseIntelligence = fromHero.baseIntelligence;
-            heroToAdd.baseDexterity = fromHero.baseDexterity;
-            heroToAdd.baseAgility = fromHero.baseAgility;
-            heroToAdd.baseSpirit = fromHero.baseSpirit;
+            heroToAdd.baseSTR = fromHero.baseSTR;
+            heroToAdd.baseSTA = fromHero.baseSTA;
+            heroToAdd.baseINT = fromHero.baseINT;
+            heroToAdd.baseDEX = fromHero.baseDEX;
+            heroToAdd.baseAGI = fromHero.baseAGI;
+            heroToAdd.baseSPI = fromHero.baseSPI;
             heroToAdd.currentStrength = fromHero.currentStrength;
             heroToAdd.currentStamina = fromHero.currentStamina;
             heroToAdd.currentIntelligence = fromHero.currentIntelligence;
             heroToAdd.currentDexterity = fromHero.currentDexterity;
             heroToAdd.currentAgility = fromHero.currentAgility;
             heroToAdd.currentSpirit = fromHero.currentSpirit;
-            heroToAdd.strengthModifier = fromHero.strengthModifier;
-            heroToAdd.staminaModifier = fromHero.staminaModifier;
-            heroToAdd.intelligenceModifier = fromHero.intelligenceModifier;
-            heroToAdd.dexterityModifier = fromHero.dexterityModifier;
-            heroToAdd.agilityModifier = fromHero.agilityModifier;
-            heroToAdd.baseHitRating = fromHero.baseHitRating;
+            heroToAdd.strengthMod = fromHero.strengthMod;
+            heroToAdd.staminaMod = fromHero.staminaMod;
+            heroToAdd.intelligenceMod = fromHero.intelligenceMod;
+            heroToAdd.dexterityMod = fromHero.dexterityMod;
+            heroToAdd.agilityMod = fromHero.agilityMod;
+            heroToAdd.baseHit = fromHero.baseHit;
             heroToAdd.currentHitRating = fromHero.currentHitRating;
-            heroToAdd.baseCritRating = fromHero.baseCritRating;
+            heroToAdd.baseCrit = fromHero.baseCrit;
             heroToAdd.currentCritRating = fromHero.currentCritRating;
-            heroToAdd.attacks = fromHero.attacks;
+            heroToAdd.attack = fromHero.attack;
             heroToAdd.MagicAttacks = fromHero.MagicAttacks;
         }
     }
@@ -319,7 +307,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("currentExp: " + hero.currentExp + ", currentLevel: " + hero.currentLevel);
             while(receivedAllExp == false)
             {
-                if (hero.currentExp >= toLevelUp[(hero.currentLevel - 1)])
+                if (hero.currentExp >= GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(hero.currentLevel - 1)])
                 {
                     hero.levelBeforeExp = hero.currentLevel; //wrong place for this, will update later
                     hero.LevelUp();
@@ -392,24 +380,46 @@ public class GameManager : MonoBehaviour
                 }
             }
          }
-        for (int i = 0; i < troops[whichTroop].enemies.Count; i++)
+        for (int i = 0; i < GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies.Count; i++)
         {
-            enemiesToBattle.Add(troops[whichTroop].enemies[i].enemyObject);
-            enemySpawnPoints.Add(troops[whichTroop].enemies[i].spawnPoint);
+            BaseBattleEnemy newBattleEnemy = new BaseBattleEnemy();
+            newBattleEnemy.ID = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies[i].enemyID;
+            newBattleEnemy.prefab = GetEnemyDBEntry(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies[i].enemyID).prefab;
+
+            enemiesToBattle.Add(newBattleEnemy);
+
+            enemySpawnPoints.Add(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies[i].spawnPoint);
         }
-        enemyAmount = troops[whichTroop].enemies.Count;
+        enemyAmount = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies.Count;
         }
 
     public void GetBattleFromScript(int troopIndex, string scene) //sets troops from script
     {
-        for (int i = 0; i < troops[troopIndex].enemies.Count; i++)
+        for (int i = 0; i < GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies.Count; i++)
         {
-            enemiesToBattle.Add(troops[troopIndex].enemies[i].enemyObject);
-            enemySpawnPoints.Add(troops[troopIndex].enemies[i].spawnPoint);
+            BaseBattleEnemy newBattleEnemy = new BaseBattleEnemy();
+            newBattleEnemy.ID = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies[i].enemyID;
+            newBattleEnemy.prefab = GetEnemyDBEntry(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies[i].enemyID).prefab;
+
+            enemiesToBattle.Add(newBattleEnemy);
+            
+            enemySpawnPoints.Add(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies[i].spawnPoint);
         }
         battleSceneFromScript = scene;
-        enemyAmount = troops[troopIndex].enemies.Count;
+        enemyAmount = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies.Count;
         gameState = GameManager.GameStates.BATTLE_STATE;
+    }
+
+    BaseEnemyDBEntry GetEnemyDBEntry(int ID)
+    {
+        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        {
+            if (entry.enemy.ID == ID)
+            {
+                return entry;
+            }
+        }
+        return null;
     }
 
     IEnumerator UpdateTime()

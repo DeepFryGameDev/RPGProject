@@ -21,6 +21,8 @@ public class BaseQuest
 
     public string description;
 
+    public string completedText;
+
     public List<BaseQuestGatherRequirement> gatherReqs = new List<BaseQuestGatherRequirement>();
     public List<BaseQuestKillRequirement> killReqs = new List<BaseQuestKillRequirement>();
     public List<BaseQuestBoolRequirement> boolReqs = new List<BaseQuestBoolRequirement>();

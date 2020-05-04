@@ -90,6 +90,7 @@ GameObject:
   - component: {fileID: 7567189598976965388}
   - component: {fileID: 8925239330408611553}
   - component: {fileID: 6476740297679689175}
+  - component: {fileID: 6854460154362958115}
   m_Layer: 0
   m_Name: BestiaryEntryButton
   m_TagString: Untagged
@@ -197,3 +198,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6854460154362958115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8548863637195279239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6846df765fec36843b23498b9ee83eb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -8,19 +8,19 @@ public class GridMenuMouseEvents : MonoBehaviour
 {
    public void ChangeSpawnPoint()
     {
-        if (GameObject.Find("GameManager").GetComponent<GameMenu>().gridChoosingTile)
+        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             SetSpawnPoint(gameObject.name);
-            GameObject.Find("GameManager").GetComponent<GameMenu>().gridChoosingTile = false;
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile = false;
         }
     }
 
     public void SetHero()
     {
-        if (!GameObject.Find("GameManager").GetComponent<GameMenu>().gridChoosingTile)
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
-            GameObject.Find("GameManager").GetComponent<GameMenu>().gridMenuHero = GetHero(gameObject.transform.Find("NameText").GetComponent<Text>().text);
-            GameObject.Find("GameManager").GetComponent<GameMenu>().gridChoosingTile = true;
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = GetHero(gameObject.transform.Find("NameText").GetComponent<Text>().text);
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile = true;
 
             DisableButtons(gameObject.GetComponent<Button>());
         }
@@ -30,9 +30,9 @@ public class GridMenuMouseEvents : MonoBehaviour
     {
         foreach (BaseHero h in GameManager.instance.activeHeroes)
         {
-            if (h._Name == heroName)
+            if (h.name == heroName)
             {
-                GameObject.Find("GameManager").GetComponent<GameMenu>().gridTileChanging = h.spawnPoint;
+                GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridTileChanging = h.spawnPoint;
                 return h;
             }
         }
@@ -48,7 +48,7 @@ public class GridMenuMouseEvents : MonoBehaviour
 
         foreach (BaseHero h in GameManager.instance.activeHeroes)
         {
-            if (h.spawnPoint == tile && h != GameObject.Find("GameManager").GetComponent<GameMenu>().gridMenuHero)
+            if (h.spawnPoint == tile && h != GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero)
             {
                 heroSwapping = h;
             }
@@ -58,7 +58,7 @@ public class GridMenuMouseEvents : MonoBehaviour
         {
             if (heroSwapping != null)
             {
-                if (h == GameObject.Find("GameManager").GetComponent<GameMenu>().gridMenuHero)
+                if (h == GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero)
                 {
                     tempTile = h.spawnPoint;
                     h.spawnPoint = heroSwapping.spawnPoint;
@@ -71,11 +71,11 @@ public class GridMenuMouseEvents : MonoBehaviour
                 }
             } else
             {
-                if (h == GameObject.Find("GameManager").GetComponent<GameMenu>().gridMenuHero && tile != h.spawnPoint)
+                if (h == GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero && tile != h.spawnPoint)
                 {
                     h.spawnPoint = tile;
                     GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + tile).GetComponent<Image>().sprite = h.faceImage;
-                    ClearSpawnPoint(GameObject.Find("GameManager").GetComponent<GameMenu>().gridTileChanging);
+                    ClearSpawnPoint(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridTileChanging);
                     EnableButtons();
                     break;
                 }
@@ -86,7 +86,7 @@ public class GridMenuMouseEvents : MonoBehaviour
     void ClearSpawnPoint(string tile)
     {
         GameObject objectToClear = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + tile);
-        objectToClear.GetComponent<Image>().sprite = GameObject.Find("GameManager").GetComponent<GameMenu>().gridBG;
+        objectToClear.GetComponent<Image>().sprite = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridBG;
     }
 
     void DisableButtons(Button buttonToSkip)

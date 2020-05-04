@@ -5,9 +5,10 @@ using UnityEngine;
 public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
 {
     private BattleStateMachine BSM; //global battle state machine
-    public BaseEnemy enemy; //contains enemy details
 
     public EnemyBehavior enemyBehavior;
+
+    [HideInInspector] public BaseEnemy enemy;
 
     public enum TurnState
     {
@@ -48,6 +49,9 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
         Selector.SetActive(false); //hides enemy selector cursor
 
         enemyBehavior = GetComponent<EnemyBehavior>();
+
+        enemy.curHP = enemy.baseHP;
+        enemy.curMP = enemy.baseMP;
     }
 
     void Update()
@@ -131,7 +135,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
     {
         cur_cooldown = (cur_cooldown + (Time.deltaTime / 1)) + (enemy.baseDexterity * .000055955f); //increases enemy ATB gauge over time
 
-        Debug.Log(enemy._Name + " Cooldown: " + cur_cooldown + "/" + max_cooldown);
+        Debug.Log(enemy.name + " Cooldown: " + cur_cooldown + "/" + max_cooldown);
         if (cur_cooldown >= max_cooldown) //if enemy ATB gauge meets threshold for choosing an action
         {
             BSM.pendingTurn = true;

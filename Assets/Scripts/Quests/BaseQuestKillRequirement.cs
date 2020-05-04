@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class BaseQuestKillRequirement
 {
-    public GameObject target;
+    public int enemyID;
     public int quantity;
-    public int targetsKilled;
+    [ReadOnly] public int targetsKilled;
 }

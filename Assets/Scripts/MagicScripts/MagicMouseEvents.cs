@@ -21,8 +21,8 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         magicDesc = GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDescriptionPanel/MagicDescriptionText").GetComponent<Text>();
         MPCostText = GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel/MPCostText").GetComponent<Text>();
         cooldownText = GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel/CooldownText").GetComponent<Text>();
-        menu = GameObject.Find("GameManager").GetComponent<GameMenu>(); //the menu script on GameManager
-        heroFromMenu = menu.HeroForMagicMenu; //hero that was chosen to enter the magic menu with
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>(); //the menu script on GameManager
+        heroFromMenu = menu.heroToCheck; //hero that was chosen to enter the magic menu with
     }
 
     BaseAttack GetMagic(string name) //gets the actual magic spell
@@ -100,21 +100,22 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
             GetHeroClicked();
             yield return null;
         }
-        menu.HeroSelectMagicPanel.gameObject.SetActive(false);
+        menu.HideCanvas(menu.HeroSelectMagicPanel);
     }
 
     void DrawHeroSelectPanel() //shows hero panels to be selected to cast spell on
     {
-        menu.HeroSelectMagicPanel.gameObject.SetActive(true);
+        menu.DisplayCanvas(menu.HeroSelectMagicPanel);
         int heroCount = GameManager.instance.activeHeroes.Count;
         DrawHeroSelectPanels(heroCount);
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(1).GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(3).GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.GetChild(8).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
+            menu.DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("FacePanel").GetComponent<Image>());
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
         }
     }
 

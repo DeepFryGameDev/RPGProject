@@ -8,7 +8,7 @@ public class TalentEffects
 
     public void AddEffect(string effect)
     {
-        hero = GameObject.Find("GameManager").GetComponent<GameMenu>().heroToCheck;
+        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
 
         Debug.Log("Adding effect: " + effect);
 
@@ -28,7 +28,7 @@ public class TalentEffects
 
     public void RemoveEffect(string effect)
     {
-        hero = GameObject.Find("GameManager").GetComponent<GameMenu>().heroToCheck;
+        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
         Debug.Log("Removing effect: " + effect);
 
         if (effect == "Test1")

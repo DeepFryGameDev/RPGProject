@@ -38,7 +38,7 @@ public class HeroSelectButton : MonoBehaviour
         string heroName = this.gameObject.GetComponentInChildren<Text>().text;
         foreach (GameObject hero in GameObject.Find("BattleManager").GetComponent<BattleStateMachine>().HeroesInBattle)
         {
-            if (heroName == hero.GetComponent<HeroStateMachine>().hero._Name)
+            if (heroName == hero.GetComponent<HeroStateMachine>().hero.name)
             {
                 detailsText.GetComponent<Text>().text = heroName;
                 break;

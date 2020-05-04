@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class BaseStatusEffect
 {
-    public string _Name;
+    public string name;
     
     public enum EffectTypes
     {

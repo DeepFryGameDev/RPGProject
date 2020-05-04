@@ -131,18 +131,30 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         {
             string spawnPoint = (GameManager.instance.enemySpawnPoints[i]);  //need to set spawn point by troop and use it below
             GameObject spawnPointObject = GameObject.Find("EnemySpawnPoints/EnemySP" + spawnPoint);
-            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], spawnPointObject.transform.position, Quaternion.identity) as GameObject; //uses enemy prefabs in Encounter region list and creates them as gameobjects
+            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i].prefab, spawnPointObject.transform.position, Quaternion.identity) as GameObject; //uses enemy prefabs in Encounter region list and creates them as gameobjects
             if (i == 0)
             {
-                NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy._Name; //sets the created enemy's name based on prefab enemy's name
+                NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.name; //sets the created enemy's name based on prefab enemy's name
             } else
             {
-                NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy._Name + " " + (i + 1); //if there are more than 1 of the enemy, add a number to it.  This will need to be updated as separate enemies will not be taken into account
+                NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.name + " " + (i + 1); //if there are more than 1 of the enemy, add a number to it.  This will need to be updated as separate enemies will not be taken into account
             }
-            NewEnemy.GetComponent<EnemyStateMachine>().enemy._Name = NewEnemy.name; //sets the created enemy's name in the state machine
+            NewEnemy.GetComponent<EnemyStateMachine>().enemy = GetEnemy(GameManager.instance.enemiesToBattle[i].ID); //sets the created enemy's name in the state machine
             EnemiesInBattle.Add(NewEnemy); //adds the created enemy to enemies in battle list
-            GameObject.Find("GameManager").GetComponent<GameMenu>().disableMenu = true;
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = true;
         }
+    }
+
+    BaseEnemy GetEnemy(int ID)
+    {
+        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        {
+            if (entry.enemy.ID == ID)
+            {
+                return entry.enemy;
+            }
+        }
+        return null;
     }
 
     GameObject GetHeroSpawnPoint(GameObject heroObj)
@@ -414,7 +426,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         ClearActionLists();
 
         //check which attacks are available based on MP cost of all attacks, and enemy's current MP, and adds them to 'attacksWithinMPThreshold' list.
-        foreach (BaseAttack atk in HeroesToManage[0].GetComponent<HeroStateMachine>().hero.attacks)
+        foreach (BaseAttack atk in HeroesToManage[0].GetComponent<HeroStateMachine>().hero.MagicAttacks)
         {
             if (atk.MPCost <= HeroesToManage[0].GetComponent<HeroStateMachine>().hero.curMP)
             {
@@ -812,7 +824,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         HeroChoice.Attacker = HeroesToManage[0].name; //sets heroChoice attacker to current hero making selection
         HeroChoice.AttackersGameObject = HeroesToManage[0]; //sets heroChoice attacker's game object to the current hero making selection's game object
         HeroChoice.attackerType = HandleTurn.Types.HERO; //as HeroChoice is of class HandleTurn, sets type to Hero
-        HeroChoice.chosenAttack = HeroesToManage[0].GetComponent<HeroStateMachine>().hero.attacks[0]; //sets heroChoice chosen attack to the current hero's hero state machine to the attack at top of their attack list (likely change later)
+        HeroChoice.chosenAttack = HeroesToManage[0].GetComponent<HeroStateMachine>().hero.attack; //sets heroChoice chosen attack to the current hero's hero state machine to the attack at top of their attack list (likely change later)
         actionPanel.SetActive(false); //hides attack panel as action has been chosen
         EnemySelectPanel.SetActive(true); //displays enemy select panel to process chosen attack to
         StartCoroutine(ChooseTarget());
@@ -1190,11 +1202,11 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
-            DrawHeroFace(GameManager.instance.activeHeroes[i].ID, GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(0).GetComponent<Image>());
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(1).GetComponent<Text>().text = GameManager.instance.activeHeroes[i]._Name; //Name text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(3).GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(5).GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp.ToString()); //Exp text
-            GameObject.Find("Hero" + (i + 1) + "Panel").transform.GetChild(8).GetComponent<Text>().text = (GameManager.instance.toLevelUp[(GameManager.instance.activeHeroes[i].currentLevel - 1)] - (GameManager.instance.activeHeroes[i].currentExp)).ToString(); //Exp text
+            DrawHeroFace(GameManager.instance.activeHeroes[i].ID, GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("FacePanel").GetComponent<Image>());
+            GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
+            GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp.ToString()); //Exp text
+            GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("NextLevelText").GetComponent<Text>().text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel - 1)] - (GameManager.instance.activeHeroes[i].currentExp)).ToString(); //Exp text
         }
     }
 
@@ -1288,12 +1300,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (hero.currentLevel == 1)
         {
-            baseLineEXP = (GameManager.instance.toLevelUp[hero.currentLevel - 1]);
+            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1]);
             heroEXP = hero.currentExp;
         }
         else
         {
-            baseLineEXP = (GameManager.instance.toLevelUp[hero.currentLevel - 1] - GameManager.instance.toLevelUp[hero.currentLevel - 2]);
+            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1] - GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 2]);
             heroEXP = (hero.currentExp - baseLineEXP);
             //Debug.Log("baseLine: " + baseLineEXP);
         }
@@ -1312,12 +1324,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (heroLevel == 1)
         {
-            baseLineEXP = (GameManager.instance.toLevelUp[heroLevel - 1]);
+            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[heroLevel - 1]);
             //Debug.Log("baseLine level 1: " + baseLineEXP);
         }
         else
         {
-            baseLineEXP = (GameManager.instance.toLevelUp[heroLevel - 1] - GameManager.instance.toLevelUp[heroLevel - 2]);
+            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[heroLevel - 1] - GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[heroLevel - 2]);
             //Debug.Log("baseLine > level 1: " + baseLineEXP);
         }
 
@@ -1369,12 +1381,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     void UpdateBestiary()
     {
         bool found;
-        foreach (GameObject enemyObj in GameManager.instance.enemiesToBattle)
+        foreach (BaseBattleEnemy battleEnemy in GameManager.instance.enemiesToBattle)
         {
             found = false;
             foreach (BaseBestiaryEntry entry in GameManager.instance.bestiaryEntries)
             {
-                if (entry.enemy == enemyObj.GetComponent<EnemyStateMachine>().enemy)
+                if (entry.enemy == GetEnemy(battleEnemy.ID))
                 {
                     found = true;
                     break;
@@ -1384,7 +1396,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             {
                 Debug.Log("Enemy not found, adding to bestiary");
                 BaseBestiaryEntry newEntry = new BaseBestiaryEntry();
-                newEntry.enemy = enemyObj.GetComponent<EnemyStateMachine>().enemy;
+                newEntry.enemy = GetEnemy(battleEnemy.ID);
                 newEntry.scanned = false; //change later when we add 'scan' ability
                 GameManager.instance.bestiaryEntries.Add(newEntry);
             }
@@ -1397,12 +1409,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         {
             if (quest.type == BaseQuest.types.KILLTARGETS)
             {
-                foreach (GameObject enemy in GameManager.instance.enemiesToBattle)
+                foreach (BaseBattleEnemy battleEnemy in GameManager.instance.enemiesToBattle)
                 {
                     foreach (BaseQuestKillRequirement killReq in quest.killReqs)
                     {
                         int enemyCount = 0;
-                        if (killReq.target == enemy)
+                        if (killReq.enemyID == battleEnemy.ID)
                         {
                             enemyCount++;
                         }
@@ -1450,7 +1462,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 if (heroNextLevelText.text == 0.ToString()) //Levelup
                 {
                     heroLevel.text = ((int.Parse(heroLevel.text) + 1).ToString());
-                    heroNextLevelText.text = (GameManager.instance.toLevelUp[(int.Parse(heroLevel.text) - 1)] - int.Parse(heroExpText.text)).ToString();
+                    heroNextLevelText.text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(int.Parse(heroLevel.text) - 1)] - int.Parse(heroExpText.text)).ToString();
                 }
 
                 int expNeededToLevel;
@@ -1461,7 +1473,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 }
                 else
                 {
-                    expNeededToLevel = GameManager.instance.toLevelUp[int.Parse(heroLevel.text) - 2];
+                    expNeededToLevel = GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[int.Parse(heroLevel.text) - 2];
                 }
 
                 int tempLevel = int.Parse(heroLevel.text);
@@ -1525,31 +1537,33 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         GameManager.instance.LoadSceneAfterBattle(); //load scene from before battle
         GameManager.instance.gameState = GameManager.GameStates.HOSTILE_STATE; //puts game manager back to hostile state
         GameManager.instance.enemiesToBattle.Clear(); //clears enemies to battle list to be used from scratch on next battle
-        GameObject.Find("GameManager").GetComponent<GameMenu>().disableMenu = false;
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = false;
     }
 
     void HideVictoryCanvas()
     {
-        victoryCanvas.SetActive(false);
+        victoryCanvas.GetComponent<CanvasGroup>().alpha = 0;
+        victoryCanvas.GetComponent<CanvasGroup>().interactable = false;
+        victoryCanvas.GetComponent<CanvasGroup>().blocksRaycasts = false;
     }
 
     void GetItemsDropped() //to determine which items to be dropped after battle, and add them
     {
-        foreach (GameObject enemy in GameManager.instance.enemiesToBattle)
+        foreach (BaseBattleEnemy battleEnemy in GameManager.instance.enemiesToBattle)
         {
-            foreach (BaseItemDrop itemDrop in enemy.GetComponent<EnemyStateMachine>().enemy.itemsDropped)
+            foreach (BaseItemDrop itemDrop in GetEnemy(battleEnemy.ID).itemsDropped)
             {
                 Random.InitState(System.DateTime.Now.Millisecond);
                 int dropChance = Random.Range(1, 100); //get random value out of 100
                 if (itemDrop.dropChance >= dropChance)
                 {
-                    Debug.Log(enemy.GetComponent<EnemyStateMachine>().enemy._Name + " dropped " + itemDrop.item.name + " - drop chance is " + itemDrop.dropChance + ", and roll was " + dropChance);
+                    Debug.Log(GetEnemy(battleEnemy.ID).name + " dropped " + itemDrop.item.name + " - drop chance is " + itemDrop.dropChance + ", and roll was " + dropChance);
                     Inventory.instance.Add(itemDrop.item);
                     itemsDropped.Add(itemDrop.item);
                 }
                 else
                 {
-                    Debug.Log(enemy.GetComponent<EnemyStateMachine>().enemy._Name + " did not drop " + itemDrop.item.name + " - drop chance is " + itemDrop.dropChance + ", and roll was " + dropChance);
+                    Debug.Log(GetEnemy(battleEnemy.ID).name + " did not drop " + itemDrop.item.name + " - drop chance is " + itemDrop.dropChance + ", and roll was " + dropChance);
                 }
             }
         }
@@ -1557,11 +1571,11 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     void GetGoldDropped()
     {
-        foreach (GameObject enemy in GameManager.instance.enemiesToBattle)
+        foreach (BaseBattleEnemy battleEnemy in GameManager.instance.enemiesToBattle)
         {
-            Debug.Log(enemy.GetComponent<EnemyStateMachine>().enemy._Name + " dropped " + enemy.GetComponent<EnemyStateMachine>().enemy.goldDropped + " gold.");
-            GameManager.instance.gold += enemy.GetComponent<EnemyStateMachine>().enemy.goldDropped;
-            goldDropped += enemy.GetComponent<EnemyStateMachine>().enemy.goldDropped; ;
+            Debug.Log(GetEnemy(battleEnemy.ID).name + " dropped " + GetEnemy(battleEnemy.ID).goldDropped + " gold.");
+            GameManager.instance.gold += GetEnemy(battleEnemy.ID).goldDropped;
+            goldDropped += GetEnemy(battleEnemy.ID).goldDropped;
         }
     }
 

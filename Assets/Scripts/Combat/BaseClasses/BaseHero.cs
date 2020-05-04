@@ -6,12 +6,48 @@ using UnityEngine.UI;
 [System.Serializable]
 public class BaseHero : BaseClass
 {
-    public List<BaseAttack> MagicAttacks = new List<BaseAttack>(); //unit's magic attacks
+    [ReadOnly] public string spawnPoint;
 
     public GameObject heroPrefab; //each hero needs its own prefab
     public Sprite faceImage;
+
+    public int currentLevel = 1;
+    public int currentExp;
     
-    public string spawnPoint;
+    public int baseHP; //max HP
+    public int baseMP; //max MP
+
+    //base attack values and current attack values - base is their max value, while current could be modified at any point
+    public int baseATK;
+    public int baseMATK;
+    public int baseDEF;
+    public int baseMDEF;
+
+    //enemies need to be implemented for all of these
+    public int baseSTR; //for calculating physical attack damage
+    public int baseSTA; //for calculating HP
+    public int baseDEX; //for calculating ATB gauge speed
+    public int baseAGI; //for calculating dodge/crit (not yet implemented)
+    public int baseINT; //for calculating magic damage
+    public int baseSPI; //for calculating MP regeneration, magic defense (not yet implemented)
+
+    public int baseHit;
+    public int baseCrit;
+    public int baseMove;
+    public int baseRegen;
+
+    public int baseDodge;
+    public int baseBlock;
+    public int baseParry;
+    public int baseThreat;
+
+    //modifiers for leveling purposes.  The higher the modifier, the more effect they are at gaining that particular stat
+    public float strengthMod;
+    public float staminaMod;
+    public float intelligenceMod;
+    public float dexterityMod;
+    public float agilityMod;
+    public float spiritMod;
 
     public BaseTalent[] level1Talents = new BaseTalent[3];
     public BaseTalent[] level2Talents = new BaseTalent[3];
@@ -20,68 +56,68 @@ public class BaseHero : BaseClass
     public BaseTalent[] level5Talents = new BaseTalent[3];
     public BaseTalent[] level6Talents = new BaseTalent[3];
 
-    //modifiers for leveling purposes.  The higher the modifier, the more effect they are at gaining that particular stat
-    public float strengthModifier;
-    public float staminaModifier;
-    public float intelligenceModifier;
-    public float dexterityModifier;
-    public float agilityModifier;
-    public float spiritModifier;
-
-     public int currentStrength;
-     public int currentStamina;
-     public int currentAgility;
-     public int currentDexterity;
-     public int currentIntelligence;
-     public int currentSpirit;
-     public int currentATK;
-     public int currentMATK;
-     public int currentDEF;
-     public int currentMDEF;
-
-     public int maxHP;
-     public int maxMP;
-
-     public int currentHitRating;
-     public int currentCritRating;
-     public int currentMoveRating;
-     public int currentRegenRating;
-
-     public int currentDodgeRating;
-     public int currentBlockRating;
-     public int currentParryRating;
-     public int currentThreatRating;
-
-    public int currentLevel = 1;
-    [HideInInspector] public int levelBeforeExp;
-    public int currentExp;
-    [HideInInspector] public int expBeforeAddingExp;
+    public BaseAttack attack;
+    public List<BaseAttack> MagicAttacks = new List<BaseAttack>(); //unit's magic attacks
 
     public Equipment[] equipment = new Equipment[System.Enum.GetNames(typeof(EquipmentSlot)).Length];
-    
+
+    [ReadOnly] public int curHP; //current HP
+    [ReadOnly] public int maxHP;
+
+    [ReadOnly] public int curMP; //current MP
+    [ReadOnly] public int maxMP;
+
+    [ReadOnly] public int currentStrength;
+    [ReadOnly] public int currentStamina;
+    [ReadOnly] public int currentAgility;
+    [ReadOnly] public int currentDexterity;
+    [ReadOnly] public int currentIntelligence;
+    [ReadOnly] public int currentSpirit;
+    [ReadOnly] public int currentATK;
+    [ReadOnly] public int currentMATK;
+    [ReadOnly] public int currentDEF;
+    [ReadOnly] public int currentMDEF;
+
+    [ReadOnly] public int currentHitRating;
+    [ReadOnly] public int currentCritRating;
+    [ReadOnly] public int currentMoveRating;
+    [ReadOnly] public int currentRegenRating;
+
+    [ReadOnly] public int currentDodgeRating;
+    [ReadOnly] public int currentBlockRating;
+    [ReadOnly] public int currentParryRating;
+    [ReadOnly] public int currentThreatRating;
+
+    [HideInInspector] public int levelBeforeExp;
+    [HideInInspector] public int expBeforeAddingExp;
+
     public void InitializeStats()
     {
-        currentStrength = baseStrength;
-        currentStamina = baseStamina;
-        currentAgility = baseAgility;
-        currentDexterity = baseDexterity;
-        currentIntelligence = baseIntelligence;
-        currentSpirit = baseSpirit;
         maxHP = GetBaseMaxHP(baseHP);
+        curHP = maxHP;
         maxMP = GetBaseMaxMP(baseMP);
+        curMP = maxMP;
+
+        currentStrength = baseSTR;
+        currentStamina = baseSTA;
+        currentAgility = baseAGI;
+        currentDexterity = baseDEX;
+        currentIntelligence = baseINT;
+        currentSpirit = baseSPI;
+
         currentATK = baseATK;
         currentMATK = baseMATK;
         currentDEF = baseDEF;
         currentMDEF = baseMDEF;
-        currentHitRating = baseHitRating;
-        currentCritRating = baseCritRating;
-        currentMoveRating = baseMoveRating;
-        currentRegenRating = baseRegenRating;
+        currentHitRating = baseHit;
+        currentCritRating = baseCrit;
+        currentMoveRating = baseMove;
+        currentRegenRating = baseRegen;
 
-        currentDodgeRating = baseDodgeRating;
-        currentBlockRating = baseBlockRating;
-        currentParryRating = baseParryRating;
-        currentThreatRating = baseThreatRating;
+        currentDodgeRating = baseDodge;
+        currentBlockRating = baseBlock;
+        currentParryRating = baseParry;
+        currentThreatRating = baseThreat;
     }
 
     public void Equip(Equipment newEquip)
@@ -124,34 +160,34 @@ public class BaseHero : BaseClass
     public void LevelUp()
     {
         currentLevel++;
-        Debug.Log(_Name + " has leveled up from " + levelBeforeExp + " to " + currentLevel);
+        Debug.Log(name + " has leveled up from " + levelBeforeExp + " to " + currentLevel);
         ProcessStatLevelUps();
     }
 
     public void ProcessStatLevelUps()
     {
-        //Debug.Log("Strength: " + strength + ", strengthModifier: " + strengthModifier);
-        baseStrength = baseStrength + Mathf.RoundToInt(baseStrength * strengthModifier);
+        //Debug.Log("Strength: " + strength + ", strengthMod: " + strengthMod);
+        baseSTR = baseSTR + Mathf.RoundToInt(baseSTR * strengthMod);
         //Debug.Log("New strength: " + strength);
 
         //Debug.Log("Stamina: " + stamina + ", staminaModifier: " + staminaModifier);
-        baseStamina = baseStamina + Mathf.RoundToInt(baseStamina * staminaModifier);
+        baseSTA = baseSTA + Mathf.RoundToInt(baseSTA * staminaMod);
         //Debug.Log("New stamina: " + stamina);
 
         //Debug.Log("Intelligence: " + intelligence + ", intelligenceModifer: " + intelligenceModifier);
-        baseIntelligence = baseIntelligence + Mathf.RoundToInt(baseIntelligence * intelligenceModifier);
+        baseINT = baseINT + Mathf.RoundToInt(baseINT * intelligenceMod);
         //Debug.Log("New intelligence: " + intelligence);
 
         //Debug.Log("Spirit: " + spirit + ", spiritModifier: " + spiritModifier);
-        baseSpirit = baseSpirit + Mathf.RoundToInt(baseSpirit * spiritModifier);
+        baseSPI = baseSPI + Mathf.RoundToInt(baseSPI * spiritMod);
         //Debug.Log("New spirit: " + spirit);
 
         //Debug.Log("Dexterity: " + dexterity + ", dexterityModifier: " + dexterityModifier);
-        baseDexterity = baseDexterity + Mathf.RoundToInt(baseDexterity * dexterityModifier);
+        baseDEX = baseDEX + Mathf.RoundToInt(baseDEX * dexterityMod);
         //Debug.Log("New dexterity: " + dexterity);
 
         //Debug.Log("Agility: " + agility + ", agilityModifier: " + agilityModifier);
-        baseAgility = baseAgility + Mathf.RoundToInt(baseAgility * agilityModifier);
+        baseAGI = baseAGI + Mathf.RoundToInt(baseAGI * agilityMod);
         //Debug.Log("New agility: " + agility);
 
         UpdateBaseStats();
@@ -215,12 +251,12 @@ public class BaseHero : BaseClass
             }
         }
 
-        currentStrength = baseStrength + tempStrength;
-        currentStamina = baseStamina + tempStamina;
-        currentAgility = baseAgility + tempAgility;
-        currentDexterity = baseDexterity + tempDexterity;
-        currentIntelligence = baseIntelligence + tempIntelligence;
-        currentSpirit = baseSpirit + tempSpirit;
+        currentStrength = baseSTR + tempStrength;
+        currentStamina = baseSTA + tempStamina;
+        currentAgility = baseAGI + tempAgility;
+        currentDexterity = baseDEX + tempDexterity;
+        currentIntelligence = baseINT + tempIntelligence;
+        currentSpirit = baseSPI + tempSpirit;
 
         maxHP = GetBaseMaxHP(baseHP) + tempHP;
         maxMP = GetBaseMaxMP(baseMP) + tempMP;
@@ -230,20 +266,20 @@ public class BaseHero : BaseClass
         currentDEF = baseDEF + tempDEF;
         currentMDEF = baseMDEF + tempMDEF;
 
-        currentHitRating = baseHitRating + tempHit;
-        currentCritRating = baseCritRating + tempCrit;
-        currentMoveRating = baseMoveRating + tempMove;
-        currentRegenRating = baseRegenRating + tempRegen;
+        currentHitRating = baseHit + tempHit;
+        currentCritRating = baseCrit + tempCrit;
+        currentMoveRating = baseMove + tempMove;
+        currentRegenRating = baseRegen + tempRegen;
 
-        currentDodgeRating = baseDodgeRating + tempDodge;
-        currentBlockRating = baseBlockRating + tempBlock;
-        currentParryRating = baseParryRating + tempParry;
-        currentThreatRating = baseThreatRating + tempThreat;
+        currentDodgeRating = baseDodge + tempDodge;
+        currentBlockRating = baseBlock + tempBlock;
+        currentParryRating = baseParry + tempParry;
+        currentThreatRating = baseThreat + tempThreat;
     }
 
     void learnNewAttacks()
     {
-        if (_Name == "Test dude 1")
+        if (name == "Test dude 1")
         {
             if (currentLevel == 4)
             {
@@ -251,7 +287,7 @@ public class BaseHero : BaseClass
             }
         }
 
-        if (_Name == "Test dude 2")
+        if (name == "Test dude 2")
         {
             if (currentLevel == 2)
             {
@@ -294,7 +330,7 @@ public class BaseHero : BaseClass
 
     public int GetBaseMaxHP(int hp)
     {
-        int HP = Mathf.RoundToInt(hp + (baseStamina * .75f));
+        int HP = Mathf.RoundToInt(hp + (baseSTA * .75f));
 
         return HP;
     }
@@ -308,7 +344,7 @@ public class BaseHero : BaseClass
 
     public int GetBaseMaxMP(int mp)
     {
-        int MP = Mathf.RoundToInt(mp + (baseIntelligence * .5f));
+        int MP = Mathf.RoundToInt(mp + (baseINT * .5f));
 
         return MP;
     }

@@ -5,6 +5,6 @@ using UnityEngine;
 [System.Serializable]
 public class EnemySpawnPoints
 {
-    public GameObject enemyObject; //which enemy
+    public int enemyID; //which enemy
     public string spawnPoint;
 }

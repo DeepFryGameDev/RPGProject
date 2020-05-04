@@ -61,6 +61,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -209,7 +210,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemy:
-    _Name: DebugEnemy 2
+    name: Enemy 2
+    ID: 0
     baseHP: 20
     curHP: 20
     baseMP: 0
@@ -232,11 +234,11 @@ MonoBehaviour:
     baseBlockRating: 0
     baseParryRating: 0
     baseThreatRating: 0
+    enemyType: 0
+    rarity: 0
     attacks:
     - {fileID: 458636252490780732, guid: 77b71f7bd7e88bd418d716fbf8d4e68b, type: 3}
     - {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea, type: 3}
-    enemyType: 0
-    rarity: 0
     earnedEXP: 30
     goldDropped: 100
     itemsDropped:
@@ -288,6 +290,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -425,6 +428,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

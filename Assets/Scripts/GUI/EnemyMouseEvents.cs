@@ -39,7 +39,7 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         {
             this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(true);
         }
-        detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<EnemyStateMachine>().enemy._Name;
+        detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
     }
 
     public void OnPointerExit(PointerEventData eventData) //hides selector

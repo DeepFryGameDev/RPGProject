@@ -30,20 +30,20 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
         {
-            if (child.Find("HeroName").GetComponent<Text>().text == this.GetComponent<HeroStateMachine>().hero._Name)
+            if (child.Find("HeroName").GetComponent<Text>().text == this.GetComponent<HeroStateMachine>().hero.name)
             {
                 HSM = this.GetComponent<HeroStateMachine>();
                 HSM.HeroPanel.transform.Find("BorderCanvas").GetComponent<CanvasGroup>().alpha = 1.0f;
             }
         }
-        detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<HeroStateMachine>().hero._Name;
+        detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<HeroStateMachine>().hero.name;
     }
 
     public void OnPointerExit(PointerEventData eventData) //hides border around hero panel in battle
     {
         foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
         {
-            if (child.Find("HeroName").GetComponent<Text>().text == this.GetComponent<HeroStateMachine>().hero._Name)
+            if (child.Find("HeroName").GetComponent<Text>().text == this.GetComponent<HeroStateMachine>().hero.name)
             {
                 HSM = this.GetComponent<HeroStateMachine>();
                 HSM.HeroPanel.transform.Find("BorderCanvas").GetComponent<CanvasGroup>().alpha = 0.0f;

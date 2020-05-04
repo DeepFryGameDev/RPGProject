@@ -38,7 +38,7 @@ public class EnemySelectButton : MonoBehaviour
         string enemyName = this.gameObject.GetComponentInChildren<Text>().text;
         foreach (GameObject enemy in GameObject.Find("BattleManager").GetComponent<BattleStateMachine>().EnemiesInBattle)
         {
-            if (enemyName == enemy.GetComponent<EnemyStateMachine>().enemy._Name)
+            if (enemyName == enemy.GetComponent<EnemyStateMachine>().enemy.name)
             {
                 detailsText.GetComponent<Text>().text = enemyName;
                 break;

@@ -31,8 +31,8 @@ public class EquipShop : MonoBehaviour
 
         DisablePlayerInput();
 
-        GameObject.Find("GameManager").GetComponent<GameMenu>().PauseBackground(true);
-        GameObject.Find("GameManager").GetComponent<GameMenu>().disableMenu = true;
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PauseBackground(true);
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = true;
     }
 
     public void HideEquipShopGUI()
@@ -53,8 +53,8 @@ public class EquipShop : MonoBehaviour
 
             EnablePlayerInput();
 
-            GameObject.Find("GameManager").GetComponent<GameMenu>().PauseBackground(false);
-            GameObject.Find("GameManager").GetComponent<GameMenu>().disableMenu = false;
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PauseBackground(false);
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = false;
         }
     }
 
@@ -86,9 +86,9 @@ public class EquipShop : MonoBehaviour
         foreach (BaseShopEquipment shopEquip in equipShopList)
         {
             GameObject shopItemPanel = Instantiate(PrefabManager.Instance.shopBuyEquipPrefab);
-            shopItemPanel.transform.GetChild(0).GetComponent<Text>().text = shopEquip.equipment.name;
-            shopItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = shopEquip.equipment.icon;
-            shopItemPanel.transform.GetChild(2).GetComponent<Text>().text = shopEquip.cost.ToString();
+            shopItemPanel.transform.Find("BuyShopEquipNameText").GetComponent<Text>().text = shopEquip.equipment.name;
+            shopItemPanel.transform.Find("BuyShopEquipIcon").GetComponent<Image>().sprite = shopEquip.equipment.icon;
+            shopItemPanel.transform.Find("BuyShopEquipCostText").GetComponent<Text>().text = shopEquip.cost.ToString();
             shopItemPanel.transform.SetParent(GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipBuyListSpacer, false);
         }
     }

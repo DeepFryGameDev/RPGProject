@@ -9,8 +9,8 @@ public class EnemyBehavior : EnemyMove
     protected List<BaseEnemy> enemyParty = new List<BaseEnemy>();
     protected List<BaseHero> heroParty = new List<BaseHero>();
 
-    protected EnemyStateMachine ESM;
-    protected BaseEnemy thisEnemy;
+    [HideInInspector] public EnemyStateMachine ESM;
+    protected BaseEnemy self;
     protected BattleStateMachine BSM; //global battle state machine
 
     public GameObject HeroToAttack; //the hero to be attacked by enemy
@@ -60,15 +60,15 @@ public class EnemyBehavior : EnemyMove
     public void InitBehavior()
     {
         ESM = GetComponent<EnemyStateMachine>();
-        thisEnemy = ESM.enemy;
-        enemySkills = thisEnemy.attacks;
+        self = ESM.enemy;
+        enemySkills = self.attacks;
 
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //sets battle state machine to active battle state machine in BattleManager (in scene)
 
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         for (int i = 0; i < enemies.Length; i++)
         {
-            enemyParty.Add(enemies[i].GetComponent<EnemyStateMachine>().enemy);
+            enemyParty.Add(self);
         }
 
         GameObject[] heroes = GameObject.FindGameObjectsWithTag("Hero");
@@ -89,9 +89,9 @@ public class EnemyBehavior : EnemyMove
         ClearActionLists();
 
         //check which attacks are available based on MP cost of all attacks, and enemy's current MP, and adds them to 'attacksWithinMPThreshold' list.
-        foreach (BaseAttack atk in thisEnemy.attacks)
+        foreach (BaseAttack atk in self.attacks)
         {
-            if (atk.MPCost <= thisEnemy.curMP)
+            if (atk.MPCost <= self.curMP)
             {
                 attacksWithinMPThreshold.Add(atk);
             }
@@ -221,7 +221,7 @@ public class EnemyBehavior : EnemyMove
 
         BaseMagicScript magicScript = new BaseMagicScript();
         magicScript.spell = chosenAttack;
-        magicScript.enemyPerformingAction = gameObject.GetComponent<EnemyStateMachine>().enemy;
+        magicScript.enemyPerformingAction = self;
         magicScript.eb = this;
 
         foreach (GameObject tar in targets)
@@ -263,7 +263,7 @@ public class EnemyBehavior : EnemyMove
     protected void RunAction(BaseAttack action, List<GameObject> targets)
     {
         HandleTurn myAttack = new HandleTurn(); //new handleturn for the enemy's attack
-        myAttack.Attacker = thisEnemy._Name; //enemy's name set for the handleturn's attacker
+        myAttack.Attacker = self.name; //enemy's name set for the handleturn's attacker
         myAttack.attackerType = HandleTurn.Types.ENEMY; //sets handleturn's type to enemy
         myAttack.AttackersGameObject = this.gameObject; //sets the handleturn's attacker game object to this enemy
         
@@ -281,33 +281,33 @@ public class EnemyBehavior : EnemyMove
 
     void DoDamage() //deals damage to hero
     {
-        int calc_damage = thisEnemy.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by enemy's current attack + the attack's damage
+        int calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by enemy's current attack + the attack's damage
         
         foreach (GameObject target in targets)
         {
             if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.PHYSICAL)
             {
-                calc_damage = thisEnemy.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
                 target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
-                Debug.Log(thisEnemy._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero._Name + "!");
-                Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + thisEnemy.baseATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+                Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
+                Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + self.baseATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
             }
             else if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.MAGIC)
             {
                 //can check if magic attack should have a flat value, ie gravity spell
-                calc_damage = thisEnemy.baseMATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's magic attack + the chosen attack's damage
+                calc_damage = self.baseMATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's magic attack + the chosen attack's damage
                 target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
-                Debug.Log(thisEnemy._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero._Name + "!");
-                Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - magic - hero's MATK: " + thisEnemy.baseMATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+                Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
+                Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - magic - hero's MATK: " + self.baseMATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
             }
             else //if attack type not found
             {
-                calc_damage = thisEnemy.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
                 target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
-                Debug.Log(thisEnemy._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero._Name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
+                Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
             }
             //HeroToAttack.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes the damage to the hero from the enemy
-            //Debug.Log(this.gameObject.name + " has chosen " + BSM.PerformList[0].chosenAttack.attackName + " and does " + calc_damage + " damage to " + HeroToAttack.GetComponent<HeroStateMachine>().hero._Name + "!");
+            //Debug.Log(this.gameObject.name + " has chosen " + BSM.PerformList[0].chosenAttack.attackName + " and does " + calc_damage + " damage to " + HeroToAttack.GetComponent<HeroStateMachine>().hero.name + "!");
 
             //enemy.curMP -= BSM.PerformList[0].chosenAttack.attackCost; //remove MP from enemy
 
@@ -376,25 +376,25 @@ public class EnemyBehavior : EnemyMove
 
     public void TakeDamage(int getDamageAmount) //receives damage from hero
     {
-        thisEnemy.curHP -= getDamageAmount; //lowers current HP from damageAmount parameter
-        if (thisEnemy.curHP <= 0) //checks if enemy is dead
+        self.curHP -= getDamageAmount; //lowers current HP from damageAmount parameter
+        if (self.curHP <= 0) //checks if enemy is dead
         {
-            thisEnemy.curHP = 0; //sets HP to 0 if lower than 0
+            self.curHP = 0; //sets HP to 0 if lower than 0
             ESM.currentState = EnemyStateMachine.TurnState.DEAD; //changes enemy state to DEAD
         }
     }
 
     void RecoverMPAfterTurn() //slowly recovers MP based on spirit value and below math
     {
-        if (thisEnemy.curMP < thisEnemy.baseMP)
+        if (self.curMP < self.baseMP)
         {
-            thisEnemy.curMP += Mathf.CeilToInt(thisEnemy.baseSpirit * .15f);
-            Debug.Log(thisEnemy._Name + " recovering " + Mathf.Ceil(thisEnemy.baseSpirit * .15f) + " MP");
+            self.curMP += Mathf.CeilToInt(self.baseSpirit * .15f);
+            Debug.Log(self.name + " recovering " + Mathf.Ceil(self.baseSpirit * .15f) + " MP");
         }
 
-        if (thisEnemy.curMP > thisEnemy.baseMP)
+        if (self.curMP > self.baseMP)
         {
-            thisEnemy.curMP = thisEnemy.baseMP;
+            self.curMP = self.baseMP;
         }
     }
 
@@ -404,21 +404,21 @@ public class EnemyBehavior : EnemyMove
         foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
         {
             BaseEffect effectToApply = new BaseEffect();
-            effectToApply.effectName = statusEffect._Name;
+            effectToApply.effectName = statusEffect.name;
             effectToApply.effectType = statusEffect.effectType.ToString();
             effectToApply.turnsRemaining = statusEffect.turnsApplied;
-            effectToApply.baseValue = statusEffect.baseValue + thisEnemy.baseMATK;
+            effectToApply.baseValue = statusEffect.baseValue + self.baseMATK;
 
             foreach (GameObject statusTarget in targets)
             {
                 if (statusTarget.tag == "Hero")
                 {
-                    Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + statusTarget.GetComponent<HeroStateMachine>().hero._Name);
+                    Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + statusTarget.GetComponent<HeroStateMachine>().hero.name);
                     statusTarget.GetComponent<HeroStateMachine>().activeStatusEffects.Add(effectToApply);
                 }
                 else if (statusTarget.tag == "Enemy")
                 {
-                    Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + statusTarget.GetComponent<EnemyStateMachine>().enemy._Name);
+                    Debug.Log("Status effect: " + effectToApply.effectName + ", type: " + effectToApply.effectType + " - applied to " + statusTarget.GetComponent<EnemyStateMachine>().enemy.name);
                     statusTarget.GetComponent<EnemyBehavior>().activeStatusEffects.Add(effectToApply);
                 }
             }
@@ -441,11 +441,11 @@ public class EnemyBehavior : EnemyMove
 
             activeStatusEffects[i].turnsRemaining--; //lowers turns remaining by 1
 
-            Debug.Log(thisEnemy._Name + " - turns remaining on " + activeStatusEffects[i].effectName + ": " + activeStatusEffects[i].turnsRemaining);
+            Debug.Log(self.name + " - turns remaining on " + activeStatusEffects[i].effectName + ": " + activeStatusEffects[i].turnsRemaining);
 
             if (activeStatusEffects[i].turnsRemaining == 0) //removes status effect if no more turns remaining
             {
-                Debug.Log(activeStatusEffects[i].effectName + " removed from " + thisEnemy._Name);
+                Debug.Log(activeStatusEffects[i].effectName + " removed from " + self.name);
                 activeStatusEffects.RemoveAt(i);
             }
         }
@@ -772,7 +772,7 @@ public class EnemyBehavior : EnemyMove
     {
         bool hasEnoughMP = false;
 
-        if (thisEnemy.curMP >= magic.MPCost)
+        if (self.curMP >= magic.MPCost)
         {
             return true;
         }

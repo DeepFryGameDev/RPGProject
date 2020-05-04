@@ -36,7 +36,7 @@ public class BaseItemScript
         {
             hero.curHP = hero.maxHP;
         }
-        Debug.Log("Healing " + hero._Name + " for 20 HP!");
+        Debug.Log("Healing " + hero.name + " for 20 HP!");
     }
 
     void EtherToHero(BaseHero hero)
@@ -49,7 +49,7 @@ public class BaseItemScript
         {
             hero.curMP = hero.maxMP;
         }
-        Debug.Log("Recovering " + hero._Name + "'s MP by 10!");
+        Debug.Log("Recovering " + hero.name + "'s MP by 10!");
     }
 
     public void ProcessItemToEnemy(BaseEnemy enemy) //used by hero/enemy state manager to process the item workflow
@@ -76,7 +76,7 @@ public class BaseItemScript
         {
             enemy.curHP = enemy.baseHP;
         }
-        Debug.Log("Healing " + enemy._Name + " for 20 HP!");
+        Debug.Log("Healing " + enemy.name + " for 20 HP!");
     }
 
     void EtherToEnemy(BaseEnemy enemy)
@@ -88,7 +88,7 @@ public class BaseItemScript
         {
             enemy.curMP = enemy.baseMP;
         }
-        Debug.Log("Recovering " + enemy._Name + "'s MP by 10!");
+        Debug.Log("Recovering " + enemy.name + "'s MP by 10!");
     }
 
     void SetValue()

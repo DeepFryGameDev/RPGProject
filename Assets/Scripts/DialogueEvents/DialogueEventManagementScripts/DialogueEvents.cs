@@ -183,7 +183,7 @@ public class DialogueEvents : MonoBehaviour
                     {
                         int whichBool = thisEvent.processIfTrue[i]; //gets the bool value
                         //Debug.Log("Check do process: " + e + " - " + whichBool);
-                        if (GameManager.instance.globalBools[whichBool]) //checks global booleans from assigned processIfTrue val. if matches:
+                        if (GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[whichBool]) //checks global booleans from assigned processIfTrue val. if matches:
                         {
                             //Debug.Log("Found do process: " + whichBool);
                             processEvent = true; //set process message to true
@@ -199,7 +199,7 @@ public class DialogueEvents : MonoBehaviour
                     {
                         int whichBool = thisEvent.processIfTrue[i]; //gets the bool value
                         //Debug.Log("Check do process: " + i + " - " + whichBool);
-                        if (GameManager.instance.globalBools[whichBool]) //checks global bools from assigned processIfTrue val. if matches:
+                        if (GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[whichBool]) //checks global bools from assigned processIfTrue val. if matches:
                         {
                             //Debug.Log("setting to true in ALL");
                             processEvent = true; //set process message to true and break from this loop
@@ -224,7 +224,7 @@ public class DialogueEvents : MonoBehaviour
                     {
                         int whichBool = thisEvent.dontProcessIfTrue[i]; //gets the bool value
                         //Debug.Log("Check dont process: " + e + " - " + whichBool);
-                        if (GameManager.instance.globalBools[whichBool]) //checks global bools from assigned dontProcessIfTrue val. if matches:
+                        if (GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[whichBool]) //checks global bools from assigned dontProcessIfTrue val. if matches:
                         {
                             //Debug.Log("Found dont process: " + e + " - " + whichBool);
                             processEvent = false; //sets process message to false
@@ -241,7 +241,7 @@ public class DialogueEvents : MonoBehaviour
                     {
                         int whichBool = thisEvent.dontProcessIfTrue[i]; //gets the bool value
                         //Debug.Log("Check dont process: " + i + " - " + whichBool);
-                        if (GameManager.instance.globalBools[whichBool]) //checks global bools from assigned dontProcessIfTrue val. if matches:
+                        if (GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[whichBool]) //checks global bools from assigned dontProcessIfTrue val. if matches:
                         {
                             //Debug.Log("Found dont process: " + whichBool);
                             processEvent = false; //sets process message to false and breaks from this loop
@@ -383,7 +383,7 @@ public class DialogueEvents : MonoBehaviour
             bool dontProcess = false;
             foreach (int index in eventToRun.dontProcessIfTrue)
             {
-                if (GameManager.instance.globalBools[index])
+                if (GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[index])
                 {
                     dontProcess = true;
                 }
@@ -407,10 +407,10 @@ public class DialogueEvents : MonoBehaviour
         {
             foreach (int boolToChange in eventToRun.markAsTrue)
             {
-                if (!GameManager.instance.globalBools[boolToChange])
+                if (!GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[boolToChange])
                 {
                     Debug.Log("Marking global bool " + boolToChange + " as true");
-                    GameManager.instance.globalBools[boolToChange] = true; //sets the global bool from input to true
+                    GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[boolToChange] = true; //sets the global bool from input to true
                 }
             }
         }
@@ -420,7 +420,7 @@ public class DialogueEvents : MonoBehaviour
             foreach (int boolToChange in eventToRun.markAsFalse)
             {
                 Debug.Log("Marking global bool " + boolToChange + " as false");
-                GameManager.instance.globalBools[boolToChange] = false; //sets the global bool from input to false
+                GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[boolToChange] = false; //sets the global bool from input to false
             }
         }
     }

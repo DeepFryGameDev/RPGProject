@@ -884,12 +884,12 @@ public class BaseScriptedEvent : MonoBehaviour
     public void SavePosition(GameObject objectToSave) //saves the position of player for loadPosition method
     {
         BasePositionSave thePosition = new BasePositionSave();
-        thePosition._Name = objectToSave.name;
+        thePosition.name = objectToSave.name;
         thePosition.newPosition = gameObject.transform.position;
         thePosition.newDirection = "Test"; //not yet implemented
         thePosition.Scene = SceneManager.GetActiveScene().name;
         GameManager.instance.positionSaves.Add(thePosition);
-        Debug.Log("Position saved: " + thePosition._Name);
+        Debug.Log("Position saved: " + thePosition.name);
     }
 
     #endregion
@@ -983,7 +983,7 @@ public class BaseScriptedEvent : MonoBehaviour
 
     public void ChangeGlobalBool(int index, bool boolean) //changes value of global event bools
     {
-        GameManager.instance.globalBools[index] = boolean;
+        GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[index] = boolean;
     }
 
     #endregion
@@ -1307,7 +1307,7 @@ public class BaseScriptedEvent : MonoBehaviour
     {
         DisablePlayerMovement();
         DisplayInputPanel("Name");
-        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel/NameEnteredPanel/NameEnteredText").GetComponent<Text>().text = hero._Name;
+        GameObject.Find("GameManager/TextInputCanvas/NameInputPanel/NameEnteredPanel/NameEnteredText").GetComponent<Text>().text = hero.name;
 
         GameManager.instance.nameInput = "";
 
@@ -1320,7 +1320,7 @@ public class BaseScriptedEvent : MonoBehaviour
             yield return null;
         }
 
-        hero._Name = GameManager.instance.nameInput;
+        hero.name = GameManager.instance.nameInput;
 
         EnablePlayerMovement();
         HideInputPanels();
@@ -1699,6 +1699,18 @@ public class BaseScriptedEvent : MonoBehaviour
                 }
             }
         }
+    }
+
+    protected BaseEnemy GetEnemy(int ID)
+    {
+        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        {
+            if (entry.enemy.ID == ID)
+            {
+                return entry.enemy;
+            }
+        }
+        return null;
     }
 
     #endregion

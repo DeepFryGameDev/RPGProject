@@ -61,6 +61,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -134,6 +135,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -275,6 +277,7 @@ MonoBehaviour:
   moveSpeed: 2
   actualTargetTile: {fileID: 0}
   readyToAnimateAction: 0
+  ESM: {fileID: 0}
   HeroToAttack: {fileID: 0}
   attacksWithinMPThreshold: []
   effectDamage: 0
@@ -294,8 +297,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3f6e5a8fd3394344a04ecf58fa7b588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyBehavior: {fileID: 0}
   enemy:
-    _Name: DebugEnemy 1
+    name: Enemy 1
+    ID: 0
     baseHP: 30
     curHP: 30
     baseMP: 50
@@ -318,12 +323,12 @@ MonoBehaviour:
     baseBlockRating: 0
     baseParryRating: 0
     baseThreatRating: 0
+    enemyType: 2
+    rarity: 0
     attacks:
     - {fileID: 6075571008585570978, guid: 4df8457608a92314fac8530119cfce6f, type: 3}
     - {fileID: 5194423850133241829, guid: c801a3f77a2afbc46afc9799b93ce166, type: 3}
     - {fileID: 5085128331928981671, guid: a11066208f52ac14e9e34a5fafe1910b, type: 3}
-    enemyType: 2
-    rarity: 0
     earnedEXP: 17
     goldDropped: 50
     itemsDropped:
@@ -331,7 +336,6 @@ MonoBehaviour:
       dropChance: 100
     - item: {fileID: 11400000, guid: 67d266636efa9bb4b8e92d287c7081ff, type: 2}
       dropChance: 75
-  enemyBehavior: {fileID: 0}
   waitForDamageToFinish: 0
   currentState: 0
   cur_cooldown: 0
@@ -375,6 +379,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

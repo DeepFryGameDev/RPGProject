@@ -158,7 +158,7 @@ public class HeroStateMachine : MonoBehaviour
                     }
                     
                     this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change color/ play animation
-                    Debug.Log(hero._Name + " - DEAD");
+                    Debug.Log(hero.name + " - DEAD");
                     BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
 
                     alive = false;
@@ -172,7 +172,7 @@ public class HeroStateMachine : MonoBehaviour
     {
         HeroPanel = Instantiate(HeroPanel) as GameObject; //creates gameobject of heroPanel prefab (display in BattleCanvas which shows ATB gauge and HP, MP, etc)
         stats = HeroPanel.GetComponent<HeroPanelStats>(); //gets the hero panel's stats script
-        stats.HeroName.text = hero._Name; //sets hero name in the hero panel to the current hero's name
+        stats.HeroName.text = hero.name; //sets hero name in the hero panel to the current hero's name
         stats.HeroHP.text = "HP: " + hero.curHP + "/" + hero.maxHP; //sets HP in the hero panel to the current hero's HP
         stats.HeroMP.text = "MP: " + hero.curMP + "/" + hero.maxMP; //sets MP in the hero panel to the current hero's MP
         ProgressBar = stats.ProgressBar; //sets ATB gauge in the hero panel to the hero's ATB
@@ -311,7 +311,7 @@ public class HeroStateMachine : MonoBehaviour
             else
             {
                 StartCoroutine(BSM.ShowMiss(ActionTarget));
-                Debug.Log(hero._Name + " missed!");
+                Debug.Log(hero.name + " missed!");
             }
             Debug.Log(hero.GetHitChance(hero.currentHitRating, hero.currentAgility) + "% chance to hit, roll was: " + hitRoll);
         }
@@ -433,7 +433,7 @@ public class HeroStateMachine : MonoBehaviour
         EnemyBehavior eb = enemy.GetComponent<EnemyBehavior>();
         foreach (BaseThreat t in eb.threatList)
         {
-            if (hero._Name == t.hero._Name)
+            if (hero.name == t.hero.name)
             {
                 int threatToAdd = Mathf.RoundToInt(threat);
                 t.threat += threatToAdd;
@@ -444,7 +444,7 @@ public class HeroStateMachine : MonoBehaviour
                     Debug.Log("Setting max threat: " + t.threat);
                 }
 
-                Debug.Log("Adding " + threat + " threat from hero " + hero._Name + " to " + enemy.GetComponent<EnemyStateMachine>().enemy._Name);
+                Debug.Log("Adding " + threat + " threat from hero " + hero.name + " to " + enemy.GetComponent<EnemyStateMachine>().enemy.name);
                 break;
             }
         }
@@ -462,12 +462,12 @@ public class HeroStateMachine : MonoBehaviour
                 if (crit)
                 {
                     calc_damage = calc_damage * 2;
-                    Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy._Name + "!");
+                    Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy.name + "!");
                     Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
                     StartCoroutine(BSM.ShowCrit(calc_damage, target));
                 } else
                 {
-                    Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy._Name + "!");
+                    Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy.name + "!");
                     Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
                     StartCoroutine(BSM.ShowDamage(calc_damage, target));
                 }
@@ -479,7 +479,7 @@ public class HeroStateMachine : MonoBehaviour
             {
                 //can check if magic attack should have a flat value, ie gravity spell
                 //calc_damage = hero.curMATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's magic attack + the chosen attack's damage
-                //Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<EnemyStateMachine>().enemy._Name + "!");
+                //Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<EnemyStateMachine>().enemy.name + "!");
                 //Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - magic - hero's MATK: " + hero.curMATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
 
                 BaseMagicScript magicScript = new BaseMagicScript();
@@ -500,7 +500,7 @@ public class HeroStateMachine : MonoBehaviour
                 {
                     calc_damage = calc_damage * 2;
                 }
-                Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<EnemyStateMachine>().enemy._Name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
+                Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<EnemyStateMachine>().enemy.name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
             }
             target.GetComponent<EnemyStateMachine>().enemyBehavior.TakeDamage(calc_damage); //processes enemy take damage by above value
             
@@ -513,12 +513,12 @@ public class HeroStateMachine : MonoBehaviour
                 if (crit)
                 {
                     calc_damage = calc_damage * 2;
-                    Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero._Name + "!");
+                    Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
                     Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
                     StartCoroutine(BSM.ShowCrit(calc_damage, target));
                 } else
                 {
-                    Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero._Name + "!");
+                    Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
                     Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
                     StartCoroutine(BSM.ShowDamage(calc_damage, target));
                 }
@@ -528,7 +528,7 @@ public class HeroStateMachine : MonoBehaviour
             {
                 //can check if magic attack should have a flat value, ie gravity spell
                 //calc_damage = hero.curMATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's magic attack + the chosen attack's damage
-                //Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<HeroStateMachine>().hero._Name + "!");
+                //Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + ActionTarget.GetComponent<HeroStateMachine>().hero.name + "!");
                 //Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - magic - hero's MATK: " + hero.curMATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
 
                 BaseMagicScript magicScript = new BaseMagicScript();
@@ -546,7 +546,7 @@ public class HeroStateMachine : MonoBehaviour
                 {
                     calc_damage = calc_damage * 2;
                 }
-                Debug.Log(hero._Name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero._Name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
+                Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
             }
             target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
         }
@@ -587,7 +587,7 @@ public class HeroStateMachine : MonoBehaviour
 
             foreach (BaseHero hero in GameManager.instance.activeHeroes)
             {
-                if (hero._Name == heroHSM.hero._Name)
+                if (hero.name == heroHSM.hero.name)
                 {
                     hero.curHP = heroHSM.hero.curHP;
                     hero.curMP = heroHSM.hero.curMP;
@@ -601,7 +601,7 @@ public class HeroStateMachine : MonoBehaviour
         if (hero.curMP < hero.baseMP)
         {
             hero.curMP += hero.GetRegen(hero.currentRegenRating, hero.currentSpirit);
-            Debug.Log(hero._Name + " recovering " + hero.GetRegen(hero.currentRegenRating, hero.currentSpirit) + " MP");
+            Debug.Log(hero.name + " recovering " + hero.GetRegen(hero.currentRegenRating, hero.currentSpirit) + " MP");
         }
 
         if (hero.curMP > hero.maxMP)
@@ -622,7 +622,7 @@ public class HeroStateMachine : MonoBehaviour
                 foreach (GameObject target in targets)
                 {
                     BaseEffect effectToApply = new BaseEffect();
-                    effectToApply.effectName = statusEffect._Name;
+                    effectToApply.effectName = statusEffect.name;
                     effectToApply.effectType = statusEffect.effectType.ToString();
                     effectToApply.turnsRemaining = statusEffect.turnsApplied;
                     effectToApply.baseValue = statusEffect.baseValue;
@@ -645,7 +645,7 @@ public class HeroStateMachine : MonoBehaviour
                 foreach (GameObject target in targets)
                 {
                     BaseEffect effectToApply = new BaseEffect();
-                    effectToApply.effectName = statusEffect._Name;
+                    effectToApply.effectName = statusEffect.name;
                     effectToApply.effectType = statusEffect.effectType.ToString();
                     effectToApply.turnsRemaining = statusEffect.turnsApplied;
                     effectToApply.baseValue = statusEffect.baseValue;
@@ -681,10 +681,10 @@ public class HeroStateMachine : MonoBehaviour
 
             activeStatusEffects[i].turnsRemaining--; //lowers turns remaining by 1
 
-            Debug.Log(hero._Name + " - turns remaining on " + activeStatusEffects[i].effectName + ": " + activeStatusEffects[i].turnsRemaining);
+            Debug.Log(hero.name + " - turns remaining on " + activeStatusEffects[i].effectName + ": " + activeStatusEffects[i].turnsRemaining);
             if (activeStatusEffects[i].turnsRemaining == 0) //removes status effect if no more turns remaining
             {
-                Debug.Log(activeStatusEffects[i].effectName + " removed from " + hero._Name);
+                Debug.Log(activeStatusEffects[i].effectName + " removed from " + hero.name);
                 activeStatusEffects.RemoveAt(i);
             }
         }

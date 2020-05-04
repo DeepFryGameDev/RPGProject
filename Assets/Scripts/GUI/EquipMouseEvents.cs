@@ -14,7 +14,7 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private void Start()
     {
         equipDesc = GameObject.Find("EquipMenuCanvas/EquipMenuPanel/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>();
-        menu = GameObject.Find("GameManager").GetComponent<GameMenu>();
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
     Equipment GetEquip(string name) //get item from name

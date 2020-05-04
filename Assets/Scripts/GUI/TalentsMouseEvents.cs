@@ -12,7 +12,7 @@ public class TalentsMouseEvents : MonoBehaviour
 
     public void OnMouseOver()
     {
-        hero = GameObject.Find("GameManager").GetComponent<GameMenu>().heroToCheck;
+        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
         if (gameObject.transform.parent.name == "Talent1")
         {
             if (gameObject.name == "Talent1Button")
@@ -131,7 +131,7 @@ public class TalentsMouseEvents : MonoBehaviour
 
     public void TalentButtonClicked()
     {
-        hero = GameObject.Find("GameManager").GetComponent<GameMenu>().heroToCheck;
+        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
         effectToAdd = "";
         effectToRemove = "";
 
@@ -288,6 +288,6 @@ public class TalentsMouseEvents : MonoBehaviour
 
         DrawActiveTalent(GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/" + parent.name + "/" + talentChosen.name + "/TalentIcon").GetComponent<Image>());
         
-        GameObject.Find("GameManager").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel(GameObject.Find("GameManager").GetComponent<GameMenu>().heroToCheck);
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck);
     }
 }

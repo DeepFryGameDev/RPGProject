@@ -16,7 +16,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void Start()
     {
         itemDesc = GameObject.Find("ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>();
-        menu = GameObject.Find("GameManager").GetComponent<GameMenu>();
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
     Item GetItem(string name) //get item from name

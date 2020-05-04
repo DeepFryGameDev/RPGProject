@@ -183,17 +183,23 @@ public class MenuScript : MonoBehaviour
         GameObject.Find("BestiaryMenuCanvas").GetComponent<CanvasGroup>().alpha = 0;
     }
 
-
-    //for Troops
-    [MenuItem("Dev Tools/List Troops")] //lists out each troop with index for easy identifying
-    public static void ListTroops()
+    [MenuItem("Dev Tools/Assign IDs/Hero IDs")]
+    public static void AssignHeroIDs()
     {
-        List<BaseTroop> troops = GameObject.Find("GameManager").GetComponent<GameManager>().troops;
-        Debug.Log("-----GameManager Troops-----");
-        for (int i = 0; i < troops.Count; i++)
+        foreach (BaseHero hero in GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes)
         {
-            Debug.Log(i + ") " + troops[i]._Name);
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero) + " to hero " + hero.name);
+            hero.ID = GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero);
         }
-        Debug.Log("-----End GameManager Troops-----");
+    }
+
+    [MenuItem("Dev Tools/Assign IDs/Enemy IDs")]
+    public static void AssignEnemyIDs()
+    {
+        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        {
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(entry) + " to enemy " + entry.enemy.name);
+            entry.enemy.ID = GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(entry);
+        }
     }
 }

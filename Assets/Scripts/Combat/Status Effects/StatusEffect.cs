@@ -44,19 +44,19 @@ public class StatusEffect
         if (target == "Enemy")
         {
         Debug.Log("Processing poison to enemy");
-        Debug.Log(thisObject.GetComponent<EnemyStateMachine>().enemy._Name + " HP: " + thisObject.GetComponent<EnemyStateMachine>().enemy.curHP + " / " + thisObject.GetComponent<EnemyStateMachine>().enemy.baseHP);
-        Debug.Log(thisObject.GetComponent<EnemyStateMachine>().enemy._Name + " taking " + baseVal + " damage from poison.");
+        Debug.Log(thisObject.GetComponent<EnemyStateMachine>().enemy.name + " HP: " + thisObject.GetComponent<EnemyStateMachine>().enemy.curHP + " / " + thisObject.GetComponent<EnemyStateMachine>().enemy.baseHP);
+        Debug.Log(thisObject.GetComponent<EnemyStateMachine>().enemy.name + " taking " + baseVal + " damage from poison.");
         thisObject.GetComponent<EnemyStateMachine>().enemyBehavior.TakeDamage(baseVal);
-        Debug.Log(thisObject.GetComponent<EnemyStateMachine>().enemy._Name + " HP: " + thisObject.GetComponent<EnemyStateMachine>().enemy.curHP + " / " + thisObject.GetComponent<EnemyStateMachine>().enemy.baseHP);
+        Debug.Log(thisObject.GetComponent<EnemyStateMachine>().enemy.name + " HP: " + thisObject.GetComponent<EnemyStateMachine>().enemy.curHP + " / " + thisObject.GetComponent<EnemyStateMachine>().enemy.baseHP);
         }
 
         if (target == "Hero")
         {
         Debug.Log("Processing poison to hero");
-        Debug.Log(thisObject.GetComponent<HeroStateMachine>().hero._Name + " HP: " + thisObject.GetComponent<HeroStateMachine>().hero.curHP + " / " + thisObject.GetComponent<HeroStateMachine>().hero.baseHP);
+        Debug.Log(thisObject.GetComponent<HeroStateMachine>().hero.name + " HP: " + thisObject.GetComponent<HeroStateMachine>().hero.curHP + " / " + thisObject.GetComponent<HeroStateMachine>().hero.baseHP);
         Debug.Log(thisObject.GetComponent<HeroStateMachine>().name + " taking " + baseVal + " damage from poison.");
         thisObject.GetComponent<HeroStateMachine>().TakeDamage(baseVal);
-        Debug.Log(thisObject.GetComponent<HeroStateMachine>().hero._Name + " HP: " + thisObject.GetComponent<HeroStateMachine>().hero.curHP + " / " + thisObject.GetComponent<HeroStateMachine>().hero.baseHP);
+        Debug.Log(thisObject.GetComponent<HeroStateMachine>().hero.name + " HP: " + thisObject.GetComponent<HeroStateMachine>().hero.curHP + " / " + thisObject.GetComponent<HeroStateMachine>().hero.baseHP);
         }
 
         elementColor = new Color(0, 0.75f, 0);

@@ -68,7 +68,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Cure 1 on " + heroReceivingAction._Name + "!");
+        Debug.Log("Casting Cure 1 on " + heroReceivingAction.name + "!");
     }
 
     void Bio1HeroToHero()
@@ -77,7 +77,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Bio 1 on " + heroReceivingAction._Name + "!");
+        Debug.Log("Casting Bio 1 on " + heroReceivingAction.name + "!");
     }
 
     void Fire1HeroToHero()
@@ -86,7 +86,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Fire 1 on " + heroReceivingAction._Name + "!");
+        Debug.Log("Casting Fire 1 on " + heroReceivingAction.name + "!");
     }
     #endregion
 
@@ -98,7 +98,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Cure 1 on " + enemyReceivingAction._Name + "!");
+        Debug.Log("Casting Cure 1 on " + enemyReceivingAction.name + "!");
     }
 
     void Bio1HeroToEnemy()
@@ -107,7 +107,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Bio 1 on " + enemyReceivingAction._Name + "!");
+        Debug.Log("Casting Bio 1 on " + enemyReceivingAction.name + "!");
     }
 
     void Fire1HeroToEnemy()
@@ -116,7 +116,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Fire 1 on " + enemyReceivingAction._Name + "!");
+        Debug.Log("Casting Fire 1 on " + enemyReceivingAction.name + "!");
     }
     #endregion
 
@@ -172,7 +172,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Cure 1 on " + heroReceivingAction._Name + "!");
+        Debug.Log("Casting Cure 1 on " + heroReceivingAction.name + "!");
     }
 
     void Bio1EnemyToHero()
@@ -181,7 +181,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Bio 1 on " + heroReceivingAction._Name + "!");
+        Debug.Log("Casting Bio 1 on " + heroReceivingAction.name + "!");
     }
 
     void Fire1EnemyToHero()
@@ -190,7 +190,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Fire 1 on " + heroReceivingAction._Name + "!");
+        Debug.Log("Casting Fire 1 on " + heroReceivingAction.name + "!");
     }
     #endregion
 
@@ -202,7 +202,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Cure 1 on " + enemyReceivingAction._Name + "!");
+        Debug.Log("Casting Cure 1 on " + enemyReceivingAction.name + "!");
     }
 
     void Bio1EnemyToEnemy()
@@ -211,7 +211,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Bio 1 on " + enemyReceivingAction._Name + "!");
+        Debug.Log("Casting Bio 1 on " + enemyReceivingAction.name + "!");
     }
 
     void Fire1EnemyToEnemy()
@@ -220,7 +220,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
 
         adjDamage = spell.damage;
 
-        Debug.Log("Casting Fire 1 on " + enemyReceivingAction._Name + "!");
+        Debug.Log("Casting Fire 1 on " + enemyReceivingAction.name + "!");
     }
     #endregion
 

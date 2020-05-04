@@ -117,7 +117,7 @@ public class DebugStuff : BaseScriptedEvent
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
         {
-            Debug.Log("Changing " + hero._Name);
+            Debug.Log("Changing " + hero.name);
             yield return StartCoroutine(NameInput(hero));
         }
     }
