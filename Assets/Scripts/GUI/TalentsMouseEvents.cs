@@ -6,8 +6,6 @@ using UnityEngine.UI;
 public class TalentsMouseEvents : MonoBehaviour
 {
     TalentEffects effect = new TalentEffects();
-    string effectToAdd;
-    string effectToRemove;
     BaseHero hero = new BaseHero();
 
     public void OnMouseOver()
@@ -132,43 +130,25 @@ public class TalentsMouseEvents : MonoBehaviour
     public void TalentButtonClicked()
     {
         hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
-        effectToAdd = "";
-        effectToRemove = "";
 
         if (gameObject.transform.parent.name == "Talent1") //for debugging -- when ready, add  && hero.currentLevel >= 15
         {
-            foreach (BaseTalent talent in hero.level1Talents)
-            {
-                if (talent.isActive)
-                {
-                    effectToRemove = talent.effect;
-                }
-            }
-            if (effectToRemove != "")
-            {
-                effect.RemoveEffect(effectToRemove);
-            }
-
             hero.level1Talents[0].isActive = false;
             hero.level1Talents[1].isActive = false;
             hero.level1Talents[2].isActive = false;
+
             if (gameObject.name == "Talent1Button")
             {
                 hero.level1Talents[0].isActive = true;
-                effectToAdd = hero.level1Talents[0].effect;
             }
             if (gameObject.name == "Talent2Button")
             {
                 hero.level1Talents[1].isActive = true;
-                effectToAdd = hero.level1Talents[1].effect;
             }
             if (gameObject.name == "Talent3Button")
             {
                 hero.level1Talents[2].isActive = true;
-                effectToAdd = hero.level1Talents[2].effect;
             }
-            
-            effect.AddEffect(effectToAdd);
 
             SetActiveTalent(gameObject.transform.parent.gameObject, gameObject);
         }
@@ -192,6 +172,7 @@ public class TalentsMouseEvents : MonoBehaviour
             }
             SetActiveTalent(gameObject.transform.parent.gameObject, gameObject);
         }
+
         if (gameObject.transform.parent.name == "Talent3" && hero.currentLevel >= 45)
         {
             hero.level3Talents[0].isActive = false;
@@ -211,6 +192,7 @@ public class TalentsMouseEvents : MonoBehaviour
             }
             SetActiveTalent(gameObject.transform.parent.gameObject, gameObject);
         }
+
         if (gameObject.transform.parent.name == "Talent4" && hero.currentLevel >= 60)
         {
             hero.level4Talents[0].isActive = false;
@@ -230,6 +212,7 @@ public class TalentsMouseEvents : MonoBehaviour
             }
             SetActiveTalent(gameObject.transform.parent.gameObject, gameObject);
         }
+
         if (gameObject.transform.parent.name == "Talent5" && hero.currentLevel >= 75)
         {
             hero.level5Talents[0].isActive = false;
@@ -249,6 +232,7 @@ public class TalentsMouseEvents : MonoBehaviour
             }
             SetActiveTalent(gameObject.transform.parent.gameObject, gameObject);
         }
+
         if (gameObject.transform.parent.name == "Talent6" && hero.currentLevel >= 90)
         {
             hero.level6Talents[0].isActive = false;
@@ -268,6 +252,8 @@ public class TalentsMouseEvents : MonoBehaviour
             }
             SetActiveTalent(gameObject.transform.parent.gameObject, gameObject);
         }
+
+        hero.UpdateStatsFromTalents();
     }
 
     void DrawInactiveTalent(Image icon)

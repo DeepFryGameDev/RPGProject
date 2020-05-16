@@ -861,7 +861,7 @@ public class EnemyBehavior : EnemyMove
         {
             BaseHero hero = obj.GetComponent<HeroStateMachine>().hero;
             curHP = hero.curHP;
-            maxHP = hero.maxHP;
+            maxHP = hero.finalMaxHP;
         } else if (obj.tag == "Enemy")
         {
             BaseEnemy enemy = obj.GetComponent<EnemyStateMachine>().enemy;

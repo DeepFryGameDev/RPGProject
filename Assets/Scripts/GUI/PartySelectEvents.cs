@@ -39,8 +39,8 @@ public class PartySelectEvents : MonoBehaviour
             DrawHeroFace(hoveredHero, GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/FacePanel").GetComponent<Image>());
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/NameText").GetComponent<Text>().text = hoveredHero.name;
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/LevelText").GetComponent<Text>().text = hoveredHero.currentLevel.ToString(); //Level text
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/HPText").GetComponent<Text>().text = (hoveredHero.curHP + " / " + hoveredHero.maxHP); //HP text
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/MPText").GetComponent<Text>().text = (hoveredHero.curMP + " / " + hoveredHero.maxMP); //MP text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/HPText").GetComponent<Text>().text = (hoveredHero.curHP + " / " + hoveredHero.finalMaxHP); //HP text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/MPText").GetComponent<Text>().text = (hoveredHero.curMP + " / " + hoveredHero.finalMaxMP); //MP text
 
             if (hoveredHero.currentLevel == 1)
             {
@@ -48,10 +48,10 @@ public class PartySelectEvents : MonoBehaviour
             }
             else
             {
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/EXPText").GetComponent<Text>().text = (hoveredHero.currentExp + " / " + GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(hoveredHero.currentLevel - 1)]); //Exp text
+                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/EXPText").GetComponent<Text>().text = (hoveredHero.currentExp + " / " + HeroDB.instance.levelEXPThresholds[(hoveredHero.currentLevel - 1)]); //Exp text
             }
 
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/ToNextLevelText").GetComponent<Text>().text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hoveredHero.currentLevel - 1] - hoveredHero.currentExp).ToString(); //To next level text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/ToNextLevelText").GetComponent<Text>().text = (HeroDB.instance.levelEXPThresholds[hoveredHero.currentLevel - 1] - hoveredHero.currentExp).ToString(); //To next level text
 
             SelectedHeroMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hoveredHero), 0, 1), SelectedHeroMenuHPProgressBar.transform.localScale.y);
             SelectedHeroMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hoveredHero), 0, 1), SelectedHeroMenuMPProgressBar.transform.localScale.y);
@@ -73,8 +73,8 @@ public class PartySelectEvents : MonoBehaviour
                 DrawHeroFace(hoveredHero, GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/FacePanel").GetComponent<Image>());
                 GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/NameText").GetComponent<Text>().text = hoveredHero.name;
                 GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/LevelText").GetComponent<Text>().text = hoveredHero.currentLevel.ToString(); //Level text
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/HPText").GetComponent<Text>().text = (hoveredHero.curHP + " / " + hoveredHero.maxHP); //HP text
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/MPText").GetComponent<Text>().text = (hoveredHero.curMP + " / " + hoveredHero.maxMP); //MP text
+                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/HPText").GetComponent<Text>().text = (hoveredHero.curHP + " / " + hoveredHero.finalMaxHP); //HP text
+                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/MPText").GetComponent<Text>().text = (hoveredHero.curMP + " / " + hoveredHero.finalMaxMP); //MP text
 
                 if (hoveredHero.currentLevel == 1)
                 {
@@ -82,10 +82,10 @@ public class PartySelectEvents : MonoBehaviour
                 }
                 else
                 {
-                    GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/EXPText").GetComponent<Text>().text = (hoveredHero.currentExp + " / " + GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(hoveredHero.currentLevel - 1)]); //Exp text
+                    GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/EXPText").GetComponent<Text>().text = (hoveredHero.currentExp + " / " + HeroDB.instance.levelEXPThresholds[(hoveredHero.currentLevel - 1)]); //Exp text
                 }
 
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/ToNextLevelText").GetComponent<Text>().text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hoveredHero.currentLevel - 1] - hoveredHero.currentExp).ToString(); //To next level text
+                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/ToNextLevelText").GetComponent<Text>().text = (HeroDB.instance.levelEXPThresholds[hoveredHero.currentLevel - 1] - hoveredHero.currentExp).ToString(); //To next level text
 
                 SelectedHeroMenuHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hoveredHero), 0, 1), SelectedHeroMenuHPProgressBar.transform.localScale.y);
                 SelectedHeroMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hoveredHero), 0, 1), SelectedHeroMenuMPProgressBar.transform.localScale.y);
@@ -306,7 +306,7 @@ public class PartySelectEvents : MonoBehaviour
     float GetProgressBarValuesHP(BaseHero hero)
     {
         float heroHP = hero.curHP;
-        float heroBaseHP = hero.maxHP;
+        float heroBaseHP = hero.finalMaxHP;
         float calc_HP;
 
         calc_HP = heroHP / heroBaseHP;
@@ -317,7 +317,7 @@ public class PartySelectEvents : MonoBehaviour
     float GetProgressBarValuesMP(BaseHero hero)
     {
         float heroMP = hero.curMP;
-        float heroBaseMP = hero.maxMP;
+        float heroBaseMP = hero.finalMaxMP;
         float calc_MP;
 
         calc_MP = heroMP / heroBaseMP;
@@ -332,12 +332,12 @@ public class PartySelectEvents : MonoBehaviour
 
         if (hero.currentLevel == 1)
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1]);
             heroEXP = hero.currentExp;
         }
         else
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1] - GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 2]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
             heroEXP = (hero.currentExp - baseLineEXP);
             //Debug.Log("baseLine: " + baseLineEXP);
         }

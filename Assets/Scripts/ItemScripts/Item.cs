@@ -27,7 +27,8 @@ public class Item : ScriptableObject
         RESTORATIVE,
         DAMAGE,
         HEALSTATUS,
-        INFLICTSTATUS
+        INFLICTSTATUS,
+        KEYITEM
     }
 
     public Types type;

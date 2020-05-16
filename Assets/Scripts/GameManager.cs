@@ -266,35 +266,35 @@ public class GameManager : MonoBehaviour
             heroToAdd.curHP = fromHero.curHP;
             heroToAdd.baseMP = fromHero.baseMP;
             heroToAdd.curMP = fromHero.curMP;
-            heroToAdd.maxHP = fromHero.maxHP;
-            heroToAdd.maxMP = fromHero.maxMP;
+            heroToAdd.finalMaxHP = fromHero.finalMaxHP;
+            heroToAdd.finalMaxMP = fromHero.finalMaxMP;
             heroToAdd.baseATK = fromHero.baseATK;
-            heroToAdd.currentATK = fromHero.currentATK;
+            heroToAdd.finalATK = fromHero.finalATK;
             heroToAdd.baseMATK = fromHero.baseMATK;
-            heroToAdd.currentMATK = fromHero.currentMATK;
+            heroToAdd.finalMATK = fromHero.finalMATK;
             heroToAdd.baseDEF = fromHero.baseDEF;
-            heroToAdd.currentDEF = fromHero.currentDEF;
+            heroToAdd.finalDEF = fromHero.finalDEF;
             heroToAdd.baseSTR = fromHero.baseSTR;
             heroToAdd.baseSTA = fromHero.baseSTA;
             heroToAdd.baseINT = fromHero.baseINT;
             heroToAdd.baseDEX = fromHero.baseDEX;
             heroToAdd.baseAGI = fromHero.baseAGI;
             heroToAdd.baseSPI = fromHero.baseSPI;
-            heroToAdd.currentStrength = fromHero.currentStrength;
-            heroToAdd.currentStamina = fromHero.currentStamina;
-            heroToAdd.currentIntelligence = fromHero.currentIntelligence;
-            heroToAdd.currentDexterity = fromHero.currentDexterity;
-            heroToAdd.currentAgility = fromHero.currentAgility;
-            heroToAdd.currentSpirit = fromHero.currentSpirit;
+            heroToAdd.finalStrength = fromHero.finalStrength;
+            heroToAdd.finalStamina = fromHero.finalStamina;
+            heroToAdd.finalIntelligence = fromHero.finalIntelligence;
+            heroToAdd.finalDexterity = fromHero.finalDexterity;
+            heroToAdd.finalAgility = fromHero.finalAgility;
+            heroToAdd.finalSpirit = fromHero.finalSpirit;
             heroToAdd.strengthMod = fromHero.strengthMod;
             heroToAdd.staminaMod = fromHero.staminaMod;
             heroToAdd.intelligenceMod = fromHero.intelligenceMod;
             heroToAdd.dexterityMod = fromHero.dexterityMod;
             heroToAdd.agilityMod = fromHero.agilityMod;
             heroToAdd.baseHit = fromHero.baseHit;
-            heroToAdd.currentHitRating = fromHero.currentHitRating;
+            heroToAdd.finalHitRating = fromHero.finalHitRating;
             heroToAdd.baseCrit = fromHero.baseCrit;
-            heroToAdd.currentCritRating = fromHero.currentCritRating;
+            heroToAdd.finalCritRating = fromHero.finalCritRating;
             heroToAdd.attack = fromHero.attack;
             heroToAdd.MagicAttacks = fromHero.MagicAttacks;
         }
@@ -307,7 +307,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("currentExp: " + hero.currentExp + ", currentLevel: " + hero.currentLevel);
             while(receivedAllExp == false)
             {
-                if (hero.currentExp >= GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(hero.currentLevel - 1)])
+                if (hero.currentExp >= HeroDB.instance.levelEXPThresholds[(hero.currentLevel - 1)])
                 {
                     hero.levelBeforeExp = hero.currentLevel; //wrong place for this, will update later
                     hero.LevelUp();
@@ -380,39 +380,39 @@ public class GameManager : MonoBehaviour
                 }
             }
          }
-        for (int i = 0; i < GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies.Count; i++)
+        for (int i = 0; i < TroopDB.instance.troops[whichTroop].enemies.Count; i++)
         {
             BaseBattleEnemy newBattleEnemy = new BaseBattleEnemy();
-            newBattleEnemy.ID = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies[i].enemyID;
-            newBattleEnemy.prefab = GetEnemyDBEntry(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies[i].enemyID).prefab;
+            newBattleEnemy.ID = TroopDB.instance.troops[whichTroop].enemies[i].enemyID;
+            newBattleEnemy.prefab = GetEnemyDBEntry(TroopDB.instance.troops[whichTroop].enemies[i].enemyID).prefab;
 
             enemiesToBattle.Add(newBattleEnemy);
 
-            enemySpawnPoints.Add(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies[i].spawnPoint);
+            enemySpawnPoints.Add(TroopDB.instance.troops[whichTroop].enemies[i].spawnPoint);
         }
-        enemyAmount = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[whichTroop].enemies.Count;
+        enemyAmount = TroopDB.instance.troops[whichTroop].enemies.Count;
         }
 
     public void GetBattleFromScript(int troopIndex, string scene) //sets troops from script
     {
-        for (int i = 0; i < GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies.Count; i++)
+        for (int i = 0; i < TroopDB.instance.troops[troopIndex].enemies.Count; i++)
         {
             BaseBattleEnemy newBattleEnemy = new BaseBattleEnemy();
-            newBattleEnemy.ID = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies[i].enemyID;
-            newBattleEnemy.prefab = GetEnemyDBEntry(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies[i].enemyID).prefab;
+            newBattleEnemy.ID = TroopDB.instance.troops[troopIndex].enemies[i].enemyID;
+            newBattleEnemy.prefab = GetEnemyDBEntry(TroopDB.instance.troops[troopIndex].enemies[i].enemyID).prefab;
 
             enemiesToBattle.Add(newBattleEnemy);
             
-            enemySpawnPoints.Add(GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies[i].spawnPoint);
+            enemySpawnPoints.Add(TroopDB.instance.troops[troopIndex].enemies[i].spawnPoint);
         }
         battleSceneFromScript = scene;
-        enemyAmount = GameObject.Find("GameManager/TroopDB").GetComponent<TroopDB>().troops[troopIndex].enemies.Count;
+        enemyAmount = TroopDB.instance.troops[troopIndex].enemies.Count;
         gameState = GameManager.GameStates.BATTLE_STATE;
     }
 
     BaseEnemyDBEntry GetEnemyDBEntry(int ID)
     {
-        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)
         {
             if (entry.enemy.ID == ID)
             {

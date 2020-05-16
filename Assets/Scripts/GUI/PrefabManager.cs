@@ -4,6 +4,7 @@ public class PrefabManager : MonoBehaviour //fixes a prefab destroyed bug (when 
 {
     // Assign the prefab in the inspector
     public GameObject itemPrefab; //for the items in item list in battle, menu, and shop
+    public GameObject keyItemPrefab;
     public GameObject magicPrefab; //for magic listed in menu
     public GameObject equipPrefab;
     public GameObject damagePrefab;

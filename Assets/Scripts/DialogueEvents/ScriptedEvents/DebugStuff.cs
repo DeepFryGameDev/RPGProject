@@ -80,32 +80,26 @@ public class DebugStuff : BaseScriptedEvent
 
     public void QuestTest1()
     {
-        BaseQuest questToStart = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests[0];
-
         StartCoroutine(ShowMessage("Go forth and bring me 5 potions!", baseTextSpeed, true, true));
 
         Debug.Log("Quest started!");
-        StartQuest(questToStart);
+        StartQuest(0);
     }
 
     public void QuestTest2()
     {
-        BaseQuest questToStart = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests[1];
-
         StartCoroutine(ShowMessage("Go forth and kill 1 test enemy!", baseTextSpeed, true, true));
 
         Debug.Log("Quest started!");
-        StartQuest(questToStart);
+        StartQuest(1);
     }
 
     public void QuestTest3()
     {
-        BaseQuest questToStart = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests[2];
-
         StartCoroutine(ShowMessage("Go talk to that guy over there!", baseTextSpeed, true, true));
 
         Debug.Log("Quest started!");
-        StartQuest(questToStart);
+        StartQuest(2);
     }
 
     void RenameCharacters()

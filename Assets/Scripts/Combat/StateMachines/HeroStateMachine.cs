@@ -173,8 +173,8 @@ public class HeroStateMachine : MonoBehaviour
         HeroPanel = Instantiate(HeroPanel) as GameObject; //creates gameobject of heroPanel prefab (display in BattleCanvas which shows ATB gauge and HP, MP, etc)
         stats = HeroPanel.GetComponent<HeroPanelStats>(); //gets the hero panel's stats script
         stats.HeroName.text = hero.name; //sets hero name in the hero panel to the current hero's name
-        stats.HeroHP.text = "HP: " + hero.curHP + "/" + hero.maxHP; //sets HP in the hero panel to the current hero's HP
-        stats.HeroMP.text = "MP: " + hero.curMP + "/" + hero.maxMP; //sets MP in the hero panel to the current hero's MP
+        stats.HeroHP.text = "HP: " + hero.curHP + "/" + hero.finalMaxHP; //sets HP in the hero panel to the current hero's HP
+        stats.HeroMP.text = "MP: " + hero.curMP + "/" + hero.finalMaxMP; //sets MP in the hero panel to the current hero's MP
         ProgressBar = stats.ProgressBar; //sets ATB gauge in the hero panel to the hero's ATB
         HeroPanel.transform.SetParent(HeroPanelSpacer, false); //sets the hero panel to the hero panel's spacer for vertical layout group
     }
@@ -291,11 +291,11 @@ public class HeroStateMachine : MonoBehaviour
         foreach (GameObject target in targets)
         {
             int hitRoll = GetRandomInt(0, 100);
-            if (hitRoll <= hero.GetHitChance(hero.currentHitRating, hero.currentAgility))
+            if (hitRoll <= hero.GetHitChance(hero.finalHitRating, hero.finalAgility))
             {
                 Debug.Log("Hero hits!");
                 int critRoll = GetRandomInt(0, 100);
-                if (critRoll <= hero.GetCritChance(hero.currentCritRating, hero.currentDexterity))
+                if (critRoll <= hero.GetCritChance(hero.finalCritRating, hero.finalDexterity))
                 {
                     Debug.Log("Hero crits!");
                     DoDamage(target, true); //do damage with calculations (this will change later)
@@ -305,7 +305,7 @@ public class HeroStateMachine : MonoBehaviour
                     Debug.Log("Hero doesn't crit.");
                     DoDamage(target, false); //do damage with calculations (this will change later)
                 }
-                Debug.Log(hero.GetCritChance(hero.currentCritRating, hero.currentDexterity) + "% chance to crit, roll was: " + critRoll);
+                Debug.Log(hero.GetCritChance(hero.finalCritRating, hero.finalDexterity) + "% chance to crit, roll was: " + critRoll);
 
             }
             else
@@ -313,7 +313,7 @@ public class HeroStateMachine : MonoBehaviour
                 StartCoroutine(BSM.ShowMiss(ActionTarget));
                 Debug.Log(hero.name + " missed!");
             }
-            Debug.Log(hero.GetHitChance(hero.currentHitRating, hero.currentAgility) + "% chance to hit, roll was: " + hitRoll);
+            Debug.Log(hero.GetHitChance(hero.finalHitRating, hero.finalAgility) + "% chance to hit, roll was: " + hitRoll);
         }
 
         //animate the enemy back to start position
@@ -458,21 +458,21 @@ public class HeroStateMachine : MonoBehaviour
         {
             if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.PHYSICAL)
             {
-                calc_damage = hero.currentATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                calc_damage = hero.finalATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
                 if (crit)
                 {
                     calc_damage = calc_damage * 2;
                     Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy.name + "!");
-                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
+                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
                     StartCoroutine(BSM.ShowCrit(calc_damage, target));
                 } else
                 {
                     Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy.name + "!");
-                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
                     StartCoroutine(BSM.ShowDamage(calc_damage, target));
                 }
 
-                float calc_threat = (((calc_damage / 2) + hero.currentThreatRating) * BSM.PerformList[0].chosenAttack.threatMultiplier);
+                float calc_threat = (((calc_damage / 2) + hero.finalThreatRating) * BSM.PerformList[0].chosenAttack.threatMultiplier);
                 IncreaseThreat(target, hero, calc_threat);
             }
             else if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.MAGIC) //--process from magic script
@@ -489,13 +489,13 @@ public class HeroStateMachine : MonoBehaviour
                 magicScript.hsm = this;
                 magicScript.ProcessMagicHeroToEnemy(); //actually process the magic to enemy
 
-                float calc_threat = (((magicDamage / 2) + hero.currentThreatRating) * BSM.PerformList[0].chosenAttack.threatMultiplier);
+                float calc_threat = (((magicDamage / 2) + hero.finalThreatRating) * BSM.PerformList[0].chosenAttack.threatMultiplier);
                 IncreaseThreat(target, hero, calc_threat);
                 //StartCoroutine(BSM.ShowDamage(magicDamage, target));
             }
             else //if attack type not found
             {
-                calc_damage = hero.currentATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                calc_damage = hero.finalATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
                 if (crit)
                 {
                     calc_damage = calc_damage * 2;
@@ -509,17 +509,17 @@ public class HeroStateMachine : MonoBehaviour
         {
             if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.PHYSICAL)
             {
-                calc_damage = hero.currentATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                calc_damage = hero.finalATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
                 if (crit)
                 {
                     calc_damage = calc_damage * 2;
                     Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
-                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
+                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
                     StartCoroutine(BSM.ShowCrit(calc_damage, target));
                 } else
                 {
                     Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
-                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.currentATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
                     StartCoroutine(BSM.ShowDamage(calc_damage, target));
                 }
                 
@@ -541,7 +541,7 @@ public class HeroStateMachine : MonoBehaviour
             }
             else //if attack type not found
             {
-                calc_damage = hero.currentATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                calc_damage = hero.finalATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
                 if (crit)
                 {
                     calc_damage = calc_damage * 2;
@@ -582,8 +582,8 @@ public class HeroStateMachine : MonoBehaviour
         foreach (GameObject heroObj in heroes)
         {
             HeroStateMachine heroHSM = heroObj.GetComponent<HeroStateMachine>();
-            heroHSM.stats.HeroHP.text = "HP: " + heroHSM.hero.curHP + "/" + heroHSM.hero.maxHP;
-            heroHSM.stats.HeroMP.text = "MP: " + heroHSM.hero.curMP + "/" + heroHSM.hero.maxMP;
+            heroHSM.stats.HeroHP.text = "HP: " + heroHSM.hero.curHP + "/" + heroHSM.hero.finalMaxHP;
+            heroHSM.stats.HeroMP.text = "MP: " + heroHSM.hero.curMP + "/" + heroHSM.hero.finalMaxMP;
 
             foreach (BaseHero hero in GameManager.instance.activeHeroes)
             {
@@ -600,13 +600,13 @@ public class HeroStateMachine : MonoBehaviour
     {
         if (hero.curMP < hero.baseMP)
         {
-            hero.curMP += hero.GetRegen(hero.currentRegenRating, hero.currentSpirit);
-            Debug.Log(hero.name + " recovering " + hero.GetRegen(hero.currentRegenRating, hero.currentSpirit) + " MP");
+            hero.curMP += hero.GetRegen(hero.finalRegenRating, hero.finalSpirit);
+            Debug.Log(hero.name + " recovering " + hero.GetRegen(hero.finalRegenRating, hero.finalSpirit) + " MP");
         }
 
-        if (hero.curMP > hero.maxMP)
+        if (hero.curMP > hero.finalMaxMP)
         {
-            hero.curMP = hero.maxMP;
+            hero.curMP = hero.finalMaxMP;
         }
         UpdateHeroStats();
     }
@@ -700,7 +700,7 @@ public class HeroStateMachine : MonoBehaviour
 
     void UpgradeProgressBar()
     {
-        cur_cooldown = (cur_cooldown + (Time.deltaTime / 1f)) + (hero.currentDexterity * .000055955f); //increases ATB gauge, first float dictates how slowly gauge fills (default 1f), while second float dictates how effective dexterity is
+        cur_cooldown = (cur_cooldown + (Time.deltaTime / 1f)) + (hero.finalDexterity * .000055955f); //increases ATB gauge, first float dictates how slowly gauge fills (default 1f), while second float dictates how effective dexterity is
         float calc_cooldown = cur_cooldown / max_cooldown; //does math of % of ATB gauge to be filled each frame
         ProgressBar.transform.localScale = new Vector2(Mathf.Clamp(calc_cooldown, 0, 1), ProgressBar.transform.localScale.y); //shows graphic of ATB gauge increasing
         if (cur_cooldown >= max_cooldown) //if hero turn is ready

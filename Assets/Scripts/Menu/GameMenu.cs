@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using System.Linq;
+using System;
 
 public class GameMenu : MonoBehaviour
 {
@@ -54,7 +56,13 @@ public class GameMenu : MonoBehaviour
     Image Hero5ItemMenuHPProgressBar;
     Image Hero5ItemMenuMPProgressBar;
     private Transform ItemListSpacer;
+    private Transform KeyItemListSpacer;
     GameObject NewItemPanel;
+    [HideInInspector] public bool itemChoosingHero;
+    [HideInInspector] public bool itemCustomizeModeOn;
+    [HideInInspector] public int itemIndexSwapA;
+    [HideInInspector] public int itemIndexSwapB;
+    [HideInInspector] public bool itemIndexSwapAPicked;
 
     //for magic menu objects
     Image MagicPanelHPProgressBar;
@@ -88,7 +96,7 @@ public class GameMenu : MonoBehaviour
    Image EquipPanelMPProgressBar;
    GameObject NewEquipPanel;
    Transform EquipListSpacer;
-   string equipButtonClicked;
+   public string equipButtonClicked;
    bool inEquipList;
    [HideInInspector] public string equipMode;
 
@@ -208,6 +216,8 @@ public class GameMenu : MonoBehaviour
     {
         player = GameObject.Find("Player");
 
+        heroToCheck = null;
+
         //Set Canvases
         MainMenuCanvas = GameObject.Find("GameManager/Menus/MainMenuCanvas");
         ItemMenuCanvas = GameObject.Find("GameManager/Menus/ItemMenuCanvas");
@@ -236,10 +246,11 @@ public class GameMenu : MonoBehaviour
         BestiaryButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/BestiaryButton").GetComponent<Button>();
 
         //sets spacers
-        ItemListSpacer = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform; //find spacer and make connection
-        WhiteMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/WhiteMagicListPanel/WhiteMagicScroller/WhiteMagicListSpacer").transform; //find spacer and make connection
-        BlackMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/BlackMagicListPanel/BlackMagicScroller/BlackMagicListSpacer").transform; //find spacer and make connection
-        SorceryMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/SorceryMagicListPanel/SorceryMagicScroller/SorceryMagicListSpacer").transform; //find spacer and make connection
+        ItemListSpacer = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform;
+        KeyItemListSpacer = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform;
+        WhiteMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/WhiteMagicListPanel/WhiteMagicScroller/WhiteMagicListSpacer").transform;
+        BlackMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/BlackMagicListPanel/BlackMagicScroller/BlackMagicListSpacer").transform;
+        SorceryMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/SorceryMagicListPanel/SorceryMagicScroller/SorceryMagicListSpacer").transform;
         EquipListSpacer = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform;
         PartyInactiveRow1Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform;
         PartyInactiveRow2Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow2Spacer").transform;
@@ -330,6 +341,9 @@ public class GameMenu : MonoBehaviour
         StatusPanelHPProgressBar = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel/HPProgressBarBG/HPProgressBar").GetComponent<Image>();
         StatusPanelMPProgressBar = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel/MPProgressBarBG/MPProgressBar").GetComponent<Image>();
         StatusPanelEXPProgressBar = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel/LevelProgressBarBG/LevelProgressBar").GetComponent<Image>();
+
+        TalentsPanelHPProgressBar = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPProgressBarBG/HPProgressBar").GetComponent<Image>();
+        TalentsPanelMPProgressBar = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPProgressBarBG/MPProgressBar").GetComponent<Image>();
 
         Hero1GridMenuHPProgressBar = Hero1GridPanel.transform.Find("HPProgressBarBG/HPProgressBar").GetComponent<Image>();
         Hero1GridMenuMPProgressBar = Hero1GridPanel.transform.Find("MPProgressBarBG/MPProgressBar").GetComponent<Image>();
@@ -424,7 +438,7 @@ public class GameMenu : MonoBehaviour
             menuState = MenuStates.IDLE;
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.ITEM && !buttonPressed) //if cancel is pressed on item menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.ITEM && !buttonPressed && !itemCustomizeModeOn && !itemChoosingHero) //if cancel is pressed on item menu
         {
             HideItemMenu();
             ShowMainMenu();
@@ -494,6 +508,16 @@ public class GameMenu : MonoBehaviour
             CancelBestiarySelect();
         }
 
+        if (Input.GetButtonDown("Cancel") && !buttonPressed && itemCustomizeModeOn)
+        {
+            CancelCustomizeMode();
+        }
+
+        if (Input.GetButtonDown("Cancel") && !buttonPressed && itemChoosingHero)
+        {
+            CancelItemChoosingHero();
+        }
+
         CheckCancelPressed(); //makes sure cancel is only pressed once
     }
 
@@ -520,9 +544,9 @@ public class GameMenu : MonoBehaviour
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
+            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + HeroDB.instance.levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
             DrawHeroSpawnPoint(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("GridPanel").gameObject);
         }
     }
@@ -733,6 +757,11 @@ public class GameMenu : MonoBehaviour
         EraseItemDescText();
         DrawHeroItemMenuStats();
         DrawItemList();
+        ShowUseItemMenu();
+
+        HideArrangeMenu();
+        itemCustomizeModeOn = false;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
     }
 
     void HideItemMenu()
@@ -742,6 +771,7 @@ public class GameMenu : MonoBehaviour
         HideCanvas(ItemMenuCanvas);
         menuState = MenuStates.MAIN;
         heroToCheck = null;
+        itemCustomizeModeOn = false;
     }
 
     void EraseItemDescText()
@@ -758,7 +788,7 @@ public class GameMenu : MonoBehaviour
         foreach (Item item in Inventory.instance.items)
         {
             int itemCount = 0;
-            if (!itemsAccountedFor.Contains(item))
+            if (!itemsAccountedFor.Contains(item) && item.type != Item.Types.KEYITEM)
             {
                 for (int i = 0; i < Inventory.instance.items.Count; i++)
                 {
@@ -781,6 +811,19 @@ public class GameMenu : MonoBehaviour
                 NewItemPanel.transform.SetParent(ItemListSpacer, false);
                 itemsAccountedFor.Add(item);
             }
+
+            if (item.type == Item.Types.KEYITEM)
+            {
+                NewItemPanel = Instantiate(PrefabManager.Instance.keyItemPrefab);
+                NewItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
+                NewItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
+                if (!item.usableInMenu)
+                {
+
+                }
+                NewItemPanel.transform.SetParent(KeyItemListSpacer, false);
+                itemsAccountedFor.Add(item);
+            }
         }
 
         itemsAccountedFor.Clear();
@@ -788,7 +831,12 @@ public class GameMenu : MonoBehaviour
 
     public void ResetItemList()
     {
-        foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
+        foreach (Transform child in ItemListSpacer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        foreach (Transform child in KeyItemListSpacer.transform)
         {
             Destroy(child.gameObject);
         }
@@ -804,8 +852,8 @@ public class GameMenu : MonoBehaviour
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
+            GameObject.Find("ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
         }
     }
 
@@ -915,6 +963,416 @@ public class GameMenu : MonoBehaviour
 
     }
 
+    public void ShowUseItemMenu()
+    {
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/UseButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+    }
+
+    public void ShowKeyItemMenu()
+    {
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/UseButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+    }
+
+    public void ShowArrangeMenu()
+    {
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    void HideArrangeMenu()
+    {
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    public void ItemArrange(string mode)
+    {
+        if (mode == "Customize")
+        {
+            itemCustomizeModeOn = true;
+            GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+        } else
+        {
+            SortItems(mode);
+            DrawItemList();
+        }
+
+        HideArrangeMenu();
+    }
+
+    void SortItems(string option)
+    {
+        CancelCustomizeMode();
+
+        List<Item> items = Inventory.instance.items;
+
+        if (option == "Field")
+        {
+            List<Item> fieldItems = new List<Item>();
+            List<Item> battleItems = new List<Item>();
+            List<Item> equipmentItems = new List<Item>();
+
+            foreach (Item item in items)
+            {
+                if (item is Equipment)
+                {
+                    equipmentItems.Add(item);
+                }
+                else
+                {
+                    if (item.usableInMenu)
+                    {
+                        fieldItems.Add(item);
+                    }
+                    else
+                    {
+                        battleItems.Add(item);
+                    }
+                }
+            }
+
+            items.Clear(); //resets item list for adding them again with new sorting
+
+            foreach (Item item in fieldItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in battleItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in equipmentItems)
+            {
+                items.Add(item);
+            }
+
+            Inventory.instance.items = items;
+        }
+
+        if (option == "Battle")
+        {
+            List<Item> fieldItems = new List<Item>();
+            List<Item> battleItems = new List<Item>();
+            List<Item> equipmentItems = new List<Item>();
+
+            foreach (Item item in items)
+            {
+                if (item is Equipment)
+                {
+                    equipmentItems.Add(item);
+                }
+                else
+                {
+                    if (item.usableInMenu)
+                    {
+                        fieldItems.Add(item);
+                    }
+                    else
+                    {
+                        battleItems.Add(item);
+                    }
+                }
+            }
+
+            items.Clear(); //resets item list for adding them again with new sorting
+
+            foreach (Item item in battleItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in fieldItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in equipmentItems)
+            {
+                items.Add(item);
+            }
+
+            Inventory.instance.items = items;
+        }
+
+        if (option == "Type")
+        {
+            List<Item> restoreItems = new List<Item>();
+            List<Item> healStatusItems = new List<Item>();
+            List<Item> damageItems = new List<Item>();
+            List<Item> inflictStatusItems = new List<Item>();
+            List<Item> equipmentItems = new List<Item>();
+
+            foreach (Item item in items)
+            {
+                if (item is Equipment)
+                {
+                    equipmentItems.Add(item);
+                }
+                else
+                {
+                    if (item.type == Item.Types.RESTORATIVE)
+                    {
+                        restoreItems.Add(item);
+                    }
+                    else if (item.type == Item.Types.HEALSTATUS)
+                    {
+                        healStatusItems.Add(item);
+                    }
+                    else if (item.type == Item.Types.DAMAGE)
+                    {
+                        damageItems.Add(item);
+                    }
+                    else if (item.type == Item.Types.INFLICTSTATUS)
+                    {
+                        inflictStatusItems.Add(item);
+                    }
+                }
+            }
+
+            items.Clear(); //resets item list for adding them again with new sorting
+
+            foreach (Item item in restoreItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in healStatusItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in damageItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in inflictStatusItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in equipmentItems)
+            {
+                items.Add(item);
+            }
+
+            Inventory.instance.items = items;
+
+        }
+
+        if (option == "Name")
+        {
+            List<Item> normalItems = new List<Item>();
+            List<Item> equipment = new List<Item>();
+
+            foreach (Item item in Inventory.instance.items)
+            {
+                if (item is Equipment)
+                {
+                    equipment.Add(item);
+                }
+                else
+                {
+                    normalItems.Add(item);
+                }
+            }
+
+            items.Clear();
+
+            normalItems = normalItems.OrderBy(item => item.name).ToList();
+            equipment = equipment.OrderBy(item => item.name).ToList();
+
+            foreach (Item item in normalItems)
+            {
+                items.Add(item);
+            }
+
+            foreach (Item item in equipment)
+            {
+                items.Add(item);
+            }
+
+            Inventory.instance.items = items;
+        }
+
+        if (option == "Most")
+        {
+            List<Item> tempItems = Inventory.instance.items;
+            List<Item> sortedItems = new List<Item>();
+            List<Item> sortedEquips = new List<Item>();
+            List<Item> itemsAccountedFor = new List<Item>();
+
+            int itemCount = 0;
+
+            Item highestCountItem = null;
+            int highestCount = 0;
+
+            List<Item> diffItems = new List<Item>();
+
+            foreach (Item item in tempItems) //to get the individual items (discluding count)
+            {
+                if (!diffItems.Contains(item))
+                {
+                    diffItems.Add(item);
+                }
+            }
+
+            for (int c = 0; c < diffItems.Count; c++)
+            {
+                foreach (Item item in tempItems)
+                {
+                    if (!itemsAccountedFor.Contains(item))
+                    {
+                        for (int i = 0; i < tempItems.Count; i++)
+                        {
+                            if (tempItems[i] == item)
+                            {
+                                itemCount++;
+                            }
+                        }
+                    }
+
+                    if (itemCount > highestCount)
+                    {
+                        highestCountItem = item; //gets the item in the entire list with the highest count
+                        highestCount = itemCount;
+                    }
+                    itemCount = 0;
+                }
+
+                //add the highest item
+                for (int i = 0; i < highestCount; i++)
+                {
+                    if (highestCountItem is Equipment)
+                    {
+                        sortedEquips.Add(highestCountItem);
+                    }
+                    else
+                    {
+                        sortedItems.Add(highestCountItem);
+                    }
+                }
+
+                itemsAccountedFor.Add(highestCountItem);
+                highestCount = 0;
+            }
+            Inventory.instance.items = sortedItems;
+
+            foreach (Item item in sortedEquips)
+            {
+                Inventory.instance.Add(item);
+            }
+        }
+
+        if (option == "Least")
+        {
+            List<Item> tempItems = Inventory.instance.items;
+            List<Item> sortedItems = new List<Item>();
+            List<Item> sortedEquips = new List<Item>();
+            List<Item> itemsAccountedFor = new List<Item>();
+
+            int itemCount = 0;
+
+            Item lowestCountItem = null;
+            int lowestCount = 0;
+
+            List<Item> diffItems = new List<Item>();
+
+            foreach (Item item in tempItems) //to get the individual items (discluding count)
+            {
+                if (!diffItems.Contains(item))
+                {
+                    diffItems.Add(item);
+                }
+            }
+
+            for (int c = 0; c < diffItems.Count; c++)
+            {
+                foreach (Item item in tempItems)
+                {
+                    if (!itemsAccountedFor.Contains(item))
+                    {
+                        for (int i = 0; i < tempItems.Count; i++)
+                        {
+                            if (tempItems[i] == item)
+                            {
+                                itemCount++;
+                            }
+                        }
+
+                        if (itemCount < lowestCount || lowestCount == 0)
+                        {
+                            lowestCountItem = item; //gets the item in the entire list with the highest count
+                            lowestCount = itemCount;
+                        }
+                        itemCount = 0;
+                    }
+                }
+
+                //add the highest item
+                for (int i = 0; i < lowestCount; i++)
+                { 
+                    if (lowestCountItem is Equipment)
+                    {
+                        sortedEquips.Add(lowestCountItem);
+                    } else
+                    {
+                        sortedItems.Add(lowestCountItem);
+                    }
+                    
+                }
+
+                itemsAccountedFor.Add(lowestCountItem);
+                lowestCount = 0;
+            }
+
+            Inventory.instance.items = sortedItems;
+
+            foreach (Item item in sortedEquips)
+            {
+                Inventory.instance.Add(item);
+            }
+        }
+    }
+
+    void CancelCustomizeMode()
+    {
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+        itemCustomizeModeOn = false;
+    }
+
+    void CancelItemChoosingHero()
+    {
+        foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
+        {
+            child.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        }
+
+        itemChoosingHero = false;
+    }
+
     //--------------------
 
     //Magic Menu
@@ -940,9 +1398,15 @@ public class GameMenu : MonoBehaviour
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(MagicMenuCanvas);
         DisplayCanvas(WhiteMagicListPanel);
+
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDescriptionPanel/MagicDescriptionText").GetComponent<Text>().text = "";
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel/CooldownText").GetComponent<Text>().text = "-";
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel/MPCostText").GetComponent<Text>().text = "-";
+
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/BlackMagicButton/BlackMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/SorceryMagicButton/SorceryMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+
         DrawMagicMenuStats(hero);
         DrawMagicListPanels(hero);
         menuState = MenuStates.MAGIC;
@@ -986,13 +1450,21 @@ public class GameMenu : MonoBehaviour
 
     public void ShowWhiteMagicListPanel()
     {
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/BlackMagicButton/BlackMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/SorceryMagicButton/SorceryMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+
         DisplayCanvas(WhiteMagicListPanel);
         HideCanvas(BlackMagicListPanel);
         HideCanvas(SorceryMagicListPanel);
     }
 
     public void ShowBlackMagicListPanel()
-    {
+    { 
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/BlackMagicButton/BlackMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/SorceryMagicButton/SorceryMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+
         HideCanvas(WhiteMagicListPanel);
         DisplayCanvas(BlackMagicListPanel);
         HideCanvas(SorceryMagicListPanel);
@@ -1000,6 +1472,10 @@ public class GameMenu : MonoBehaviour
 
     public void ShowSorceryMagicListPanel()
     {
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/BlackMagicButton/BlackMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/SorceryMagicButton/SorceryMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+
         HideCanvas(WhiteMagicListPanel);
         HideCanvas(BlackMagicListPanel);
         DisplayCanvas(SorceryMagicListPanel);
@@ -1010,8 +1486,8 @@ public class GameMenu : MonoBehaviour
         DrawHeroFace(hero, GameObject.Find("HeroMagicPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("HeroMagicPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
         GameObject.Find("HeroMagicPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("HeroMagicPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
-        GameObject.Find("HeroMagicPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.maxMP.ToString()); //MP text
+        GameObject.Find("HeroMagicPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
+        GameObject.Find("HeroMagicPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
 
         MagicPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), MagicPanelHPProgressBar.transform.localScale.y);
         MagicPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), MagicPanelMPProgressBar.transform.localScale.y);
@@ -1223,70 +1699,70 @@ public class GameMenu : MonoBehaviour
 
     }
 
-    void DrawEquipMenuStats(BaseHero hero)
+    public void DrawEquipMenuStats(BaseHero hero)
     {
         //For HeroEquipPanel
         DrawHeroFace(hero, GameObject.Find("HeroEquipPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("HeroEquipPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
         GameObject.Find("HeroEquipPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("HeroEquipPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
-        GameObject.Find("HeroEquipPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.maxMP.ToString()); //MP text
+        GameObject.Find("HeroEquipPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
+        GameObject.Find("HeroEquipPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
 
         EquipPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), EquipPanelHPProgressBar.transform.localScale.y);
         EquipPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), EquipPanelMPProgressBar.transform.localScale.y);
-
+        
         //For EquipStatsPanel
         //STR-SPI
-        GameObject.Find("EquipStatsPanel/BaseStrengthText").GetComponent<Text>().text = hero.currentStrength.ToString();
-        GameObject.Find("EquipStatsPanel/BaseStaminaText").GetComponent<Text>().text = hero.currentStamina.ToString();
-        GameObject.Find("EquipStatsPanel/BaseAgilityText").GetComponent<Text>().text = hero.currentAgility.ToString();
-        GameObject.Find("EquipStatsPanel/BaseDexterityText").GetComponent<Text>().text = hero.currentDexterity.ToString();
-        GameObject.Find("EquipStatsPanel/BaseIntelligenceText").GetComponent<Text>().text = hero.currentIntelligence.ToString();
-        GameObject.Find("EquipStatsPanel/BaseSpiritText").GetComponent<Text>().text = hero.currentSpirit.ToString();
+        GameObject.Find("EquipStatsPanel/BaseStrengthText").GetComponent<Text>().text = hero.finalStrength.ToString();
+        GameObject.Find("EquipStatsPanel/BaseStaminaText").GetComponent<Text>().text = hero.finalStamina.ToString();
+        GameObject.Find("EquipStatsPanel/BaseAgilityText").GetComponent<Text>().text = hero.finalAgility.ToString();
+        GameObject.Find("EquipStatsPanel/BaseDexterityText").GetComponent<Text>().text = hero.finalDexterity.ToString();
+        GameObject.Find("EquipStatsPanel/BaseIntelligenceText").GetComponent<Text>().text = hero.finalIntelligence.ToString();
+        GameObject.Find("EquipStatsPanel/BaseSpiritText").GetComponent<Text>().text = hero.finalSpirit.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = hero.currentStrength.ToString();
-        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = hero.currentStamina.ToString();
-        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = hero.currentAgility.ToString();
-        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = hero.currentDexterity.ToString();
-        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = hero.currentIntelligence.ToString();
-        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = hero.currentSpirit.ToString();
+        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = hero.finalStrength.ToString();
+        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = hero.finalStamina.ToString();
+        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = hero.finalAgility.ToString();
+        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = hero.finalDexterity.ToString();
+        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = hero.finalIntelligence.ToString();
+        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = hero.finalSpirit.ToString();
 
         //HP & MP
-        GameObject.Find("EquipStatsPanel/BaseHPText").GetComponent<Text>().text = hero.maxHP.ToString();
-        GameObject.Find("EquipStatsPanel/BaseMPText").GetComponent<Text>().text = hero.maxMP.ToString();
+        GameObject.Find("EquipStatsPanel/BaseHPText").GetComponent<Text>().text = hero.finalMaxHP.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMPText").GetComponent<Text>().text = hero.finalMaxMP.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = hero.maxHP.ToString();
-        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = hero.maxMP.ToString();
+        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = hero.finalMaxHP.ToString();
+        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = hero.finalMaxMP.ToString();
 
         //ATK-MDEF
-        GameObject.Find("EquipStatsPanel/BaseAttackText").GetComponent<Text>().text = hero.currentATK.ToString();
-        GameObject.Find("EquipStatsPanel/BaseMagicAttackText").GetComponent<Text>().text = hero.currentMATK.ToString();
-        GameObject.Find("EquipStatsPanel/BaseDefenseText").GetComponent<Text>().text = hero.currentDEF.ToString();
-        GameObject.Find("EquipStatsPanel/BaseMagicDefenseText").GetComponent<Text>().text = hero.currentMDEF.ToString();
+        GameObject.Find("EquipStatsPanel/BaseAttackText").GetComponent<Text>().text = hero.finalATK.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMagicAttackText").GetComponent<Text>().text = hero.finalMATK.ToString();
+        GameObject.Find("EquipStatsPanel/BaseDefenseText").GetComponent<Text>().text = hero.finalDEF.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMagicDefenseText").GetComponent<Text>().text = hero.finalMDEF.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = hero.currentATK.ToString();
-        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = hero.currentMATK.ToString();
-        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = hero.currentDEF.ToString();
-        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = hero.currentMDEF.ToString();
+        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = hero.finalATK.ToString();
+        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = hero.finalMATK.ToString();
+        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = hero.finalDEF.ToString();
+        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = hero.finalMDEF.ToString();
 
         //Other stats
-        GameObject.Find("EquipStatsPanel/BaseHitText").GetComponent<Text>().text = hero.GetHitChance(hero.currentHitRating, hero.currentAgility).ToString();
-        GameObject.Find("EquipStatsPanel/BaseCritText").GetComponent<Text>().text = hero.GetCritChance(hero.currentCritRating, hero.currentDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseMPRegenText").GetComponent<Text>().text = hero.GetRegen(hero.currentRegenRating, hero.currentSpirit).ToString();
-        GameObject.Find("EquipStatsPanel/BaseMoveText").GetComponent<Text>().text = hero.GetMoveRating(hero.currentMoveRating, hero.currentDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseDodgeText").GetComponent<Text>().text = hero.GetDodgeChance(hero.currentDodgeRating, hero.currentAgility).ToString();
-        GameObject.Find("EquipStatsPanel/BaseBlockText").GetComponent<Text>().text = hero.GetBlockChance(hero.currentBlockRating).ToString();
-        GameObject.Find("EquipStatsPanel/BaseParryText").GetComponent<Text>().text = hero.GetParryChance(hero.currentParryRating, hero.currentStrength, hero.currentDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.currentThreatRating).ToString();
+        GameObject.Find("EquipStatsPanel/BaseHitText").GetComponent<Text>().text = hero.GetHitChance(hero.finalHitRating, hero.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/BaseCritText").GetComponent<Text>().text = hero.GetCritChance(hero.finalCritRating, hero.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/BaseMPRegenText").GetComponent<Text>().text = hero.GetRegen(hero.finalRegenRating, hero.finalSpirit).ToString();
+        GameObject.Find("EquipStatsPanel/BaseMoveText").GetComponent<Text>().text = hero.GetMoveRating(hero.finalMoveRating, hero.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/BaseDodgeText").GetComponent<Text>().text = hero.GetDodgeChance(hero.finalDodgeRating, hero.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/BaseBlockText").GetComponent<Text>().text = hero.GetBlockChance(hero.finalBlockRating).ToString();
+        GameObject.Find("EquipStatsPanel/BaseParryText").GetComponent<Text>().text = hero.GetParryChance(hero.finalParryRating, hero.finalStrength, hero.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/BaseThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.finalThreatRating).ToString();
 
-        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = hero.GetHitChance(hero.currentHitRating, hero.currentAgility).ToString();
-        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = hero.GetCritChance(hero.currentCritRating, hero.currentDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = hero.GetRegen(hero.currentRegenRating, hero.currentSpirit).ToString();
-        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = hero.GetMoveRating(hero.currentMoveRating, hero.currentDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = hero.GetDodgeChance(hero.currentDodgeRating, hero.currentAgility).ToString();
-        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = hero.GetBlockChance(hero.currentBlockRating).ToString();
-        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = hero.GetParryChance(hero.currentParryRating, hero.currentStrength, hero.currentDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.currentThreatRating).ToString();
+        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = hero.GetHitChance(hero.finalHitRating, hero.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = hero.GetCritChance(hero.finalCritRating, hero.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = hero.GetRegen(hero.finalRegenRating, hero.finalSpirit).ToString();
+        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = hero.GetMoveRating(hero.finalMoveRating, hero.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = hero.GetDodgeChance(hero.finalDodgeRating, hero.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = hero.GetBlockChance(hero.finalBlockRating).ToString();
+        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = hero.GetParryChance(hero.finalParryRating, hero.finalStrength, hero.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.finalThreatRating).ToString();
     }
 
     void DrawInitialArrows()
@@ -1696,11 +2172,104 @@ public class GameMenu : MonoBehaviour
                 GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
             }
 
-            UpdateHeroFromEquipmentStats();
+            heroToCheck.GetCurrentStatsFromEquipment();
+            heroToCheck.UpdateStatsFromTalents();
 
             DrawEquipMenuStats(heroToCheck);
-
+            
+            UpdateEquipmentArrowsToNeutral();
         }
+    }
+
+    public void RemoveAllEquipment()
+    {
+        string equipMenuBase = "GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipSlotsPanel/";
+
+        Color temp;
+
+        foreach (Transform child in GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform)
+        {
+            Destroy(child.gameObject);
+        }
+        
+        heroToCheck.Unequip(0);
+
+        GameObject.Find(equipMenuBase + "HeadSlot/HeadButton/HeadSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(1);
+
+        GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(2);
+
+        GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(3);
+
+        GameObject.Find(equipMenuBase + "LegsSlot/LegsButton/LegsSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(4);
+
+        GameObject.Find(equipMenuBase + "FeetSlot/FeetButton/FeetSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(5);
+
+        GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(6);
+
+        GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+
+        heroToCheck.Unequip(7);
+
+        GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = null;
+
+        temp = GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+        temp.a = 0f;
+        GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+        
+        heroToCheck.GetCurrentStatsFromEquipment();
+        heroToCheck.UpdateStatsFromTalents();
+
+        UpdateEquipmentArrowsToNeutral();
+
+        DrawEquipMenuStats(heroToCheck);
     }
 
     public void ChangeEquipment(Equipment toEquip)
@@ -1711,7 +2280,7 @@ public class GameMenu : MonoBehaviour
         {
             if (toEquip == null)
             {
-                foreach (Transform child in GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform)
+                foreach (Transform child in EquipListSpacer.transform)
                 {
                     Destroy(child.gameObject);
                 }
@@ -1805,7 +2374,11 @@ public class GameMenu : MonoBehaviour
                     GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
                 }
 
-                UpdateHeroFromEquipmentStats();
+                UpdateEquipmentArrowsToNeutral();
+
+                heroToCheck.GetCurrentStatsFromEquipment();
+
+                heroToCheck.UpdateStatsFromTalents();
 
                 DrawEquipMenuStats(heroToCheck);
 
@@ -1900,78 +2473,28 @@ public class GameMenu : MonoBehaviour
 
             GameObject.Find("EquipMenuCanvas/EquipMenuPanel/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
 
-            UpdateHeroFromEquipmentStats();
+            UpdateEquipmentArrowsToNeutral();
+
+            heroToCheck.GetCurrentStatsFromEquipment();
+
+            heroToCheck.UpdateStatsFromTalents();
 
             DrawEquipMenuStats(heroToCheck);
 
             inEquipList = false;
+
+            foreach (Item item in Inventory.instance.items.ToList())
+            {
+                if (item.name == "New Item")
+                {
+                    item.RemoveFromInventory();
+                }
+            }
         }
     }
 
-    private void UpdateHeroFromEquipmentStats()
+    private void UpdateEquipmentArrowsToNeutral()
     {
-        int tempStrength = 0, tempStamina = 0, tempAgility = 0, tempDexterity = 0, tempIntelligence = 0, tempSpirit = 0;
-        int tempHP = 0, tempMP = 0;
-        int tempATK = 0, tempMATK = 0, tempDEF = 0, tempMDEF = 0;
-        int tempHit = 0, tempCrit = 0, tempMove = 0, tempRegen = 0;
-        int tempDodge = 0, tempBlock = 0, tempParry = 0, tempThreat = 0;
-        
-        foreach (Equipment equipment in heroToCheck.equipment)
-        {
-            if (equipment != null)
-            {
-                tempStrength += equipment.Strength;
-                tempStamina += equipment.Stamina;
-                tempAgility += equipment.Agility;
-                tempDexterity += equipment.Dexterity;
-                tempIntelligence += equipment.Intelligence;
-                tempSpirit += equipment.Spirit;
-
-                tempHP += Mathf.RoundToInt(equipment.Stamina * .75f);
-                tempMP += Mathf.RoundToInt(equipment.Intelligence * .5f);
-
-                tempATK += equipment.ATK + Mathf.RoundToInt(equipment.Strength * .5f);
-                tempMATK += equipment.MATK + Mathf.RoundToInt(equipment.Intelligence * .5f);
-                tempDEF += equipment.DEF + Mathf.RoundToInt(equipment.Stamina * .6f);
-                tempMDEF += equipment.MDEF + Mathf.RoundToInt(equipment.Stamina * .5f);
-
-                tempHit += equipment.hit;
-                tempCrit += equipment.crit;
-                tempMove += equipment.move;
-                tempRegen += equipment.regen;
-
-                tempDodge += equipment.dodge;
-                tempBlock += equipment.block;
-                tempParry += equipment.parry;
-                tempThreat += equipment.threat;
-            }
-        }
-
-        heroToCheck.currentStrength = heroToCheck.baseSTR + tempStrength;
-        heroToCheck.currentStamina = heroToCheck.baseSTA + tempStamina;
-        heroToCheck.currentAgility = heroToCheck.baseAGI + tempAgility;
-        heroToCheck.currentDexterity = heroToCheck.baseDEX + tempDexterity;
-        heroToCheck.currentIntelligence = heroToCheck.baseINT + tempIntelligence;
-        heroToCheck.currentSpirit = heroToCheck.baseSPI + tempSpirit;
-
-        heroToCheck.maxHP = heroToCheck.GetMaxHP(heroToCheck.maxHP) + tempHP;
-        heroToCheck.maxMP = heroToCheck.GetMaxMP(heroToCheck.maxMP) + tempMP;
-
-        heroToCheck.currentATK = heroToCheck.baseATK + tempATK;
-        heroToCheck.currentMATK = heroToCheck.baseMATK + tempMATK;
-        heroToCheck.currentDEF = heroToCheck.baseDEF + tempDEF;
-        heroToCheck.currentMDEF = heroToCheck.baseMDEF + tempMDEF;
-
-        heroToCheck.currentHitRating = heroToCheck.baseHit + tempHit;
-        heroToCheck.currentCritRating = heroToCheck.baseCrit + tempCrit;
-        heroToCheck.currentMoveRating = heroToCheck.baseMove + tempMove;
-        heroToCheck.currentRegenRating = heroToCheck.baseRegen + tempRegen;
-
-        heroToCheck.currentDodgeRating = heroToCheck.baseDodge + tempDodge;
-        heroToCheck.currentBlockRating = heroToCheck.baseBlock + tempBlock;
-        heroToCheck.currentParryRating = heroToCheck.baseParry + tempParry;
-        heroToCheck.currentThreatRating = heroToCheck.baseThreat + tempThreat;
-
         ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
@@ -1998,708 +2521,573 @@ public class GameMenu : MonoBehaviour
         ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
     }
 
-    public void ShowEquipmentStatUpdates(Equipment toEquip)
+    Equipment GetCurrentEquippedInSlot()
     {
-        int tempStrength = heroToCheck.baseSTR, tempStamina = heroToCheck.baseSTA, tempAgility = heroToCheck.baseAGI, 
-            tempDexterity = heroToCheck.baseDEX, tempIntelligence = heroToCheck.baseINT, tempSpirit = heroToCheck.baseSPI;
-        int tempHP = heroToCheck.GetBaseMaxHP(heroToCheck.baseHP), tempMP = heroToCheck.GetBaseMaxMP(heroToCheck.baseMP);
-        int tempATK = heroToCheck.baseATK, tempMATK = heroToCheck.baseMATK, tempDEF = heroToCheck.baseDEF, tempMDEF = heroToCheck.baseMDEF;
-        int tempHit = heroToCheck.baseHit, tempCrit = heroToCheck.baseCrit, tempMove = heroToCheck.baseMove, tempRegen = heroToCheck.baseRegen;
-        int tempDodge = heroToCheck.baseDodge, tempBlock = heroToCheck.baseBlock, tempParry = heroToCheck.baseParry, tempThreat = heroToCheck.baseThreat;
-
-        foreach (Equipment equipment in heroToCheck.equipment)
+        if (equipButtonClicked == "HeadButton")
         {
-            if (equipment != null && toEquip == null) //if choosing "None", skip this equipment in loop.
-            {
-                if (
-                    equipment.equipmentSlot.ToString() == "HEAD" && equipButtonClicked == "HeadButton" ||
-                    equipment.equipmentSlot.ToString() == "WRISTS" && equipButtonClicked == "WristsButton" ||
-                    equipment.equipmentSlot.ToString() == "CHEST" && equipButtonClicked == "Chestbutton" ||
-                    equipment.equipmentSlot.ToString() == "LEGS" && equipButtonClicked == "LegsButton" ||
-                    equipment.equipmentSlot.ToString() == "FEET" && equipButtonClicked == "FeetButton" ||
-                    equipment.equipmentSlot.ToString() == "RELIC" && equipButtonClicked == "RelicButton" ||
-                    equipment.equipmentSlot.ToString() == "LEFTHAND" && equipButtonClicked == "LeftHandButton" ||
-                    equipment.equipmentSlot.ToString() == "RIGHTHAND" && equipButtonClicked == "RightHandButton"
-                    )
-                {
-                    continue;
-                } else
-                {
-                    tempStrength += equipment.Strength;
-                    tempStamina += equipment.Stamina;
-                    tempAgility += equipment.Agility;
-                    tempDexterity += equipment.Dexterity;
-                    tempIntelligence += equipment.Intelligence;
-                    tempSpirit += equipment.Spirit;
-
-                    tempHP += Mathf.RoundToInt(equipment.Stamina * .75f);
-                    tempMP += Mathf.RoundToInt(equipment.Intelligence * .5f);
-
-                    tempATK += equipment.ATK + Mathf.RoundToInt(equipment.Strength * .5f);
-                    tempMATK += equipment.MATK + Mathf.RoundToInt(equipment.Intelligence * .5f);
-                    tempDEF += equipment.DEF + Mathf.RoundToInt(equipment.Stamina * .6f);
-                    tempMDEF += equipment.MDEF + Mathf.RoundToInt(equipment.Stamina * .5f);
-
-                    tempHit += equipment.hit;
-                    tempCrit += equipment.crit;
-                    tempMove += equipment.move;
-                    tempRegen += equipment.regen;
-
-                    tempDodge += equipment.dodge;
-                    tempBlock += equipment.block;
-                    tempParry += equipment.parry;
-                    tempThreat += equipment.threat;
-                    continue;
-                }
-                
-            }
-
-            if (equipment != null && equipment.equipmentSlot != toEquip.equipmentSlot)
-            {
-                tempStrength += equipment.Strength;
-                tempStamina += equipment.Stamina;
-                tempAgility += equipment.Agility;
-                tempDexterity += equipment.Dexterity;
-                tempIntelligence += equipment.Intelligence;
-                tempSpirit += equipment.Spirit;
-
-                tempHP += Mathf.RoundToInt(equipment.Stamina * .75f);
-                tempMP += Mathf.RoundToInt(equipment.Intelligence * .5f);
-
-                tempATK += equipment.ATK + Mathf.RoundToInt(equipment.Strength * .5f);
-                tempMATK += equipment.MATK + Mathf.RoundToInt(equipment.Intelligence * .5f);
-                tempDEF += equipment.DEF + Mathf.RoundToInt(equipment.Stamina * .6f);
-                tempMDEF += equipment.MDEF + Mathf.RoundToInt(equipment.Stamina * .5f);
-
-                tempHit += equipment.hit;
-                tempCrit += equipment.crit;
-                tempMove += equipment.move;
-                tempRegen += equipment.regen;
-
-                tempDodge += equipment.dodge;
-                tempBlock += equipment.block;
-                tempParry += equipment.parry;
-                tempThreat += equipment.threat;
-            }
+            return heroToCheck.equipment[0];
         }
 
-        if (toEquip == null) //if choosing "None" (or unequipping the slot)
+        if (equipButtonClicked == "ChestButton")
         {
-            GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = tempStrength.ToString();
-            if (tempStrength > heroToCheck.currentStrength)
+            return heroToCheck.equipment[1];
+        }
+
+        if (equipButtonClicked == "WristsButton")
+        {
+            return heroToCheck.equipment[2];
+        }
+
+        if (equipButtonClicked == "LegsButton")
+        {
+            return heroToCheck.equipment[3];
+        }
+
+        if (equipButtonClicked == "FeetButton")
+        {
+            return heroToCheck.equipment[4];
+        }
+
+        if (equipButtonClicked == "RelicButton")
+        {
+            return heroToCheck.equipment[5];
+        }
+
+        if (equipButtonClicked == "RightHandButton")
+        {
+            return heroToCheck.equipment[6];
+        }
+
+        if (equipButtonClicked == "LeftHandButton")
+        {
+            return heroToCheck.equipment[7];
+        }
+
+        return null;
+    }
+
+    int GetCurrentEquippedSlotIndex()
+    {
+        if (equipButtonClicked == "HeadButton")
+        {
+            return 0;
+        }
+
+        if (equipButtonClicked == "ChestButton")
+        {
+            return 1;
+        }
+
+        if (equipButtonClicked == "WristsButton")
+        {
+            return 2;
+        }
+
+        if (equipButtonClicked == "LegsButton")
+        {
+            return 3;
+        }
+
+        if (equipButtonClicked == "FeetButton")
+        {
+            return 4;
+        }
+
+        if (equipButtonClicked == "RelicButton")
+        {
+            return 5;
+        }
+
+        if (equipButtonClicked == "RightHandButton")
+        {
+            return 6;
+        }
+
+        if (equipButtonClicked == "LeftHandButton")
+        {
+            return 7;
+        }
+
+        Debug.LogWarning("Illegal slot index, returning 0");
+        return 0;
+    }
+
+    BaseHero TempHeroForEquip()
+    {
+        BaseHero tempHero = new BaseHero();
+
+        tempHero.baseHP = heroToCheck.baseHP;
+        tempHero.baseMP = heroToCheck.baseMP;
+
+        tempHero.baseATK = heroToCheck.baseATK;
+        tempHero.baseMATK = heroToCheck.baseMATK;
+        tempHero.baseDEF = heroToCheck.baseDEF;
+        tempHero.baseMDEF = heroToCheck.baseMDEF;
+
+        tempHero.baseSTR = heroToCheck.baseSTR;
+        tempHero.baseSTA = heroToCheck.baseSTA;
+        tempHero.baseDEX = heroToCheck.baseDEX;
+        tempHero.baseAGI = heroToCheck.baseAGI;
+        tempHero.baseINT = heroToCheck.baseINT;
+        tempHero.baseSPI = heroToCheck.baseSPI;
+
+        tempHero.strengthMod = heroToCheck.strengthMod;
+        tempHero.staminaMod = heroToCheck.staminaMod;
+        tempHero.intelligenceMod = heroToCheck.intelligenceMod;
+        tempHero.dexterityMod = heroToCheck.dexterityMod;
+        tempHero.agilityMod = heroToCheck.agilityMod;
+        tempHero.spiritMod = heroToCheck.spiritMod;
+
+        tempHero.baseHit = heroToCheck.baseHit;
+        tempHero.baseCrit = heroToCheck.baseCrit;
+        tempHero.baseMove = heroToCheck.baseMove;
+        tempHero.baseRegen = heroToCheck.baseRegen;
+
+        tempHero.baseDodge = heroToCheck.baseDodge;
+        tempHero.baseBlock = heroToCheck.baseBlock;
+        tempHero.baseParry = heroToCheck.baseParry;
+        tempHero.baseThreat = heroToCheck.baseThreat;
+
+        for (int i = 0; i < 8; i++)
+        {
+            tempHero.equipment[i] = heroToCheck.equipment[i];
+        }
+
+        tempHero.currentLevel = heroToCheck.currentLevel;
+
+        tempHero.level1Talents = heroToCheck.level1Talents;
+        tempHero.level2Talents = heroToCheck.level2Talents;
+        tempHero.level3Talents = heroToCheck.level3Talents;
+        tempHero.level4Talents = heroToCheck.level4Talents;
+        tempHero.level5Talents = heroToCheck.level5Talents;
+        tempHero.level6Talents = heroToCheck.level6Talents;
+
+        //tempHero.InitializeStats();
+
+        tempHero.finalMaxHP = heroToCheck.finalMaxHP;
+        tempHero.finalMaxMP = heroToCheck.finalMaxMP;
+
+        tempHero.finalStrength = heroToCheck.finalStrength;
+        tempHero.finalStamina = heroToCheck.finalStamina;
+        tempHero.finalAgility = heroToCheck.finalAgility;
+        tempHero.finalDexterity = heroToCheck.finalDexterity;
+        tempHero.finalIntelligence = heroToCheck.finalIntelligence;
+        tempHero.finalSpirit = heroToCheck.finalSpirit;
+        tempHero.finalATK = heroToCheck.finalATK;
+        tempHero.finalMATK = heroToCheck.finalMATK;
+        tempHero.finalDEF = heroToCheck.finalDEF;
+        tempHero.finalMDEF = heroToCheck.finalMDEF;
+
+        tempHero.finalHitRating = heroToCheck.finalHitRating;
+        tempHero.finalCritRating = heroToCheck.finalCritRating;
+        tempHero.finalMoveRating = heroToCheck.finalMoveRating;
+        tempHero.finalRegenRating = heroToCheck.finalRegenRating;
+
+        tempHero.finalDodgeRating = heroToCheck.finalDodgeRating;
+        tempHero.finalBlockRating = heroToCheck.finalBlockRating;
+        tempHero.finalParryRating = heroToCheck.finalParryRating;
+        tempHero.finalThreatRating = heroToCheck.finalThreatRating;
+
+        return tempHero;
+    }
+
+    Equipment TempEquip(Equipment toEquip)
+    {
+        Equipment newEquip = ScriptableObject.CreateInstance("Equipment") as Equipment;
+
+        newEquip.Strength = toEquip.Strength;
+        newEquip.Stamina = toEquip.Stamina;
+        newEquip.Agility = toEquip.Agility;
+        newEquip.Dexterity = toEquip.Dexterity;
+        newEquip.Intelligence = toEquip.Intelligence;
+        newEquip.Spirit = toEquip.Spirit;
+
+        newEquip.ATK = toEquip.ATK;
+        newEquip.DEF = toEquip.DEF;
+
+        newEquip.MATK = toEquip.MATK;
+        newEquip.MDEF = toEquip.MDEF;
+
+        newEquip.threat = toEquip.threat;
+
+        newEquip.hit = toEquip.hit;
+        newEquip.crit = toEquip.crit;
+
+        newEquip.move = toEquip.move;
+        newEquip.regen = toEquip.regen;
+
+        newEquip.dodge = toEquip.dodge;
+        newEquip.parry = toEquip.parry;
+        newEquip.block = toEquip.block;
+
+        return newEquip;
+}
+
+    public void ShowEquipmentStatUpdates(Equipment toEquip)
+    {
+        //heroToCheck.GetCurrentStatsFromEquipment();
+        //heroToCheck.UpdateStatsFromTalents();
+
+        BaseHero tempHero = new BaseHero();
+        tempHero = TempHeroForEquip();
+        
+        if (toEquip != null) //showing stats for valid equipment
+        {
+            //Debug.Log(toEquip.name);
+            int slotIndex = (int)toEquip.equipmentSlot;
+            Equipment tempEquip = TempEquip(toEquip);
+            tempHero.equipment[slotIndex] = tempEquip;
+            
+        } else //showing stats for unequipping
+        {
+            //get item currently equipped in this slot
+            if (GetCurrentEquippedInSlot() != null) //subtract stats from currently equipped weapon
+            {
+                tempHero.equipment[GetCurrentEquippedSlotIndex()] = null;
+            }
+        }
+        
+        tempHero.GetCurrentStatsFromEquipment();
+        tempHero.UpdateStatsFromTalents();
+
+        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = tempHero.finalStrength.ToString();
+            if (tempHero.finalStrength > heroToCheck.finalStrength)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Up");
             }
-            else if (tempStrength < heroToCheck.currentStrength)
+            else if (tempHero.finalStrength < heroToCheck.finalStrength)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Down");
             }
-            else if (tempStrength == heroToCheck.currentStrength)
+            else if (tempHero.finalStrength == heroToCheck.finalStrength)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = tempStamina.ToString();
-            if (tempStamina > heroToCheck.currentStamina)
+            GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = tempHero.finalStamina.ToString();
+            
+            if (tempHero.finalStamina > heroToCheck.finalStamina)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Up");
             }
-            else if (tempStamina < heroToCheck.currentStamina)
+            else if (tempHero.finalStamina < heroToCheck.finalStamina)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Down");
             }
-            else if (tempStamina == heroToCheck.currentStamina)
+            else if (tempHero.finalStamina == heroToCheck.finalStamina)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = tempAgility.ToString();
-            if (tempAgility > heroToCheck.currentAgility)
+            GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = tempHero.finalAgility.ToString();
+            if (tempHero.finalAgility > heroToCheck.finalAgility)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Up");
             }
-            if (tempAgility < heroToCheck.currentAgility)
+            if (tempHero.finalAgility < heroToCheck.finalAgility)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Down");
             }
-            else if (tempAgility == heroToCheck.currentAgility)
+            else if (tempHero.finalAgility == heroToCheck.finalAgility)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = tempDexterity.ToString();
-            if (tempDexterity > heroToCheck.currentDexterity)
+            GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = tempHero.finalDexterity.ToString();
+            if (tempHero.finalDexterity > heroToCheck.finalDexterity)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Up");
             }
-            else if (tempDexterity < heroToCheck.currentDexterity)
+            else if (tempHero.finalDexterity < heroToCheck.finalDexterity)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Down");
             }
-            else if (tempDexterity == heroToCheck.currentDexterity)
+            else if (tempHero.finalDexterity == heroToCheck.finalDexterity)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = tempIntelligence.ToString();
-            if (tempIntelligence > heroToCheck.currentIntelligence)
+            GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = tempHero.finalIntelligence.ToString();
+            if (tempHero.finalIntelligence > heroToCheck.finalIntelligence)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Up");
             }
-            else if (tempIntelligence < heroToCheck.currentIntelligence)
+            else if (tempHero.finalIntelligence < heroToCheck.finalIntelligence)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Down");
             }
-            else if (tempIntelligence == heroToCheck.currentIntelligence)
+            else if (tempHero.finalIntelligence == heroToCheck.finalIntelligence)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = tempSpirit.ToString();
-            if (tempSpirit > heroToCheck.currentSpirit)
+            GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = tempHero.finalSpirit.ToString();
+            if (tempHero.finalSpirit > heroToCheck.finalSpirit)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Up");
             }
-            else if (tempSpirit < heroToCheck.currentSpirit)
+            else if (tempHero.finalSpirit < heroToCheck.finalSpirit)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Down");
             }
-            else if (tempSpirit == heroToCheck.currentSpirit)
+            else if (tempHero.finalSpirit == heroToCheck.finalSpirit)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
             }
 
 
-            GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = tempHP.ToString();
-            if (tempHP > heroToCheck.maxHP)
+            GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = tempHero.finalMaxHP.ToString();
+            if (tempHero.finalMaxHP > heroToCheck.finalMaxHP)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Up");
             }
-            else if (tempHP < heroToCheck.maxHP)
+            else if (tempHero.finalMaxHP < heroToCheck.finalMaxHP)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Down");
             }
-            else if (tempHP == heroToCheck.maxHP)
+            else if (tempHero.finalMaxHP == heroToCheck.finalMaxHP)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = tempMP.ToString();
-            if (tempMP > heroToCheck.maxMP)
+            GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = tempHero.finalMaxMP.ToString();
+            if (tempHero.finalMaxMP > heroToCheck.finalMaxMP)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Up");
             }
-            else if (tempMP < heroToCheck.maxMP)
+            else if (tempHero.finalMaxMP < heroToCheck.finalMaxMP)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Down");
             }
-            else if (tempMP == heroToCheck.maxMP)
+            else if (tempHero.finalMaxMP == heroToCheck.finalMaxMP)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
             }
 
 
-            GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = tempATK.ToString();
-            if (tempATK > heroToCheck.currentATK)
+            GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = tempHero.finalATK.ToString();
+            if (tempHero.finalATK > heroToCheck.finalATK)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Up");
             }
-            else if (tempATK < heroToCheck.currentATK)
+            else if (tempHero.finalATK < heroToCheck.finalATK)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Down");
             }
-            else if (tempATK == heroToCheck.currentATK)
+            else if (tempHero.finalATK == heroToCheck.finalATK)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = tempMATK.ToString();
-            if (tempMATK > heroToCheck.currentMATK)
+            GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = tempHero.finalMATK.ToString();
+            if (tempHero.finalMATK > heroToCheck.finalMATK)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Up");
             }
-            else if (tempMATK < heroToCheck.currentMATK)
+            else if (tempHero.finalMATK < heroToCheck.finalMATK)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Down");
             }
-            else if (tempMATK == heroToCheck.currentMATK)
+            else if (tempHero.finalMATK == heroToCheck.finalMATK)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = tempDEF.ToString();
-            if (tempDEF > heroToCheck.currentDEF)
+            GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = tempHero.finalDEF.ToString();
+            if (tempHero.finalDEF > heroToCheck.finalDEF)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Up");
             }
-            else if (tempDEF < heroToCheck.currentDEF)
+            else if (tempHero.finalDEF < heroToCheck.finalDEF)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Down");
             }
-            else if (tempDEF == heroToCheck.currentDEF)
+            else if (tempHero.finalDEF == heroToCheck.finalDEF)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = tempMDEF.ToString();
-            if (tempMDEF > heroToCheck.currentMDEF)
+            GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = tempHero.finalMDEF.ToString();
+            if (tempHero.finalMDEF > heroToCheck.finalMDEF)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Up");
             }
-            else if (tempMDEF < heroToCheck.currentMDEF)
+            else if (tempHero.finalMDEF < heroToCheck.finalMDEF)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Down");
             }
-            else if (tempMDEF == heroToCheck.currentMDEF)
+            else if (tempHero.finalMDEF == heroToCheck.finalMDEF)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
             }
 
 
-            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(tempHit, tempAgility).ToString();
-            if (heroToCheck.GetHitChance(tempHit, tempAgility) > heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility))
+            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility).ToString();
+            if (tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility) > heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Up");
             }
-            else if (heroToCheck.GetHitChance(tempHit, tempAgility) < heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility))
+            else if (tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility) < heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Down");
             }
-            else if (heroToCheck.GetHitChance(tempHit, tempAgility) == heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility))
+            else if (tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility) == heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(tempCrit, tempDexterity).ToString();
-            if (heroToCheck.GetCritChance(tempCrit, tempDexterity) > heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity))
+            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity).ToString();
+            if (tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity) > heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Up");
             }
-            else if (heroToCheck.GetCritChance(tempCrit, tempDexterity) < heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity))
+            else if (tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity) < heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Down");
             }
-            else if (heroToCheck.GetCritChance(tempCrit, tempDexterity) == heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity))
+            else if (tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity) == heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(tempMove, tempDexterity).ToString();
-            if (heroToCheck.GetMoveRating(tempMove, tempDexterity) > heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity))
+            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity).ToString();
+            if (tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity) > heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Up");
             }
-            else if (heroToCheck.GetMoveRating(tempMove, tempDexterity) < heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity))
+            else if (tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity) < heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Down");
             }
-            else if (heroToCheck.GetMoveRating(tempMove, tempDexterity) == heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity))
+            else if (tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity) == heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(tempRegen, tempSpirit).ToString();
-            if (heroToCheck.GetRegen(tempRegen, tempSpirit) > heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit))
+            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit).ToString();
+            if (tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit) > heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Up");
             }
-            else if (heroToCheck.GetRegen(tempRegen, tempSpirit) < heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit))
+            else if (tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit) < heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Down");
             }
-            else if (heroToCheck.GetRegen(tempRegen, tempSpirit) == heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit))
+            else if (tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit) == heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(tempDodge, tempAgility).ToString();
-            if (heroToCheck.GetDodgeChance(tempDodge, tempAgility) > heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility))
+            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility).ToString();
+            if (tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility) > heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Up");
             }
-            else if (heroToCheck.GetDodgeChance(tempDodge, tempAgility) < heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility))
+            else if (tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility) < heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Down");
             }
-            else if (heroToCheck.GetDodgeChance(tempDodge, tempAgility) == heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility))
+            else if (tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility) == heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(tempBlock).ToString();
-            if (heroToCheck.GetBlockChance(tempBlock) > heroToCheck.GetBlockChance(heroToCheck.currentBlockRating))
+            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = tempHero.GetBlockChance(tempHero.finalBlockRating).ToString();
+            if (tempHero.GetBlockChance(tempHero.finalBlockRating) > heroToCheck.GetBlockChance(heroToCheck.finalBlockRating))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Up");
             }
-            else if (heroToCheck.GetBlockChance(tempBlock) < heroToCheck.GetBlockChance(heroToCheck.currentBlockRating))
+            else if (tempHero.GetBlockChance(tempHero.finalBlockRating) < heroToCheck.GetBlockChance(heroToCheck.finalBlockRating))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Down");
             }
-            else if (heroToCheck.GetBlockChance(tempBlock) == heroToCheck.GetBlockChance(heroToCheck.currentBlockRating))
+            else if (tempHero.GetBlockChance(tempHero.finalBlockRating) == heroToCheck.GetBlockChance(heroToCheck.finalBlockRating))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(tempParry, tempStrength, tempDexterity).ToString();
-            if (heroToCheck.GetParryChance(tempParry, tempStrength, tempDexterity) > heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity))
+            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity).ToString();
+            if (tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity) > heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Up");
             }
-            else if (heroToCheck.GetParryChance(tempParry, tempStrength, tempDexterity) < heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity))
+            else if (tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity) < heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Down");
             }
-            else if (heroToCheck.GetParryChance(tempParry, tempStrength, tempDexterity) == heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity))
+            else if (tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity) == heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(tempThreat).ToString();
-            if (heroToCheck.GetThreatRating(tempThreat) > heroToCheck.GetThreatRating(heroToCheck.currentThreatRating))
+            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = tempHero.GetThreatRating(tempHero.finalThreatRating).ToString();
+            if (tempHero.GetThreatRating(tempHero.finalThreatRating) > heroToCheck.GetThreatRating(heroToCheck.finalThreatRating))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Up");
             }
-            else if (heroToCheck.GetThreatRating(tempThreat) < heroToCheck.GetThreatRating(heroToCheck.currentThreatRating))
+            else if (tempHero.GetThreatRating(tempHero.finalThreatRating) < heroToCheck.GetThreatRating(heroToCheck.finalThreatRating))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Down");
             }
-            else if (heroToCheck.GetThreatRating(tempThreat) == heroToCheck.GetThreatRating(heroToCheck.currentThreatRating))
+            else if (tempHero.GetThreatRating(tempHero.finalThreatRating) == heroToCheck.GetThreatRating(heroToCheck.finalThreatRating))
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
             }
-
-            return;
-        }
-
-        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = (tempStrength + toEquip.Strength).ToString();
-        if ((tempStrength + toEquip.Strength) > heroToCheck.currentStrength)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Up");
-        } else if ((tempStrength + toEquip.Strength) < heroToCheck.currentStrength)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Down");
-        } else if ((tempStrength + toEquip.Strength) == heroToCheck.currentStrength)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = (tempStamina + toEquip.Stamina).ToString();
-        if ((tempStamina + toEquip.Stamina) > heroToCheck.currentStamina)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Up");
-        }
-        else if ((tempStamina + toEquip.Stamina) < heroToCheck.currentStamina)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Down");
-        }
-        else if ((tempStamina + toEquip.Stamina) == heroToCheck.currentStamina)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = (tempAgility + toEquip.Agility).ToString();
-        if ((tempAgility + toEquip.Agility) > heroToCheck.currentAgility)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Up");
-        }
-        else if ((tempAgility + toEquip.Agility) < heroToCheck.currentAgility)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Down");
-        }
-        else if ((tempAgility + toEquip.Agility) == heroToCheck.currentAgility)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = (tempDexterity + toEquip.Dexterity).ToString();
-        if ((tempDexterity + toEquip.Dexterity) > heroToCheck.currentDexterity)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Up");
-        }
-        else if ((tempDexterity + toEquip.Dexterity) < heroToCheck.currentDexterity)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Down");
-        }
-        else if ((tempDexterity + toEquip.Dexterity) == heroToCheck.currentDexterity)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = (tempIntelligence + toEquip.Intelligence).ToString();
-        if ((tempIntelligence + toEquip.Intelligence) > heroToCheck.currentIntelligence)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Up");
-        }
-        else if ((tempIntelligence + toEquip.Intelligence) < heroToCheck.currentIntelligence)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Down");
-        }
-        else if ((tempIntelligence + toEquip.Intelligence) == heroToCheck.currentIntelligence)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = (tempSpirit + toEquip.Spirit).ToString();
-        if ((tempSpirit + toEquip.Spirit) > heroToCheck.currentSpirit)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Up");
-        }
-        else if ((tempSpirit + toEquip.Spirit) < heroToCheck.currentSpirit)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Down");
-        }
-        else if ((tempSpirit + toEquip.Spirit) == heroToCheck.currentSpirit)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
-        }
-
-
-        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = (tempHP + Mathf.RoundToInt(toEquip.Stamina * .75f)).ToString();
-        if ((tempHP + Mathf.RoundToInt(toEquip.Stamina * .75f)) > heroToCheck.maxHP)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Up");
-        }
-        else if ((tempHP + Mathf.RoundToInt(toEquip.Stamina * .75f)) < heroToCheck.maxHP)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Down");
-        }
-        else if ((tempHP + Mathf.RoundToInt(toEquip.Stamina * .75f)) == heroToCheck.maxHP)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = (tempMP + Mathf.RoundToInt(toEquip.Intelligence * .5f)).ToString();
-        if ((tempMP + Mathf.RoundToInt(toEquip.Intelligence * .5f)) > heroToCheck.maxMP)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Up");
-        }
-        else if ((tempMP + Mathf.RoundToInt(toEquip.Intelligence * .5f)) < heroToCheck.maxMP)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Down");
-        }
-        else if ((tempMP + Mathf.RoundToInt(toEquip.Intelligence * .5f)) == heroToCheck.maxMP)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
-        }
-
-
-        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = (tempATK + toEquip.ATK + Mathf.RoundToInt(toEquip.Strength * .5f)).ToString();
-        if ((tempATK + toEquip.ATK + Mathf.RoundToInt(toEquip.Strength * .5f)) > heroToCheck.currentATK)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Up");
-        }
-        else if ((tempATK + toEquip.ATK + Mathf.RoundToInt(toEquip.Strength * .5f)) < heroToCheck.currentATK)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Down");
-        }
-        else if ((tempATK + toEquip.ATK + Mathf.RoundToInt(toEquip.Strength * .5f)) == heroToCheck.currentATK)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = (tempMATK + toEquip.MATK + Mathf.RoundToInt(toEquip.Intelligence * .5f)).ToString();
-        if ((tempMATK + toEquip.MATK + Mathf.RoundToInt(toEquip.Intelligence * .5f)) > heroToCheck.currentMATK)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Up");
-        }
-        else if ((tempMATK + toEquip.MATK + Mathf.RoundToInt(toEquip.Intelligence * .5f)) < heroToCheck.currentMATK)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Down");
-        }
-        else if ((tempMATK + toEquip.MATK + Mathf.RoundToInt(toEquip.Intelligence * .5f)) == heroToCheck.currentMATK)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = (tempDEF + toEquip.DEF + Mathf.RoundToInt(toEquip.Stamina * .6f)).ToString();
-        if ((tempDEF + toEquip.DEF + Mathf.RoundToInt(toEquip.Stamina * .6f)) > heroToCheck.currentDEF)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Up");
-        }
-        else if ((tempDEF + toEquip.DEF + Mathf.RoundToInt(toEquip.Stamina * .6f)) < heroToCheck.currentDEF)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Down");
-        }
-        else if ((tempDEF + toEquip.DEF + Mathf.RoundToInt(toEquip.Stamina * .6f)) == heroToCheck.currentDEF)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = (tempMDEF + toEquip.MDEF + Mathf.RoundToInt(toEquip.Stamina * .5f)).ToString();
-        if ((tempMDEF + toEquip.MDEF + Mathf.RoundToInt(toEquip.Stamina * .5f)) > heroToCheck.currentMDEF)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Up");
-        }
-        else if ((tempMDEF + toEquip.MDEF + Mathf.RoundToInt(toEquip.Stamina * .5f)) < heroToCheck.currentMDEF)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Down");
-        }
-        else if ((tempMDEF + toEquip.MDEF + Mathf.RoundToInt(toEquip.Stamina * .5f)) == heroToCheck.currentMDEF)
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
-        }
-
-
-        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = (heroToCheck.GetHitChance((tempHit + toEquip.hit),(tempAgility + toEquip.Agility))).ToString();
-        if ((heroToCheck.GetHitChance((tempHit + toEquip.hit), (tempAgility + toEquip.Agility))) > heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Up");
-        }
-        else if ((heroToCheck.GetHitChance((tempHit + toEquip.hit), (tempAgility + toEquip.Agility))) < heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Down");
-        }
-        else if ((heroToCheck.GetHitChance((tempHit + toEquip.hit), (tempAgility + toEquip.Agility))) == heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = (heroToCheck.GetCritChance((tempCrit + toEquip.crit), (tempDexterity + toEquip.Dexterity))).ToString();
-        if ((heroToCheck.GetCritChance((tempCrit + toEquip.crit), (tempDexterity + toEquip.Dexterity))) > heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Up");
-        }
-        else if ((heroToCheck.GetCritChance((tempCrit + toEquip.crit), (tempDexterity + toEquip.Dexterity))) < heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Down");
-        }
-        else if ((heroToCheck.GetCritChance((tempCrit + toEquip.crit), (tempDexterity + toEquip.Dexterity))) == heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = (heroToCheck.GetMoveRating((tempMove + toEquip.move), (tempDexterity + toEquip.Dexterity))).ToString();
-        if ((heroToCheck.GetMoveRating((tempMove + toEquip.move), (tempDexterity + toEquip.Dexterity))) > heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Up");
-        }
-        else if ((heroToCheck.GetMoveRating((tempMove + toEquip.move), (tempDexterity + toEquip.Dexterity))) < heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Down");
-        }
-        else if ((heroToCheck.GetMoveRating((tempMove + toEquip.move), (tempDexterity + toEquip.Dexterity))) == heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = (heroToCheck.GetRegen((tempRegen + toEquip.regen), (tempSpirit + toEquip.Spirit))).ToString();
-        if ((heroToCheck.GetRegen((tempRegen + toEquip.regen), (tempSpirit + toEquip.Spirit))) > heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Up");
-        }
-        else if ((heroToCheck.GetRegen((tempRegen + toEquip.regen), (tempSpirit + toEquip.Spirit))) < heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Down");
-        }
-        else if ((heroToCheck.GetRegen((tempRegen + toEquip.regen), (tempSpirit + toEquip.Spirit))) == heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = (heroToCheck.GetDodgeChance((tempDodge + toEquip.dodge), (tempAgility + toEquip.Agility))).ToString();
-        if ((heroToCheck.GetDodgeChance((tempDodge + toEquip.dodge), (tempAgility + toEquip.Agility))) > heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Up");
-        }
-        else if ((heroToCheck.GetDodgeChance((tempDodge + toEquip.dodge), (tempAgility + toEquip.Agility))) < heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Down");
-        }
-        else if ((heroToCheck.GetDodgeChance((tempDodge + toEquip.dodge), (tempAgility + toEquip.Agility))) == heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = (heroToCheck.GetBlockChance((tempBlock + toEquip.block))).ToString();
-        if ((heroToCheck.GetBlockChance((tempBlock + toEquip.block))) > heroToCheck.GetBlockChance(heroToCheck.currentBlockRating))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Up");
-        }
-        else if ((heroToCheck.GetBlockChance((tempBlock + toEquip.block))) < heroToCheck.GetBlockChance(heroToCheck.currentBlockRating))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Down");
-        }
-        else if ((heroToCheck.GetBlockChance((tempBlock + toEquip.block))) == heroToCheck.GetBlockChance(heroToCheck.currentBlockRating))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = (heroToCheck.GetParryChance((tempParry + toEquip.parry), (tempStrength + toEquip.Strength), (tempDexterity + toEquip.Dexterity))).ToString();
-        if ((heroToCheck.GetParryChance((tempParry + toEquip.parry), (tempStrength + toEquip.Strength), (tempDexterity + toEquip.Dexterity))) > heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Up");
-        }
-        else if ((heroToCheck.GetParryChance((tempParry + toEquip.parry), (tempStrength + toEquip.Strength), (tempDexterity + toEquip.Dexterity))) < heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Down");
-        }
-        else if ((heroToCheck.GetParryChance((tempParry + toEquip.parry), (tempStrength + toEquip.Strength), (tempDexterity + toEquip.Dexterity))) == heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
-        }
-
-        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = (heroToCheck.GetThreatRating(tempThreat + toEquip.threat)).ToString();
-        if ((heroToCheck.GetThreatRating(tempThreat + toEquip.threat)) > heroToCheck.GetThreatRating(heroToCheck.currentThreatRating))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Up");
-        }
-        else if ((heroToCheck.GetThreatRating(tempThreat + toEquip.threat)) < heroToCheck.GetThreatRating(heroToCheck.currentThreatRating))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Down");
-        }
-        else if ((heroToCheck.GetThreatRating(tempThreat + toEquip.threat)) == heroToCheck.GetThreatRating(heroToCheck.currentThreatRating))
-        {
-            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
-        }
     }
 
     public void ResetEquipmentStatUpdates()
     {
-        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = heroToCheck.currentStrength.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = heroToCheck.currentStamina.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = heroToCheck.currentAgility.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = heroToCheck.currentDexterity.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = heroToCheck.currentIntelligence.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = heroToCheck.currentSpirit.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
+        //heroToCheck.GetCurrentStatsFromEquipment();
+        //heroToCheck.UpdateStatsFromTalents();
+        
+        if (heroToCheck != null)
+        {
+            GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = heroToCheck.finalStrength.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = heroToCheck.finalStamina.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = heroToCheck.finalAgility.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = heroToCheck.finalDexterity.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = heroToCheck.finalIntelligence.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = heroToCheck.finalSpirit.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
 
-        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = heroToCheck.maxHP.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = heroToCheck.maxMP.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = heroToCheck.finalMaxHP.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = heroToCheck.finalMaxMP.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
 
-        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = heroToCheck.currentATK.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = heroToCheck.currentMATK.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = heroToCheck.currentDEF.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = heroToCheck.currentMDEF.ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = heroToCheck.finalATK.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = heroToCheck.finalMATK.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = heroToCheck.finalDEF.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
 
-        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.currentHitRating, heroToCheck.currentAgility).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.currentCritRating, heroToCheck.currentDexterity).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.currentMoveRating, heroToCheck.currentDexterity).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.currentRegenRating, heroToCheck.currentSpirit).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
 
-        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.currentDodgeRating, heroToCheck.currentAgility).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.currentBlockRating).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.currentParryRating, heroToCheck.currentStrength, heroToCheck.currentDexterity).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
-        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.currentThreatRating).ToString();
-        ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
-
+            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
+            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString();
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
+        }
+        
     }
 
     void CancelFromEquipList()
@@ -2766,10 +3154,10 @@ public class GameMenu : MonoBehaviour
         DrawHeroFace(hero, GameObject.Find("StatusMenuPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.maxMP.ToString()); //MP text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/EXPText").GetComponent<Text>().text = (hero.currentExp + " / " + GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1]); //EXP text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/ToNextLevelText").GetComponent<Text>().text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1] - hero.currentExp).ToString(); //To next level text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/EXPText").GetComponent<Text>().text = (hero.currentExp + " / " + HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1]); //EXP text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/ToNextLevelText").GetComponent<Text>().text = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - hero.currentExp).ToString(); //To next level text
 
         StatusPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), StatusPanelHPProgressBar.transform.localScale.y);
         StatusPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), StatusPanelMPProgressBar.transform.localScale.y);
@@ -2778,26 +3166,26 @@ public class GameMenu : MonoBehaviour
 
     void DrawStatusMenuStats(BaseHero hero)
     {
-        GameObject.Find("StatusMenuPanel/StatsPanel/StrengthText").GetComponent<Text>().text = hero.currentStrength.ToString(); //Strength text
-        GameObject.Find("StatusMenuPanel/StatsPanel/StaminaText").GetComponent<Text>().text = hero.currentStamina.ToString(); //Stamina text
-        GameObject.Find("StatusMenuPanel/StatsPanel/AgilityText").GetComponent<Text>().text = hero.currentAgility.ToString(); //Agility text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DexterityText").GetComponent<Text>().text = hero.currentDexterity.ToString(); //Dexterity text
-        GameObject.Find("StatusMenuPanel/StatsPanel/IntelligenceText").GetComponent<Text>().text = hero.currentIntelligence.ToString(); //Intelligence text
-        GameObject.Find("StatusMenuPanel/StatsPanel/SpiritText").GetComponent<Text>().text = hero.currentSpirit.ToString(); //Spirit text
+        GameObject.Find("StatusMenuPanel/StatsPanel/StrengthText").GetComponent<Text>().text = hero.finalStrength.ToString(); //Strength text
+        GameObject.Find("StatusMenuPanel/StatsPanel/StaminaText").GetComponent<Text>().text = hero.finalStamina.ToString(); //Stamina text
+        GameObject.Find("StatusMenuPanel/StatsPanel/AgilityText").GetComponent<Text>().text = hero.finalAgility.ToString(); //Agility text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DexterityText").GetComponent<Text>().text = hero.finalDexterity.ToString(); //Dexterity text
+        GameObject.Find("StatusMenuPanel/StatsPanel/IntelligenceText").GetComponent<Text>().text = hero.finalIntelligence.ToString(); //Intelligence text
+        GameObject.Find("StatusMenuPanel/StatsPanel/SpiritText").GetComponent<Text>().text = hero.finalSpirit.ToString(); //Spirit text
 
-        GameObject.Find("StatusMenuPanel/StatsPanel/AttackText").GetComponent<Text>().text = hero.currentATK.ToString(); //Attack text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MagicAttackText").GetComponent<Text>().text = hero.currentMATK.ToString(); //Magic Attack text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DefenseText").GetComponent<Text>().text = hero.currentDEF.ToString(); //Defense text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MagicDefenseText").GetComponent<Text>().text = hero.currentMDEF.ToString(); //Magic Defense text
+        GameObject.Find("StatusMenuPanel/StatsPanel/AttackText").GetComponent<Text>().text = hero.finalATK.ToString(); //Attack text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MagicAttackText").GetComponent<Text>().text = hero.finalMATK.ToString(); //Magic Attack text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DefenseText").GetComponent<Text>().text = hero.finalDEF.ToString(); //Defense text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MagicDefenseText").GetComponent<Text>().text = hero.finalMDEF.ToString(); //Magic Defense text
 
-        GameObject.Find("StatusMenuPanel/StatsPanel/HitChanceText").GetComponent<Text>().text = hero.GetHitChance(hero.currentHitRating, hero.currentAgility).ToString(); //Hit Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/CritChanceText").GetComponent<Text>().text = hero.GetCritChance(hero.currentCritRating, hero.currentDexterity).ToString(); //Crit Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MoveRatingText").GetComponent<Text>().text = hero.GetMoveRating(hero.currentMoveRating, hero.currentDexterity).ToString(); //Move Rating text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MPPerTurnText").GetComponent<Text>().text = hero.GetRegen(hero.currentRegenRating, hero.currentSpirit).ToString(); //MP Regen text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DodgeChanceText").GetComponent<Text>().text = hero.GetDodgeChance(hero.currentDodgeRating, hero.currentAgility).ToString(); //Dodge Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = hero.GetBlockChance(hero.currentBlockRating).ToString(); //Block Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = hero.GetParryChance(hero.currentParryRating, hero.currentStrength, hero.currentDexterity).ToString(); //Parry Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.currentThreatRating).ToString(); //Threat Rating text
+        GameObject.Find("StatusMenuPanel/StatsPanel/HitChanceText").GetComponent<Text>().text = hero.GetHitChance(hero.finalHitRating, hero.finalAgility).ToString(); //Hit Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/CritChanceText").GetComponent<Text>().text = hero.GetCritChance(hero.finalCritRating, hero.finalDexterity).ToString(); //Crit Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MoveRatingText").GetComponent<Text>().text = hero.GetMoveRating(hero.finalMoveRating, hero.finalDexterity).ToString(); //Move Rating text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MPPerTurnText").GetComponent<Text>().text = hero.GetRegen(hero.finalRegenRating, hero.finalSpirit).ToString(); //MP Regen text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DodgeChanceText").GetComponent<Text>().text = hero.GetDodgeChance(hero.finalDodgeRating, hero.finalAgility).ToString(); //Dodge Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = hero.GetBlockChance(hero.finalBlockRating).ToString(); //Block Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = hero.GetParryChance(hero.finalParryRating, hero.finalStrength, hero.finalDexterity).ToString(); //Parry Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.finalThreatRating).ToString(); //Threat Rating text
     }
 
     void HideStatusMenu()
@@ -2837,8 +3225,8 @@ public class GameMenu : MonoBehaviour
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
+            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
 
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).name = "Active Hero Panel - ID " + GameManager.instance.activeHeroes[i].ID; //rename Panel
         }
@@ -3072,8 +3460,8 @@ public class GameMenu : MonoBehaviour
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
         }
     }
 
@@ -3227,11 +3615,11 @@ public class GameMenu : MonoBehaviour
         DrawHeroFace(hero, GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
         GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.maxHP.ToString()); //HP text
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.maxMP.ToString()); //MP text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
 
-        StatusPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), StatusPanelHPProgressBar.transform.localScale.y);
-        StatusPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), StatusPanelMPProgressBar.transform.localScale.y);
+        TalentsPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), TalentsPanelHPProgressBar.transform.localScale.y);
+        TalentsPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), TalentsPanelMPProgressBar.transform.localScale.y);
     }
 
     void DrawHeroTalents(BaseHero hero)
@@ -3629,7 +4017,7 @@ public class GameMenu : MonoBehaviour
     float GetProgressBarValuesHP(BaseHero hero)
     {
         float heroHP = hero.curHP;
-        float heroBaseHP = hero.maxHP;
+        float heroBaseHP = hero.finalMaxHP;
         float calc_HP;
         
         calc_HP = heroHP / heroBaseHP;
@@ -3640,7 +4028,7 @@ public class GameMenu : MonoBehaviour
     float GetProgressBarValuesMP(BaseHero hero)
     {
         float heroMP = hero.curMP;
-        float heroBaseMP = hero.maxMP;
+        float heroBaseMP = hero.finalMaxMP;
         float calc_MP;
         
         calc_MP = heroMP / heroBaseMP;
@@ -3655,11 +4043,11 @@ public class GameMenu : MonoBehaviour
 
         if (hero.currentLevel == 1)
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1]);
             heroEXP = hero.currentExp;
         } else
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1] - GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 2]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
             heroEXP = (hero.currentExp - baseLineEXP);
             //Debug.Log("baseLine: " + baseLineEXP);
         }

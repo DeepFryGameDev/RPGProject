@@ -6,12 +6,20 @@ using UnityEngine.UI;
 
 public class GridMenuMouseEvents : MonoBehaviour
 {
+    string emptyGridSpriteName = "Textfield full";
+
    public void ChangeSpawnPoint()
     {
         if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             SetSpawnPoint(gameObject.name);
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile = false;
+        } else
+        {
+            if (gameObject.GetComponent<Image>().sprite.name != emptyGridSpriteName)
+            {
+                SetHero(GetHero(gameObject.GetComponent<Image>().sprite));
+            }
         }
     }
 
@@ -20,6 +28,17 @@ public class GridMenuMouseEvents : MonoBehaviour
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = GetHero(gameObject.transform.Find("NameText").GetComponent<Text>().text);
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile = true;
+
+            DisableButtons(gameObject.GetComponent<Button>());
+        }
+    }
+
+    public void SetHero(BaseHero hero)
+    {
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
+        {
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = hero;
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile = true;
 
             DisableButtons(gameObject.GetComponent<Button>());
@@ -37,6 +56,19 @@ public class GridMenuMouseEvents : MonoBehaviour
             }
         }
 
+        return null;
+    }
+
+    BaseHero GetHero(Sprite faceImage)
+    {
+        foreach (BaseHero h in GameManager.instance.activeHeroes)
+        {
+            if (h.faceImage == faceImage)
+            {
+                GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridTileChanging = h.spawnPoint;
+                return h;
+            }
+        }
         return null;
     }
 

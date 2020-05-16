@@ -147,7 +147,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     BaseEnemy GetEnemy(int ID)
     {
-        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)
         {
             if (entry.enemy.ID == ID)
             {
@@ -1206,7 +1206,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
             GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp.ToString()); //Exp text
-            GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("NextLevelText").GetComponent<Text>().text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel - 1)] - (GameManager.instance.activeHeroes[i].currentExp)).ToString(); //Exp text
+            GameObject.Find("VictoryCanvas/VictoryPanel/HeroEXPPanel/Hero" + (i + 1) + "Panel").transform.Find("NextLevelText").GetComponent<Text>().text = (HeroDB.instance.levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel - 1)] - (GameManager.instance.activeHeroes[i].currentExp)).ToString(); //Exp text
         }
     }
 
@@ -1300,12 +1300,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (hero.currentLevel == 1)
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1]);
             heroEXP = hero.currentExp;
         }
         else
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 1] - GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[hero.currentLevel - 2]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
             heroEXP = (hero.currentExp - baseLineEXP);
             //Debug.Log("baseLine: " + baseLineEXP);
         }
@@ -1324,12 +1324,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (heroLevel == 1)
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[heroLevel - 1]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[heroLevel - 1]);
             //Debug.Log("baseLine level 1: " + baseLineEXP);
         }
         else
         {
-            baseLineEXP = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[heroLevel - 1] - GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[heroLevel - 2]);
+            baseLineEXP = (HeroDB.instance.levelEXPThresholds[heroLevel - 1] - HeroDB.instance.levelEXPThresholds[heroLevel - 2]);
             //Debug.Log("baseLine > level 1: " + baseLineEXP);
         }
 
@@ -1424,7 +1424,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
         }
 
-        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().UpdateQuestObjectives();
+       QuestDB.instance.UpdateQuestObjectives();
     }
 
     void ShowPostBattleGains()
@@ -1462,7 +1462,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 if (heroNextLevelText.text == 0.ToString()) //Levelup
                 {
                     heroLevel.text = ((int.Parse(heroLevel.text) + 1).ToString());
-                    heroNextLevelText.text = (GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[(int.Parse(heroLevel.text) - 1)] - int.Parse(heroExpText.text)).ToString();
+                    heroNextLevelText.text = (HeroDB.instance.levelEXPThresholds[(int.Parse(heroLevel.text) - 1)] - int.Parse(heroExpText.text)).ToString();
                 }
 
                 int expNeededToLevel;
@@ -1473,7 +1473,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 }
                 else
                 {
-                    expNeededToLevel = GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().levelEXPThresholds[int.Parse(heroLevel.text) - 2];
+                    expNeededToLevel = HeroDB.instance.levelEXPThresholds[int.Parse(heroLevel.text) - 2];
                 }
 
                 int tempLevel = int.Parse(heroLevel.text);

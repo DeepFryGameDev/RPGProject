@@ -48,13 +48,55 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData) //begins item process when clicked
     {
-        if (GetItem(GetItemName()).usableInMenu)
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().itemCustomizeModeOn)
         {
-            if (GetItem(GetItemName()).useState == Item.UseStates.HERO)
+            if (GetItem(GetItemName()).usableInMenu)
             {
-                itemUsed = GetItem(GetItemName());
-                StartCoroutine(ProcessItem());
+                if (GetItem(GetItemName()).useState == Item.UseStates.HERO)
+                {
+                    UnboldItems();
+                    gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+                    menu.itemChoosingHero = true;
+
+                    itemUsed = GetItem(GetItemName());
+                    StartCoroutine(ProcessItem());
+                }
             }
+        } else //itemCustomizeModeOn is true
+        {
+            if (!menu.itemIndexSwapAPicked)
+            {
+                menu.itemIndexSwapA = Inventory.instance.items.IndexOf(GetItem(GetItemName()));
+                gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+
+                menu.itemIndexSwapAPicked = true;
+            } else
+            {
+                menu.itemIndexSwapB = Inventory.instance.items.IndexOf(GetItem(GetItemName()));
+                SwapItemsInList();
+                menu.DrawItemList();
+            }
+        }
+    }
+
+    public void SwapItemsInList()
+    {
+        Item tmp = Inventory.instance.items[menu.itemIndexSwapA];
+        Inventory.instance.items[menu.itemIndexSwapA] = Inventory.instance.items[menu.itemIndexSwapB];
+        Inventory.instance.items[menu.itemIndexSwapB] = tmp;
+
+        menu.itemIndexSwapAPicked = false;
+        menu.itemIndexSwapA = 0;
+        menu.itemIndexSwapB = 0;
+
+        UnboldItems();
+    }
+
+    void UnboldItems()
+    {
+        foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
+        {
+            child.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
         }
     }
 
@@ -70,12 +112,23 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public IEnumerator ProcessItem()
     {
         yield return ChooseHero(); //choose hero to use item on
-        itemScript.scriptToRun = gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text; //sets item to be used
-        itemScript.ProcessItemToHero(hero); //processes the item to selected hero
-        RemoveItemFromInventory(itemUsed); //removes the item from inventory
-        itemUsed = null; //sets itemUsed to null so it isnt the same item used again next time
-        hero = null; //sets hero to null so it isnt the same hero item is used on next time
-        UpdateUI(); //updates interface after item is cast
+        if (menu.itemChoosingHero)
+        {
+            itemScript.scriptToRun = gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text; //sets item to be used
+            itemScript.ProcessItemToHero(hero); //processes the item to selected hero
+            RemoveItemFromInventory(itemUsed); //removes the item from inventory
+            itemUsed = null; //sets itemUsed to null so it isnt the same item used again next time
+            hero = null; //sets hero to null so it isnt the same hero item is used on next time
+            menu.itemChoosingHero = false;
+            UnboldItems();
+            UpdateUI(); //updates interface after item is cast
+        } else
+        {
+            itemUsed = null; //sets itemUsed to null so it isnt the same item used again next time
+            hero = null; //sets hero to null so it isnt the same hero item is used on next time
+            menu.itemChoosingHero = false;
+            StopCoroutine(ProcessItem());
+        }
     }
 
     void RemoveItemFromInventory(Item item)

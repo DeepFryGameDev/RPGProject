@@ -8,7 +8,6 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 {
 
     Text equipDesc;
-    BaseHero hero;
     GameMenu menu;
 
     private void Start()
@@ -36,12 +35,23 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public void OnPointerEnter(PointerEventData eventData) //sets item description panel with item's description
     {
-        if (GetEquip(GetEquipName()) != null)
+        if (menu.equipMode == "Equip" && !gameObject.name.Contains("Button"))
         {
-            equipDesc.text = GetEquip(GetEquipName()).description;
-            menu.ShowEquipmentStatUpdates(GetEquip(GetEquipName()));
-        } else
+            if (GetEquip(GetEquipName()) != null)
+            {
+                equipDesc.text = GetEquip(GetEquipName()).description;
+                menu.ShowEquipmentStatUpdates(GetEquip(GetEquipName()));
+            }
+            else
+            {
+                menu.ShowEquipmentStatUpdates(null);
+            }
+        }
+
+        if (menu.equipMode == "Remove")
         {
+            //show stat loss from removing equipment
+            menu.equipButtonClicked = gameObject.name;
             menu.ShowEquipmentStatUpdates(null);
         }
     }
@@ -50,11 +60,19 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         equipDesc.text = "";
         menu.ResetEquipmentStatUpdates();
+
+        if (menu.equipMode == "Remove")
+        {
+            menu.equipButtonClicked = null;
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData) //begins item process when clicked
     {
-        menu.ChangeEquipment(GetEquip(GetEquipName()));
+        if (menu.equipMode == "Equip" && !gameObject.name.Contains("Button"))
+        {
+            menu.ChangeEquipment(GetEquip(GetEquipName()));
+        }
     }
 
     static List<RaycastResult> GetEventSystemRaycastResults() //gets all objects being clicked on

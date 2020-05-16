@@ -4,44 +4,23 @@ using UnityEngine;
 
 public class TalentEffects
 {
-    BaseHero hero = new BaseHero();
-
-    public void AddEffect(string effect)
+    public void AddEffect(string effect, BaseHero hero)
     {
-        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
+        hero.GetCurrentStatsFromEquipment();
 
-        Debug.Log("Adding effect: " + effect);
+        Debug.Log("Adding Talent Effect: " + effect);
 
         if (effect == "Test1")
         {
-            hero.currentStamina = hero.currentStamina * 2;
+            hero.finalStamina = hero.postEquipmentStamina * 2;
         }
         if (effect == "Test2")
         {
-            hero.currentAgility = hero.currentAgility * 2;
+            hero.finalAgility = hero.postEquipmentAgility * 2;
         }
         if (effect == "Test3")
         {
-            hero.currentStrength = hero.currentStrength * 2;
-        }
-    }
-
-    public void RemoveEffect(string effect)
-    {
-        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
-        Debug.Log("Removing effect: " + effect);
-
-        if (effect == "Test1")
-        {
-            hero.currentStamina = hero.currentStamina / 2;
-        }
-        if (effect == "Test2")
-        {
-            hero.currentAgility = hero.currentAgility / 2;
-        }
-        if (effect == "Test3")
-        {
-            hero.currentStrength = hero.currentStrength / 2;
+            hero.finalStrength = hero.postEquipmentStrength * 2;
         }
     }
 }

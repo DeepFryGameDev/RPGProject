@@ -186,20 +186,38 @@ public class MenuScript : MonoBehaviour
     [MenuItem("Dev Tools/Assign IDs/Hero IDs")]
     public static void AssignHeroIDs()
     {
-        foreach (BaseHero hero in GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes)
+        foreach (BaseHero hero in GameObject.Find("GameManager/DBs/HeroDB").GetComponent<HeroDB>().heroes)
         {
-            Debug.Log("Assigning ID " + GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero) + " to hero " + hero.name);
-            hero.ID = GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero);
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/DBs/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero) + " to hero " + hero.name);
+            hero.ID = GameObject.Find("GameManager/DBs/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero);
         }
     }
 
     [MenuItem("Dev Tools/Assign IDs/Enemy IDs")]
     public static void AssignEnemyIDs()
     {
-        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/DBs/EnemyDB").GetComponent<EnemyDB>().enemies)
         {
-            Debug.Log("Assigning ID " + GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(entry) + " to enemy " + entry.enemy.name);
-            entry.enemy.ID = GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(entry);
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/DBs/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(entry) + " to enemy " + entry.enemy.name);
+            entry.enemy.ID = GameObject.Find("GameManager/DBs/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(entry);
+        }
+    }
+
+    [MenuItem("Dev Tools/Assign IDs/Item IDs")]
+    public static void AssignItemIDs()
+    {
+        foreach (BaseItem entry in GameObject.Find("GameManager/DBs/ItemDB").GetComponent<ItemDB>().items)
+        {
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/DBs/ItemDB").GetComponent<ItemDB>().items.IndexOf(entry) + " to enemy " + entry.item.name);
+            entry.ID = GameObject.Find("GameManager/DBs/ItemDB").GetComponent<ItemDB>().items.IndexOf(entry);
+            entry.name = entry.item.name;
+        }
+
+        foreach (BaseEquipment entry in GameObject.Find("GameManager/DBs/EquipmentDB").GetComponent<EquipmentDB>().equipment)
+        {
+            Debug.Log("Assigning ID " + GameObject.Find("GameManager/DBs/EquipmentDB").GetComponent<EquipmentDB>().equipment.IndexOf(entry) + " to enemy " + entry.equipment.name);
+            entry.ID = GameObject.Find("GameManager/DBs/EquipmentDB").GetComponent<EquipmentDB>().equipment.IndexOf(entry);
+            entry.name = entry.equipment.name;
         }
     }
 }

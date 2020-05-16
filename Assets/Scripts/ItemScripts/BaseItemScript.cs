@@ -32,9 +32,9 @@ public class BaseItemScript
 
         hero.curHP += adjValue;
 
-        if (hero.curHP > hero.maxHP)
+        if (hero.curHP > hero.finalMaxHP)
         {
-            hero.curHP = hero.maxHP;
+            hero.curHP = hero.finalMaxHP;
         }
         Debug.Log("Healing " + hero.name + " for 20 HP!");
     }
@@ -45,9 +45,9 @@ public class BaseItemScript
 
         hero.curMP += adjValue;
 
-        if (hero.curMP > hero.maxMP)
+        if (hero.curMP > hero.finalMaxMP)
         {
-            hero.curMP = hero.maxMP;
+            hero.curMP = hero.finalMaxMP;
         }
         Debug.Log("Recovering " + hero.name + "'s MP by 10!");
     }

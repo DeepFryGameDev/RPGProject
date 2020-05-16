@@ -252,9 +252,9 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         if (hero != null)
         {
-            if (hero.curHP > hero.maxHP)
+            if (hero.curHP > hero.finalMaxHP)
             {
-                hero.curHP = hero.maxHP;
+                hero.curHP = hero.finalMaxHP;
             }
         }
         else if (enemy != null)
@@ -270,9 +270,9 @@ public class BaseMagicScript //for processing magic - need to add status effects
     {
         if (hero != null)
         {
-            if (hero.curMP > hero.maxMP)
+            if (hero.curMP > hero.finalMaxMP)
             {
-                hero.curMP = hero.maxMP;
+                hero.curMP = hero.finalMaxMP;
             }
         }
         else if (enemy != null)

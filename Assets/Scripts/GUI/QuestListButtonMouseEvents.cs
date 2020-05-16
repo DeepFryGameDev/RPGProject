@@ -125,7 +125,7 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
 
     BaseQuest GetQuestByID(int ID)
     {
-        foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+        foreach (BaseQuest quest in QuestDB.instance.quests)
         {
             if (quest.ID == ID)
             {
@@ -144,7 +144,7 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
             int itemCount = 0;
             foreach (Item item in Inventory.instance.items)
             {
-                if (item == quest.gatherReqs[0].item && itemCount <= quest.gatherReqs[0].quantity)
+                if (item == quest.gatherReqs[0].item && itemCount < quest.gatherReqs[0].quantity)
                 {
                     itemCount++;
                 }
@@ -205,7 +205,7 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
 
     BaseEnemy GetEnemy(int ID)
     {
-        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)
         {
             if (entry.enemy.ID == ID)
             {

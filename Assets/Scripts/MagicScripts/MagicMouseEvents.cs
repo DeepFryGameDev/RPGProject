@@ -114,8 +114,8 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
             GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             menu.DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("FacePanel").GetComponent<Image>());
             GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].maxHP); //HP text
-            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].maxMP); //MP text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
+            GameObject.Find("Hero" + (i + 1) + "SelectMagicPanel").transform.Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
         }
     }
 
@@ -275,7 +275,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     float GetProgressBarValuesHP(BaseHero hero)
     {
         float heroHP = hero.curHP;
-        float heroBaseHP = hero.maxHP;
+        float heroBaseHP = hero.finalMaxHP;
         float calc_HP;
 
         calc_HP = heroHP / heroBaseHP;
@@ -286,7 +286,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     float GetProgressBarValuesMP(BaseHero hero)
     {
         float heroMP = hero.curMP;
-        float heroBaseMP = hero.maxMP;
+        float heroBaseMP = hero.finalMaxMP;
         float calc_MP;
 
         calc_MP = heroMP / heroBaseMP;

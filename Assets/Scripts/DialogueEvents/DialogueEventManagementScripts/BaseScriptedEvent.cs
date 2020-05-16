@@ -32,6 +32,21 @@ public class BaseScriptedEvent : MonoBehaviour
     Button Choice4Button;
     string choiceMade;
 
+    //Enums
+    public enum MenuButtons
+    {
+        Item,
+        Magic,
+        Equip,
+        Status,
+        Talents,
+        Party,
+        Grid,
+        Quests,
+        Bestiary
+    }
+    public MenuButtons menuButton;
+
     private void Start()
     {
         thisGameObject = this.gameObject; //sets thisGameObject to game object this script is attached to
@@ -983,7 +998,7 @@ public class BaseScriptedEvent : MonoBehaviour
 
     public void ChangeGlobalBool(int index, bool boolean) //changes value of global event bools
     {
-        GameObject.Find("GameManager/GlobalBoolsDB").GetComponent<GlobalBoolsDB>().globalBools[index] = boolean;
+       GlobalBoolsDB.instance.globalBools[index] = boolean;
     }
 
     #endregion
@@ -1130,17 +1145,17 @@ public class BaseScriptedEvent : MonoBehaviour
     }
 
     #endregion
-
+    
     #region ---QUESTS---
 
-    public void StartQuest(BaseQuest quest)
+    public void StartQuest(int ID)
     {
-        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().AddToActiveQuests(quest);
+        QuestDB.instance.AddToActiveQuests(QuestDB.instance.quests[ID]);
     }
 
     public bool QuestObjectivesFulfilled(BaseQuest quest)
     {
-        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().UpdateQuestObjectives();
+        QuestDB.instance.UpdateQuestObjectives();
 
         if (quest.fulfilled)
         {
@@ -1153,7 +1168,7 @@ public class BaseScriptedEvent : MonoBehaviour
 
     public void CompleteQuest(BaseQuest quest)
     {
-        GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().CompleteQuest(quest);
+        QuestDB.instance.CompleteQuest(quest);
     }
 
     public void MarkQuestBool(BaseQuest quest, int index, bool value)
@@ -1175,7 +1190,7 @@ public class BaseScriptedEvent : MonoBehaviour
     {
         if (type == "DB")
         {
-            foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+            foreach (BaseQuest quest in QuestDB.instance.quests)
             {
                 if (quest.ID == ID)
                 {
@@ -1211,7 +1226,7 @@ public class BaseScriptedEvent : MonoBehaviour
 
     public BaseQuest GetQuest(int ID)
     {
-        foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+        foreach (BaseQuest quest in QuestDB.instance.quests)
         {
             if (quest.ID == ID)
             {
@@ -1260,6 +1275,23 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ChangeMenuAccess
 
+    public void ChangeMenuButtonAccess(MenuButtons button, string access)
+    {
+        Button buttonToChange = GameObject.Find("GameManager/Menus/MainMenuCanvas/MenuButtonsPanel/" + button.ToString() + "Button").GetComponent<Button>();
+        
+        if (access == "Enable")
+        {
+            buttonToChange.interactable = true;
+            buttonToChange.GetComponentInChildren<Text>().color = new Color(1, 1, 1, 1);
+        }
+
+        if (access == "Disable")
+        {
+            buttonToChange.interactable = false;
+            buttonToChange.GetComponentInChildren<Text>().color = new Color(1, 1, 1, .5f);
+        }
+    }
+
     #endregion
 
     #region ---SPRITES---
@@ -1280,8 +1312,8 @@ public class BaseScriptedEvent : MonoBehaviour
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
         {
-            hero.curHP = hero.maxHP;
-            hero.curMP = hero.maxMP;
+            hero.curHP = hero.finalMaxHP;
+            hero.curMP = hero.finalMaxMP;
         }
     }
 
@@ -1335,16 +1367,28 @@ public class BaseScriptedEvent : MonoBehaviour
         GameManager.instance.gold += gold;
     }
 
-    public void AddItem(Item item) //adds item to inventory
+    public void AddItem(int ID) //adds item to inventory
     {
-        Inventory.instance.Add(item);
-        Debug.Log("Added to inventory: " + item.name);
+        Inventory.instance.Add(ItemDB.instance.items[ID].item);
+        Debug.Log("Added to inventory: " + ItemDB.instance.items[ID].item.name);
     }
 
-    public void RemoveItem(Item item) //removes item from inventory
+    public void RemoveItem(int ID) //removes item from inventory
     {
-        Inventory.instance.Remove(item);
-        Debug.Log("Removed from inventory: " + item.name);
+        Inventory.instance.Remove(ItemDB.instance.items[ID].item);
+        Debug.Log("Removed from inventory: " + ItemDB.instance.items[ID].item.name);
+    }
+
+    public void AddEquipment(int ID) //adds equipment to inventory
+    {
+        Inventory.instance.Add(EquipmentDB.instance.equipment[ID].equipment);
+        Debug.Log("Added to inventory: " + EquipmentDB.instance.equipment[ID].equipment.name);
+    }
+
+    public void RemoveEquipment(int ID) //removes equipment from inventory
+    {
+        Inventory.instance.Remove(EquipmentDB.instance.equipment[ID].equipment);
+        Debug.Log("Removed from inventory: " + EquipmentDB.instance.equipment[ID].equipment.name);
     }
 
     //void AddWeapon

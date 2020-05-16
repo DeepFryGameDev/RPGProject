@@ -62,62 +62,134 @@ public class BaseHero : BaseClass
     public Equipment[] equipment = new Equipment[System.Enum.GetNames(typeof(EquipmentSlot)).Length];
 
     [ReadOnly] public int curHP; //current HP
-    [ReadOnly] public int maxHP;
+    [HideInInspector] public int preEquipmentHP;
 
     [ReadOnly] public int curMP; //current MP
-    [ReadOnly] public int maxMP;
+    [HideInInspector] public int preEquipmentMP;
 
-    [ReadOnly] public int currentStrength;
-    [ReadOnly] public int currentStamina;
-    [ReadOnly] public int currentAgility;
-    [ReadOnly] public int currentDexterity;
-    [ReadOnly] public int currentIntelligence;
-    [ReadOnly] public int currentSpirit;
-    [ReadOnly] public int currentATK;
-    [ReadOnly] public int currentMATK;
-    [ReadOnly] public int currentDEF;
-    [ReadOnly] public int currentMDEF;
+    [HideInInspector] public int preEquipmentStrength;
+    [HideInInspector] public int preEquipmentStamina;
+    [HideInInspector] public int preEquipmentAgility;
+    [HideInInspector] public int preEquipmentDexterity;
+    [HideInInspector] public int preEquipmentIntelligence;
+    [HideInInspector] public int preEquipmentSpirit;
+    [HideInInspector] public int preEquipmentATK;
+    [HideInInspector] public int preEquipmentMATK;
+    [HideInInspector] public int preEquipmentDEF;
+    [HideInInspector] public int preEquipmentMDEF;
 
-    [ReadOnly] public int currentHitRating;
-    [ReadOnly] public int currentCritRating;
-    [ReadOnly] public int currentMoveRating;
-    [ReadOnly] public int currentRegenRating;
+    [HideInInspector] public int preEquipmentHitRating;
+    [HideInInspector] public int preEquipmentCritRating;
+    [HideInInspector] public int preEquipmentMoveRating;
+    [HideInInspector] public int preEquipmentRegenRating;
 
-    [ReadOnly] public int currentDodgeRating;
-    [ReadOnly] public int currentBlockRating;
-    [ReadOnly] public int currentParryRating;
-    [ReadOnly] public int currentThreatRating;
+    [HideInInspector] public int preEquipmentDodgeRating;
+    [HideInInspector] public int preEquipmentBlockRating;
+    [HideInInspector] public int preEquipmentParryRating;
+    [HideInInspector] public int preEquipmentThreatRating;
+    
+    [HideInInspector] public int fromEquipmentHP;
+    [HideInInspector] public int fromEquipmentMP;
+
+    [HideInInspector] public int fromEquipmentStrength;
+    [HideInInspector] public int fromEquipmentStamina;
+    [HideInInspector] public int fromEquipmentAgility;
+    [HideInInspector] public int fromEquipmentDexterity;
+    [HideInInspector] public int fromEquipmentIntelligence;
+    [HideInInspector] public int fromEquipmentSpirit;
+    [HideInInspector] public int fromEquipmentATK;
+    [HideInInspector] public int fromEquipmentMATK;
+    [HideInInspector] public int fromEquipmentDEF;
+    [HideInInspector] public int fromEquipmentMDEF;
+
+    [HideInInspector] public int fromEquipmentHitRating;
+    [HideInInspector] public int fromEquipmentCritRating;
+    [HideInInspector] public int fromEquipmentMoveRating;
+    [HideInInspector] public int fromEquipmentRegenRating;
+
+    [HideInInspector] public int fromEquipmentDodgeRating;
+    [HideInInspector] public int fromEquipmentBlockRating;
+    [HideInInspector] public int fromEquipmentParryRating;
+    [HideInInspector] public int fromEquipmentThreatRating;
+
+    [HideInInspector] public int postEquipmentHP;
+    [HideInInspector] public int postEquipmentMP;
+
+    [HideInInspector] public int postEquipmentStrength;
+    [HideInInspector] public int postEquipmentStamina;
+    [HideInInspector] public int postEquipmentAgility;
+    [HideInInspector] public int postEquipmentDexterity;
+    [HideInInspector] public int postEquipmentIntelligence;
+    [HideInInspector] public int postEquipmentSpirit;
+    [HideInInspector] public int postEquipmentATK;
+    [HideInInspector] public int postEquipmentMATK;
+    [HideInInspector] public int postEquipmentDEF;
+    [HideInInspector] public int postEquipmentMDEF;
+
+    [HideInInspector] public int postEquipmentHitRating;
+    [HideInInspector] public int postEquipmentCritRating;
+    [HideInInspector] public int postEquipmentMoveRating;
+    [HideInInspector] public int postEquipmentRegenRating;
+
+    [HideInInspector] public int postEquipmentDodgeRating;
+    [HideInInspector] public int postEquipmentBlockRating;
+    [HideInInspector] public int postEquipmentParryRating;
+    [HideInInspector] public int postEquipmentThreatRating;
+
+    [ReadOnly] public int finalMaxHP;
+    [ReadOnly] public int finalMaxMP;
+
+    [ReadOnly] public int finalStrength;
+    [ReadOnly] public int finalStamina;
+    [ReadOnly] public int finalAgility;
+    [ReadOnly] public int finalDexterity;
+    [ReadOnly] public int finalIntelligence;
+    [ReadOnly] public int finalSpirit;
+    [ReadOnly] public int finalATK;
+    [ReadOnly] public int finalMATK;
+    [ReadOnly] public int finalDEF;
+    [ReadOnly] public int finalMDEF;
+
+    [ReadOnly] public int finalHitRating;
+    [ReadOnly] public int finalCritRating;
+    [ReadOnly] public int finalMoveRating;
+    [ReadOnly] public int finalRegenRating;
+
+    [ReadOnly] public int finalDodgeRating;
+    [ReadOnly] public int finalBlockRating;
+    [ReadOnly] public int finalParryRating;
+    [ReadOnly] public int finalThreatRating;
 
     [HideInInspector] public int levelBeforeExp;
     [HideInInspector] public int expBeforeAddingExp;
 
     public void InitializeStats()
     {
-        maxHP = GetBaseMaxHP(baseHP);
-        curHP = maxHP;
-        maxMP = GetBaseMaxMP(baseMP);
-        curMP = maxMP;
+        preEquipmentStrength = baseSTR;
+        preEquipmentStamina = baseSTA;
+        preEquipmentAgility = baseAGI;
+        preEquipmentDexterity = baseDEX;
+        preEquipmentIntelligence = baseINT;
+        preEquipmentSpirit = baseSPI;
 
-        currentStrength = baseSTR;
-        currentStamina = baseSTA;
-        currentAgility = baseAGI;
-        currentDexterity = baseDEX;
-        currentIntelligence = baseINT;
-        currentSpirit = baseSPI;
+        preEquipmentATK = baseATK;
+        preEquipmentMATK = baseMATK;
+        preEquipmentDEF = baseDEF;
+        preEquipmentMDEF = baseMDEF;
+        preEquipmentHitRating = baseHit;
+        preEquipmentCritRating = baseCrit;
+        preEquipmentMoveRating = baseMove;
+        preEquipmentRegenRating = baseRegen;
 
-        currentATK = baseATK;
-        currentMATK = baseMATK;
-        currentDEF = baseDEF;
-        currentMDEF = baseMDEF;
-        currentHitRating = baseHit;
-        currentCritRating = baseCrit;
-        currentMoveRating = baseMove;
-        currentRegenRating = baseRegen;
+        preEquipmentDodgeRating = baseDodge;
+        preEquipmentBlockRating = baseBlock;
+        preEquipmentParryRating = baseParry;
+        preEquipmentThreatRating = baseThreat;
 
-        currentDodgeRating = baseDodge;
-        currentBlockRating = baseBlock;
-        currentParryRating = baseParry;
-        currentThreatRating = baseThreat;
+        UpdateStats();
+
+        curHP = finalMaxHP;
+        curMP = finalMaxMP;
     }
 
     public void Equip(Equipment newEquip)
@@ -133,7 +205,7 @@ public class BaseHero : BaseClass
         }
         
         equipment[slotIndex] = newEquip;
-
+        
         Inventory.instance.Remove(newEquip);
     }
 
@@ -190,36 +262,38 @@ public class BaseHero : BaseClass
         baseAGI = baseAGI + Mathf.RoundToInt(baseAGI * agilityMod);
         //Debug.Log("New agility: " + agility);
 
-        UpdateBaseStats();
+        curHP = baseHP; //if full heal should occur on levelup, using for debugging purposes for now
+        curMP = baseMP; //if MP should be restored on levelup, using for debugging purposes for now
+
+        UpdateStats();
 
         learnNewAttacks();
     }
 
     //stats are affected by parameters here when leveling up
-    void UpdateBaseStats()
+    public void UpdateStats()
     {
-        baseATK = GetATK(baseATK);
-        baseMATK = GetMATK(baseMATK);
-        baseDEF = GetDEF(baseDEF);
-        baseMDEF = GetMDEF(baseMDEF);
+        baseATK = GetATK(baseSTR, baseATK);
+        baseMATK = GetMATK(baseINT, baseMATK);
+        baseDEF = GetDEF(baseSTA, baseDEF);
+        baseMDEF = GetMDEF(baseSTA, baseMDEF);
 
-        baseHP = GetBaseMaxHP(baseHP);
-        baseMP = GetBaseMaxMP(baseMP);
+        baseHP = GetMaxHP(baseSTA, baseHP);
+        baseMP = GetMaxMP(baseINT, baseMP);
+        
+        GetCurrentStatsFromEquipment();
 
-        curHP = baseHP; //if full heal should occur on levelup, using for debugging purposes for now
-        curMP = baseMP; //if MP should be restored on levelup, using for debugging purposes for now
-
-        GetCurrentStats();
+        UpdateStatsFromTalents();
     }
 
-    void GetCurrentStats()
+    public void GetCurrentStatsFromEquipment()
     {
         int tempStrength = 0, tempStamina = 0, tempAgility = 0, tempDexterity = 0, tempIntelligence = 0, tempSpirit = 0;
         int tempHP = 0, tempMP = 0;
         int tempATK = 0, tempMATK = 0, tempDEF = 0, tempMDEF = 0;
         int tempHit = 0, tempCrit = 0, tempMove = 0, tempRegen = 0;
         int tempDodge = 0, tempBlock = 0, tempParry = 0, tempThreat = 0;
-
+        
         foreach (Equipment equipment in equipment)
         {
             if (equipment != null)
@@ -251,30 +325,182 @@ public class BaseHero : BaseClass
             }
         }
 
-        currentStrength = baseSTR + tempStrength;
-        currentStamina = baseSTA + tempStamina;
-        currentAgility = baseAGI + tempAgility;
-        currentDexterity = baseDEX + tempDexterity;
-        currentIntelligence = baseINT + tempIntelligence;
-        currentSpirit = baseSPI + tempSpirit;
+        fromEquipmentStrength = tempStrength;
+        fromEquipmentStamina = tempStamina;
+        fromEquipmentAgility = tempAgility;
+        fromEquipmentDexterity = tempDexterity;
+        fromEquipmentIntelligence = tempIntelligence;
+        fromEquipmentSpirit = tempSpirit;
 
-        maxHP = GetBaseMaxHP(baseHP) + tempHP;
-        maxMP = GetBaseMaxMP(baseMP) + tempMP;
+        fromEquipmentHP = GetMaxHP(fromEquipmentStamina, baseHP);
+        fromEquipmentMP = GetMaxMP(fromEquipmentIntelligence, baseMP);
 
-        currentATK = baseATK + tempATK;
-        currentMATK = baseMATK + tempMATK;
-        currentDEF = baseDEF + tempDEF;
-        currentMDEF = baseMDEF + tempMDEF;
+        fromEquipmentATK = tempATK;
+        fromEquipmentMATK = tempMATK;
+        fromEquipmentDEF = tempDEF;
+        fromEquipmentMDEF = tempMDEF;
 
-        currentHitRating = baseHit + tempHit;
-        currentCritRating = baseCrit + tempCrit;
-        currentMoveRating = baseMove + tempMove;
-        currentRegenRating = baseRegen + tempRegen;
+        fromEquipmentHitRating = tempHit;
+        fromEquipmentCritRating = tempCrit;
+        fromEquipmentMoveRating = tempMove;
+        fromEquipmentRegenRating = tempRegen;
 
-        currentDodgeRating = baseDodge + tempDodge;
-        currentBlockRating = baseBlock + tempBlock;
-        currentParryRating = baseParry + tempParry;
-        currentThreatRating = baseThreat + tempThreat;
+        fromEquipmentDodgeRating = tempDodge;
+        fromEquipmentBlockRating = tempBlock;
+        fromEquipmentParryRating = tempParry;
+        fromEquipmentThreatRating = tempThreat;
+        
+        UpdatePostEquipmentStats();
+    }
+
+    void UpdatePostEquipmentStats()
+    {
+        postEquipmentStrength = baseSTR + fromEquipmentStrength;
+        postEquipmentStamina = baseSTA + fromEquipmentStamina;
+        postEquipmentAgility = baseAGI + fromEquipmentAgility;
+        postEquipmentDexterity = baseDEX + fromEquipmentDexterity;
+        postEquipmentIntelligence = baseINT + fromEquipmentIntelligence;
+        postEquipmentSpirit = baseSPI + fromEquipmentSpirit;
+
+        postEquipmentATK = baseATK + fromEquipmentATK;
+        postEquipmentMATK = baseMATK + fromEquipmentMATK;
+        postEquipmentDEF = baseDEF + fromEquipmentDEF;
+        postEquipmentMDEF = baseMDEF + fromEquipmentMDEF;
+
+        postEquipmentHitRating = baseHit + fromEquipmentHitRating;
+        postEquipmentCritRating = baseCrit + fromEquipmentCritRating;
+        postEquipmentMoveRating = baseMove + fromEquipmentMoveRating;
+        postEquipmentRegenRating = baseRegen + fromEquipmentRegenRating;
+
+        postEquipmentDodgeRating = baseDodge + fromEquipmentDodgeRating;
+        postEquipmentBlockRating = baseBlock + fromEquipmentBlockRating;
+        postEquipmentParryRating = baseParry + fromEquipmentParryRating;
+        postEquipmentThreatRating = baseThreat + fromEquipmentThreatRating;
+
+        postEquipmentHP = GetMaxHP(postEquipmentStamina, fromEquipmentHP);
+        postEquipmentMP = GetMaxMP(postEquipmentIntelligence, fromEquipmentMP);
+    }
+
+    public void UpdateStatsFromTalents()
+    {
+        finalStrength = postEquipmentStrength;
+        finalStamina = postEquipmentStamina;
+        finalAgility = postEquipmentAgility;
+        finalDexterity = postEquipmentDexterity;
+        finalIntelligence = postEquipmentIntelligence;
+        finalSpirit = postEquipmentSpirit;
+
+        finalATK = postEquipmentATK;
+        finalMATK = postEquipmentMATK;
+        finalDEF = postEquipmentDEF;
+        finalMDEF = postEquipmentMDEF;
+
+        finalHitRating = postEquipmentHitRating;
+        finalCritRating = postEquipmentCritRating;
+        finalMoveRating = postEquipmentMoveRating;
+        finalRegenRating = postEquipmentRegenRating;
+
+        finalDodgeRating = postEquipmentDodgeRating;
+        finalBlockRating = postEquipmentBlockRating;
+        finalParryRating = postEquipmentParryRating;
+        finalThreatRating = postEquipmentThreatRating;
+
+        finalMaxHP = postEquipmentHP;
+        finalMaxMP = postEquipmentMP;
+
+        TalentEffects effect = new TalentEffects();
+        
+        foreach (BaseTalent talent in level1Talents)
+        {
+            if (talent.isActive)
+            {
+                effect.AddEffect(talent.effect, this);
+            }
+        }
+
+        foreach (BaseTalent talent in level2Talents)
+        {
+            if (talent.isActive)
+            {
+                effect.AddEffect(talent.effect, this);
+            }
+        }
+
+        foreach (BaseTalent talent in level3Talents)
+        {
+            if (talent.isActive)
+            {
+                effect.AddEffect(talent.effect, this);
+            }
+        }
+
+        foreach (BaseTalent talent in level4Talents)
+        {
+            if (talent.isActive)
+            {
+                effect.AddEffect(talent.effect, this);
+            }
+        }
+
+        foreach (BaseTalent talent in level5Talents)
+        {
+            if (talent.isActive)
+            {
+                effect.AddEffect(talent.effect, this);
+            }
+        }
+
+        foreach (BaseTalent talent in level6Talents)
+        {
+            if (talent.isActive)
+            {
+                effect.AddEffect(talent.effect, this);
+            }
+        }
+        
+        UpdateFinalStats();
+    }
+
+    void UpdateFinalStats()
+    {
+        finalMaxHP = GetMaxHP(finalStamina, finalMaxHP);
+        finalMaxMP = GetMaxMP(finalIntelligence, finalMaxMP);
+
+        if (curHP > finalMaxHP)
+        {
+            curHP = finalMaxHP;
+        } //keeps current HP from being higher than max
+
+        if (curMP > finalMaxMP)
+        {
+            curMP = finalMaxMP;
+        } //keeps current MP from being higher than max
+
+        finalATK = GetATK(finalStrength, finalATK);
+        finalMATK = GetMATK(finalIntelligence, finalMATK);
+        finalDEF = GetDEF(finalStamina, finalDEF);
+        finalMDEF = GetMDEF(finalStamina, finalMDEF);
+
+        finalHitRating = GetHitChance(finalHitRating, finalAgility);
+        finalCritRating = GetCritChance(finalCritRating, finalDexterity);
+        finalMoveRating = GetMoveRating(finalMoveRating, finalDexterity);
+        finalRegenRating = GetRegen(finalRegenRating, finalSpirit);
+
+        finalDodgeRating = GetDodgeChance(finalDodgeRating, finalAgility);
+        finalBlockRating = GetBlockChance(finalBlockRating);
+        finalParryRating = GetParryChance(finalParryRating, finalStrength, finalDexterity);
+        finalThreatRating = GetThreatRating(finalThreatRating);
+
+        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck != null)
+        {
+            UpdatePanels();
+        }
+    }
+
+    void UpdatePanels()
+    {
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck);
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawEquipMenuStats(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck);
     }
 
     void learnNewAttacks()
@@ -300,58 +526,44 @@ public class BaseHero : BaseClass
     //if formulas are updated, they should also be updated in GameMenu - ShowEquipmentStats, ChangeEquipment, DrawEquipMenuStats, ResetEquipmentUpdates, and DrawStatusMenuStats
     //----------------------------------------------------------------------------
 
-    public int GetATK(int attack)
+    public int GetATK(int strength, int attack)
     {
-        int ATK = Mathf.RoundToInt(attack + (currentStrength * .5f));
+        int ATK = Mathf.RoundToInt(attack + (strength * .5f));
 
         return ATK;
     }
 
-    public int GetMATK(int magicAttack)
+    public int GetMATK(int intelligence, int magicAttack)
     {
-        int MATK = Mathf.RoundToInt(magicAttack + currentIntelligence * .5f);
+        int MATK = Mathf.RoundToInt(magicAttack + intelligence * .5f);
 
         return MATK;
     }
 
-    public int GetDEF(int defense)
+    public int GetDEF(int stamina, int defense)
     {
-        int DEF = Mathf.RoundToInt(defense + (currentStamina * .6f));
+        int DEF = Mathf.RoundToInt(defense + (stamina * .6f));
 
         return DEF;
     }
 
-    public int GetMDEF(int magicDefense)
+    public int GetMDEF(int stamina, int magicDefense)
     {
-        int MDEF = Mathf.RoundToInt(magicDefense + (currentStamina * .5f));
+        int MDEF = Mathf.RoundToInt(magicDefense + (stamina * .5f));
 
         return MDEF;
     }
 
-    public int GetBaseMaxHP(int hp)
+    public int GetMaxHP(int stamina, int hp)
     {
-        int HP = Mathf.RoundToInt(hp + (baseSTA * .75f));
+        int HP = Mathf.RoundToInt(hp + (stamina * .75f));
 
         return HP;
     }
 
-    public int GetMaxHP(int hp)
+    public int GetMaxMP(int intelligence, int mp)
     {
-        int HP = Mathf.RoundToInt(hp + (currentStamina * .75f));
-
-        return HP;
-    }
-
-    public int GetBaseMaxMP(int mp)
-    {
-        int MP = Mathf.RoundToInt(mp + (baseINT * .5f));
-
-        return MP;
-    }
-
-    public int GetMaxMP(int mp)
-    {
-        int MP = Mathf.RoundToInt(mp + (currentIntelligence * .5f));
+        int MP = Mathf.RoundToInt(mp + (intelligence * .5f));
 
         return MP;
     }

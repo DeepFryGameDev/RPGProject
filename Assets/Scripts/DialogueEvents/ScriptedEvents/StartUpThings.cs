@@ -14,12 +14,14 @@ public class StartUpThings : BaseScriptedEvent
         AssignEnemyIDs();
 
         AddHeroes();
+
+        //DisableButtons(); //<-----Enable when menu is complete
     }
 
     void InitiateStats()
     {
         //Debug.Log("Initializing stats");
-        foreach (BaseHero hero in GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes)
+        foreach (BaseHero hero in HeroDB.instance.heroes)
         {
             hero.InitializeStats();
         }
@@ -29,7 +31,7 @@ public class StartUpThings : BaseScriptedEvent
     {
         List<string> savedSpawnPoints = new List<string>();
 
-        foreach (BaseHero hero in GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes)
+        foreach (BaseHero hero in HeroDB.instance.heroes)
         {
             while (hero.spawnPoint == "")
             {
@@ -50,10 +52,10 @@ public class StartUpThings : BaseScriptedEvent
 
     void AssignQuestIDs()
     {
-        foreach (BaseQuest quest in GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests)
+        foreach (BaseQuest quest in QuestDB.instance.quests)
         {
-            Debug.Log("Assigning ID " + GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests.IndexOf(quest) + " to quest " + quest.name);
-            quest.ID = GameObject.Find("GameManager/QuestDB").GetComponent<QuestDB>().quests.IndexOf(quest);
+            Debug.Log("Assigning ID " + QuestDB.instance.quests.IndexOf(quest) + " to quest " + quest.name);
+            quest.ID = QuestDB.instance.quests.IndexOf(quest);
         }
     }
 
@@ -67,7 +69,7 @@ public class StartUpThings : BaseScriptedEvent
 
     private BaseHero GetHero(int ID)
     {
-        foreach (BaseHero hero in GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes)
+        foreach (BaseHero hero in HeroDB.instance.heroes)
         {
             if (hero.ID == ID)
             {
@@ -79,22 +81,30 @@ public class StartUpThings : BaseScriptedEvent
 
     public void AssignHeroIDs()
     {
-        foreach (BaseHero hero in GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes)
+        foreach (BaseHero hero in HeroDB.instance.heroes)
         {
-            hero.ID = GameObject.Find("GameManager/HeroDB").GetComponent<HeroDB>().heroes.IndexOf(hero);
+            hero.ID = HeroDB.instance.heroes.IndexOf(hero);
         }
     }
 
     public void AssignEnemyIDs()
     {
         int ID;
-        foreach (BaseEnemyDBEntry enemyEntry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        foreach (BaseEnemyDBEntry enemyEntry in EnemyDB.instance.enemies)
         {
-            ID = GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies.IndexOf(enemyEntry);
+            ID = EnemyDB.instance.enemies.IndexOf(enemyEntry);
             enemyEntry.enemy.ID = ID;
-            enemyEntry.enemy.name = GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies[ID].name;
-            Debug.Log(enemyEntry.enemy.name);
+            enemyEntry.enemy.name = EnemyDB.instance.enemies[ID].name;
         }
+    }
+
+    void DisableButtons()
+    {
+        ChangeMenuButtonAccess(MenuButtons.Talents, "Disable");
+        ChangeMenuButtonAccess(MenuButtons.Party, "Disable");
+        ChangeMenuButtonAccess(MenuButtons.Grid, "Disable");
+        ChangeMenuButtonAccess(MenuButtons.Quests, "Disable");
+        ChangeMenuButtonAccess(MenuButtons.Bestiary, "Disable");
     }
 
 }

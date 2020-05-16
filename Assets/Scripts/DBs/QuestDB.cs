@@ -7,6 +7,21 @@ public class QuestDB : MonoBehaviour
 {
     public List<BaseQuest> quests = new List<BaseQuest>();
 
+    #region Singleton
+    public static QuestDB instance; //call instance to get the single active QuestDB for the game
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            //Debug.LogWarning("More than one instance of QuestDB found!");
+            return;
+        }
+
+        instance = this;
+    }
+    #endregion
+
     public void AddToActiveQuests(BaseQuest quest)
     {
         Debug.Log("Quest active! - " + quest.name);
