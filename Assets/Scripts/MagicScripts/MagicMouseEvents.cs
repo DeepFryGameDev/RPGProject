@@ -95,12 +95,22 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         Debug.Log("choose a hero");
         DrawHeroSelectPanel();
+        menu.choosingHeroForMagicMenu = true;
         while (heroToCastOn == null)
         {
             GetHeroClicked();
             yield return null;
         }
+
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero1SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero2SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero3SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero4SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero5SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+
         menu.HideCanvas(menu.HeroSelectMagicPanel);
+
+        menu.choosingHeroForMagicMenu = false;
     }
 
     void DrawHeroSelectPanel() //shows hero panels to be selected to cast spell on

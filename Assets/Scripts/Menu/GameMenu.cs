@@ -17,6 +17,8 @@ public class GameMenu : MonoBehaviour
     public bool disableMenuExit = false;
     [HideInInspector]public bool menuCalled = false;
 
+    public bool choosingHero = false;
+
     //for all main menu objects
     GameObject Hero1MainMenuPanel;
     GameObject Hero2MainMenuPanel;
@@ -90,6 +92,7 @@ public class GameMenu : MonoBehaviour
     Transform BlackMagicListSpacer;
     Transform SorceryMagicListSpacer;
     GameObject NewMagicPanel;
+    public bool choosingHeroForMagicMenu = false;
 
     //for equip menu objects
    Image EquipPanelHPProgressBar;
@@ -432,6 +435,19 @@ public class GameMenu : MonoBehaviour
             mainMenuCanvasGroup.alpha = 0;
             mainMenuCanvasGroup.interactable = false;
             mainMenuCanvasGroup.blocksRaycasts = false;
+
+            UnboldButton(MagicButton);
+            UnboldButton(EquipButton);
+            UnboldButton(StatusButton);
+            UnboldButton(TalentsButton);
+            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero1Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero2Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero3Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero4Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero5Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+            heroToCheck = null;
+            choosingHero = false;
+
             //HideCanvas(MainMenuCanvas);
             PauseBackground(false);
             menuCalled = false;
@@ -444,7 +460,7 @@ public class GameMenu : MonoBehaviour
             ShowMainMenu();
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.MAGIC && !buttonPressed) //if cancel is pressed on magic menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.MAGIC && !buttonPressed && !choosingHeroForMagicMenu) //if cancel is pressed on magic menu
         {
             HideMagicMenu();
             ShowMainMenu();
@@ -516,6 +532,11 @@ public class GameMenu : MonoBehaviour
         if (Input.GetButtonDown("Cancel") && !buttonPressed && itemChoosingHero)
         {
             CancelItemChoosingHero();
+        }
+
+        if (Input.GetButtonDown("Cancel") && !buttonPressed && choosingHeroForMagicMenu)
+        {
+            CancelMagicChoosingHero();
         }
 
         CheckCancelPressed(); //makes sure cancel is only pressed once
@@ -1385,11 +1406,14 @@ public class GameMenu : MonoBehaviour
 
     IEnumerator ChooseHeroForMagicMenu()
     {
+        choosingHero = true;
+        BoldButton(MagicButton);
         while (heroToCheck == null)
         {
             GetHeroClicked();
             yield return null;
         }
+        UnboldButton(MagicButton);
         DrawMagicMenu(heroToCheck);
     }
 
@@ -1509,6 +1533,19 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    void CancelMagicChoosingHero()
+    {
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero1SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero2SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero3SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero4SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero5SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
+
+        HideCanvas(HeroSelectMagicPanel);
+
+        choosingHeroForMagicMenu = false;
+    }
+
     void HideMagicMenu()
     {
         ResetMagicList();
@@ -1533,11 +1570,14 @@ public class GameMenu : MonoBehaviour
 
     IEnumerator ChooseHeroToCheck()
     {
+        choosingHero = true;
+        BoldButton(EquipButton);
         while (heroToCheck == null)
         {
             GetHeroClicked();
             yield return null;
         }
+        UnboldButton(EquipButton);
         DrawEquipMenu(heroToCheck);
     }
 
@@ -3131,12 +3171,14 @@ public class GameMenu : MonoBehaviour
 
     IEnumerator ChooseHeroForStatusMenu()
     {
+        choosingHero = true;
+        BoldButton(StatusButton);
         while (heroToCheck == null)
         {
             GetHeroClicked();
             yield return null;
         }
-
+        UnboldButton(StatusButton);
         DrawStatusMenu(heroToCheck);
     }
 
@@ -3590,11 +3632,14 @@ public class GameMenu : MonoBehaviour
 
     IEnumerator ChooseHeroForTalentsMenu()
     {
+        choosingHero = true;
+        BoldButton(TalentsButton);
         while (heroToCheck == null)
         {
             GetHeroClicked();
             yield return null;
         }
+        UnboldButton(TalentsButton);
         DrawTalentsMenu(heroToCheck);
         DrawHeroTalents(heroToCheck);
     }
@@ -3983,26 +4028,46 @@ public class GameMenu : MonoBehaviour
             {
                 if (result.gameObject.name == "Hero1Panel")
                 {
+                    choosingHero = false;
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero1Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[0];
                 }
                 if (result.gameObject.name == "Hero2Panel")
                 {
+                    choosingHero = false;
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero2Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[1];
                 }
                 if (result.gameObject.name == "Hero3Panel")
                 {
+                    choosingHero = false;
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero3Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[2];
                 }
                 if (result.gameObject.name == "Hero4Panel")
                 {
+                    choosingHero = false;
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero4Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[3];
                 }
                 if (result.gameObject.name == "Hero5Panel")
                 {
+                    choosingHero = false;
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero5Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[4];
                 }
             }
         }
+    }
+
+    void BoldButton(Button button)
+    {
+        button.gameObject.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+    }
+
+    void UnboldButton(Button button)
+    {
+        button.gameObject.GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
     }
 
     static List<RaycastResult> GetEventSystemRaycastResults()
