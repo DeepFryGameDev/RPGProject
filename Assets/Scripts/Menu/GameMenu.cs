@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,9 +6,13 @@ using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using System.Linq;
 using System;
+using System.IO;
+using UnityEditor;
 
 public class GameMenu : MonoBehaviour
 {
+    #region Objects
+
     CanvasGroup mainMenuCanvasGroup;
 
     GameObject player;
@@ -18,6 +22,24 @@ public class GameMenu : MonoBehaviour
     [HideInInspector]public bool menuCalled = false;
 
     public bool choosingHero = false;
+
+    //for menu positioning
+    Vector3 currentCameraPosition;
+    Vector3 menuCameraPosition;
+    GameObject gameCameraObj;
+    Camera gameCamera;
+    float currentCameraSize;
+    float menuCameraSize;
+
+    //menu sound effects
+    public AudioClip confirmSE;
+    public AudioClip backSE;
+    public AudioClip healSE;
+    public AudioClip cantActionSE;
+    public AudioClip equipSE; //not the correct equip SE but ok for now
+    public AudioClip openMenuSE;
+    AudioSource menuAudioSource;
+    AudioSource animAudioSource;
 
     //for all main menu objects
     GameObject Hero1MainMenuPanel;
@@ -60,6 +82,7 @@ public class GameMenu : MonoBehaviour
     private Transform ItemListSpacer;
     private Transform KeyItemListSpacer;
     GameObject NewItemPanel;
+    bool inArrangeMenu;
     [HideInInspector] public bool itemChoosingHero;
     [HideInInspector] public bool itemCustomizeModeOn;
     [HideInInspector] public int itemIndexSwapA;
@@ -193,7 +216,58 @@ public class GameMenu : MonoBehaviour
     GameObject TalentsMenuCanvas;
     GameObject QuestsMenuCanvas;
     GameObject BestiaryMenuCanvas;
-    
+
+    //for animators
+    Animator MM_infoPanelAnimator;
+    Animator MM_menuButtonsPanelAnimator;
+    Animator MM_timeGoldPanelAnimator;
+    Animator MM_locationPanelAnimator;
+    Animator Items_itemOptionsPanel;
+    Animator Items_itemDescriptionPanel;
+    Animator Items_heroItemPanel;
+    Animator Items_itemListPanel;
+    Animator Items_keyItemListPanel;
+    Animator Items_arrangeOptionsPanel;
+    Animator Magic_heroMagicPanel;
+    Animator Magic_magicOptionsPanel;
+    Animator Magic_magicDetailsPanel;
+    Animator Magic_magicDescriptionPanel;
+    Animator Magic_whiteMagicListPanel;
+    Animator Magic_blackMagicListPanel;
+    Animator Magic_sorceryMagicListPanel;
+    Animator Magic_heroSelectMagicPanel;
+    Animator Equip_equipDescriptionPanel;
+    Animator Equip_heroEquipPanel;
+    Animator Equip_equipOptionsPanel;
+    Animator Equip_equipSlotsPanel;
+    Animator Equip_equipListPanel;
+    Animator Equip_equipStatsPanel;
+    Animator Status_baseStatsPanel;
+    Animator Status_passivePanel;
+    Animator Status_statsPanel;
+    Animator Status_equipPanel;
+    Animator Status_resistancesPanel;
+    Animator Status_skillsPanel;
+    Animator Talents_heroPanel;
+    Animator Talents_talentsPanel;
+    Animator Talents_talentDetailsPanel;
+    Animator Party_activeHeroesPanel;
+    Animator Party_inactiveHeroesPanel;
+    Animator Grid_heroGridPanel;
+    Animator Grid_gridPanel;
+    Animator Quest_questListOptions;
+    Animator Quest_questListPanel;
+    Animator Quest_questNamePanel;
+    Animator Quest_questLevelRequirementsPanel;
+    Animator Quest_questDetailsPanel;
+    Animator Quest_questRewardsPanel;
+    Animator Bestiary_enemyListPanel;
+    Animator Bestiary_enemyNamePanel;
+    Animator Bestiary_enemyLevelPanel;
+    Animator Bestiary_enemyGraphicPanel;
+    Animator Bestiary_enemyDescriptionPanel;
+    Animator Bestiary_enemyDetailsPanel;
+
     public enum MenuStates
     {
         MAIN,
@@ -215,11 +289,27 @@ public class GameMenu : MonoBehaviour
     GraphicRaycaster raycaster;
     [ReadOnly] public BaseHero heroToCheck;
 
-    void Start()
+    Coroutine menuToDraw = null;
+
+    #endregion
+
+    void Start() //Sets objects
     {
+        //set BG
+        gameCameraObj = GameObject.Find("Player/FollowCamera");
+        gameCamera = gameCameraObj.GetComponent<Camera>();
+        menuCameraPosition = new Vector3(419.3f, 568.9f, -1);
+        menuCameraSize = 168.4568f;
+        currentCameraSize = gameCamera.orthographicSize;
+        
+        //-----The below until end of Start are all static and should not be changed-----
+
         player = GameObject.Find("Player");
 
         heroToCheck = null;
+
+        menuAudioSource = GameObject.Find("GameManager/Menus/MenuSounds").GetComponent<AudioSource>();
+        animAudioSource = menuAudioSource = GameObject.Find("GameManager/Menus/AnimationSounds").GetComponent<AudioSource>();
 
         //Set Canvases
         MainMenuCanvas = GameObject.Find("GameManager/Menus/MainMenuCanvas");
@@ -238,15 +328,15 @@ public class GameMenu : MonoBehaviour
         mainMenuCanvasGroup = MainMenuCanvas.GetComponent<CanvasGroup>();
 
         //Set Buttons
-        ItemButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/ItemButton").GetComponent<Button>();
-        MagicButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/MagicButton").GetComponent<Button>();
-        EquipButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/EquipButton").GetComponent<Button>();
-        StatusButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/StatusButton").GetComponent<Button>();
-        TalentsButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/TalentsButton").GetComponent<Button>();
-        PartyButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/PartyButton").GetComponent<Button>();
-        GridButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/GridButton").GetComponent<Button>();
-        QuestsButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/QuestsButton").GetComponent<Button>();
-        BestiaryButton = MainMenuCanvas.transform.Find("MenuButtonsPanel/BestiaryButton").GetComponent<Button>();
+        ItemButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/ItemButton").GetComponent<Button>();
+        MagicButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/MagicButton").GetComponent<Button>();
+        EquipButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/EquipButton").GetComponent<Button>();
+        StatusButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/StatusButton").GetComponent<Button>();
+        TalentsButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/TalentsButton").GetComponent<Button>();
+        PartyButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/PartyButton").GetComponent<Button>();
+        GridButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/GridButton").GetComponent<Button>();
+        QuestsButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/QuestsButton").GetComponent<Button>();
+        BestiaryButton = MainMenuCanvas.transform.Find("MainMenuPanel/MenuButtonsPanel/BestiaryButton").GetComponent<Button>();
 
         //sets spacers
         ItemListSpacer = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform;
@@ -263,11 +353,11 @@ public class GameMenu : MonoBehaviour
         BestiaryEnemyListSpacer = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform;
 
         //Set Hero Panels
-        Hero1MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero1Panel");
-        Hero2MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero2Panel");
-        Hero3MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero3Panel");
-        Hero4MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero4Panel");
-        Hero5MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero5Panel");
+        Hero1MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero1Panel");
+        Hero2MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero2Panel");
+        Hero3MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero3Panel");
+        Hero4MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero4Panel");
+        Hero5MainMenuPanel = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero5Panel");
 
         Hero1ItemPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/HeroItemPanel/Hero1ItemPanel");
         Hero2ItemPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/HeroItemPanel/Hero2ItemPanel");
@@ -370,6 +460,57 @@ public class GameMenu : MonoBehaviour
         Hero5PartyMenuHPProgressBar = Hero5PartyPanel.transform.Find("HPProgressBarBG/HPProgressBar").GetComponent<Image>();
         Hero5PartyMenuMPProgressBar = Hero5PartyPanel.transform.Find("MPProgressBarBG/MPProgressBar").GetComponent<Image>();
 
+        //Set animators
+        MM_infoPanelAnimator = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel").GetComponent<Animator>();
+        MM_menuButtonsPanelAnimator = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/MenuButtonsPanel").GetComponent<Animator>();
+        MM_timeGoldPanelAnimator = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/TimeGoldPanel").GetComponent<Animator>();
+        MM_locationPanelAnimator = GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/LocationPanel").GetComponent<Animator>();
+        Items_itemOptionsPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel").GetComponent<Animator>();
+        Items_itemDescriptionPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel").GetComponent<Animator>();
+        Items_heroItemPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/HeroItemPanel").GetComponent<Animator>();
+        Items_itemListPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<Animator>();
+        Items_keyItemListPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<Animator>();
+        Items_arrangeOptionsPanel = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<Animator>();
+        Magic_heroMagicPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroMagicPanel").GetComponent<Animator>();
+        Magic_magicOptionsPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel").GetComponent<Animator>();
+        Magic_magicDetailsPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel").GetComponent<Animator>();
+        Magic_magicDescriptionPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/MagicDescriptionPanel").GetComponent<Animator>();
+        Magic_whiteMagicListPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/WhiteMagicListPanel").GetComponent<Animator>();
+        Magic_blackMagicListPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/BlackMagicListPanel").GetComponent<Animator>();
+        Magic_sorceryMagicListPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/SorceryMagicListPanel").GetComponent<Animator>();
+        Magic_heroSelectMagicPanel = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel").GetComponent<Animator>();
+        Equip_equipDescriptionPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipDescriptionPanel").GetComponent<Animator>();
+        Equip_heroEquipPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/HeroEquipPanel").GetComponent<Animator>();
+        Equip_equipOptionsPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipOptionsPanel").GetComponent<Animator>();
+        Equip_equipSlotsPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipSlotsPanel").GetComponent<Animator>();
+        Equip_equipListPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel").GetComponent<Animator>();
+        Equip_equipStatsPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipStatsPanel").GetComponent<Animator>();
+        Status_baseStatsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel").GetComponent<Animator>();
+        Status_passivePanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/PassivePanel").GetComponent<Animator>();
+        Status_statsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatsPanel").GetComponent<Animator>();
+        Status_equipPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel").GetComponent<Animator>();
+        Status_resistancesPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ResistancesPanel").GetComponent<Animator>();
+        Status_skillsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/SkillsPanel").GetComponent<Animator>();
+        Talents_heroPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/HeroPanel").GetComponent<Animator>();
+        Talents_talentsPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel").GetComponent<Animator>();
+        Talents_talentDetailsPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel").GetComponent<Animator>();
+        Party_activeHeroesPanel = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").GetComponent<Animator>();
+        Party_inactiveHeroesPanel = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel").GetComponent<Animator>();
+        Grid_heroGridPanel = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel").GetComponent<Animator>();
+        Grid_gridPanel = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel").GetComponent<Animator>();
+        Quest_questListOptions = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListOptions").GetComponent<Animator>();
+        Quest_questListPanel = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListPanel").GetComponent<Animator>();
+        Quest_questNamePanel = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestNamePanel").GetComponent<Animator>();
+        Quest_questLevelRequirementsPanel = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel").GetComponent<Animator>();
+        Quest_questDetailsPanel = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestDetailsPanel").GetComponent<Animator>();
+        Quest_questRewardsPanel = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel").GetComponent<Animator>();
+        Bestiary_enemyListPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel").GetComponent<Animator>();
+        Bestiary_enemyNamePanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyNamePanel").GetComponent<Animator>();
+        Bestiary_enemyLevelPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyLevelPanel").GetComponent<Animator>();
+        Bestiary_enemyGraphicPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel").GetComponent<Animator>();
+        Bestiary_enemyDescriptionPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDescriptionPanel").GetComponent<Animator>();
+        Bestiary_enemyDetailsPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDetailsPanel").GetComponent<Animator>();
+
         //sets party spacer child counts
         row1ChildCount = PartyInactiveRow1Spacer.childCount;
         row2ChildCount = PartyInactiveRow2Spacer.childCount;
@@ -396,122 +537,91 @@ public class GameMenu : MonoBehaviour
         this.raycaster = GetComponent<GraphicRaycaster>();
     }
 
-    public void DisplayCanvas(GameObject canvas)
-    {
-        canvas.GetComponent<CanvasGroup>().alpha = 1;
-        canvas.GetComponent<CanvasGroup>().interactable = true;
-        canvas.GetComponent<CanvasGroup>().blocksRaycasts = true;
-    }
-
-    public void HideCanvas(GameObject canvas)
-    {
-        canvas.GetComponent<CanvasGroup>().alpha = 0;
-        canvas.GetComponent<CanvasGroup>().interactable = false;
-        canvas.GetComponent<CanvasGroup>().blocksRaycasts = false;
-    }
-
-    void Update()
+    void Update() //Allows for menu to be called when 'Menu' button is pressed, and also keeps time counter updated
     {
         if ((Input.GetButtonDown("Menu") && !disableMenu) || menuCalled) //if menu is called (and not disabled)
         {
             drawingGUI = true;
         }
 
-        DisplayTime(); //keeps time counter updated
+        DisplayTime();
     }
 
-    private void OnGUI() //Actually draws the menu
+    private void OnGUI() //Actually draws the menu, and facilitates cancelling from various menus
     {
         if (drawingGUI && (menuState == MenuStates.IDLE))
         {
+            gameCameraObj = GameObject.Find("Player/FollowCamera");
+            gameCamera = gameCameraObj.GetComponent<Camera>();
+            currentCameraPosition = gameCameraObj.transform.position;
+
+            //ScreenshotBG();
+            //StartCoroutine(ScreenShotCoroutine());
+            
+            gameCamera.transform.parent = null;
+            gameCamera.transform.position = menuCameraPosition;
+            gameCamera.orthographicSize = menuCameraSize;
+
             PauseBackground(true); //keeps background objects from processing
+
             ShowMainMenu();
             menuState = MenuStates.MAIN;
         }
 
         if (Input.GetButtonDown("Cancel") && !disableMenuExit && menuState == MenuStates.MAIN && !buttonPressed) //if cancel is pressed while on main menu
         {
-            drawingGUI = false;
-            mainMenuCanvasGroup.alpha = 0;
-            mainMenuCanvasGroup.interactable = false;
-            mainMenuCanvasGroup.blocksRaycasts = false;
-
-            UnboldButton(MagicButton);
-            UnboldButton(EquipButton);
-            UnboldButton(StatusButton);
-            UnboldButton(TalentsButton);
-            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero1Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
-            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero2Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
-            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero3Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
-            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero4Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
-            GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero5Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
-            heroToCheck = null;
-            choosingHero = false;
-
-            //HideCanvas(MainMenuCanvas);
-            PauseBackground(false);
-            menuCalled = false;
-            menuState = MenuStates.IDLE;
+            StartCoroutine(ExitMainMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.ITEM && !buttonPressed && !itemCustomizeModeOn && !itemChoosingHero) //if cancel is pressed on item menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.ITEM && !buttonPressed && !itemCustomizeModeOn && !itemChoosingHero && !inArrangeMenu) //if cancel is pressed on item menu
         {
-            HideItemMenu();
-            ShowMainMenu();
+            StartCoroutine(HideItemMenu());
         }
 
         if (Input.GetButtonDown("Cancel") && menuState == MenuStates.MAGIC && !buttonPressed && !choosingHeroForMagicMenu) //if cancel is pressed on magic menu
         {
-            HideMagicMenu();
-            ShowMainMenu();
+            StartCoroutine(HideMagicMenu());
         }
 
         if (Input.GetButtonDown("Cancel") && menuState == MenuStates.EQUIP && !buttonPressed && !inEquipList) //if cancel is pressed on magic menu
         {
-            HideEquipMenu();
-            ShowMainMenu();
+            StartCoroutine(HideEquipMenu());
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.STATUS && !buttonPressed) //if cancel is pressed on status menu
+        {
+            StartCoroutine(HideStatusMenu());
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.TALENTS && !buttonPressed) //if cancel is pressed on talents menu
+        {
+            StartCoroutine(HideTalentsMenu());
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.PARTY && !buttonPressed && (PartyHeroSelected == null)) //if cancel is pressed on party menu
+        {
+            StartCoroutine(HidePartyMenu());
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.GRID && !buttonPressed) //if cancel is pressed on grid menu
+        {
+            StartCoroutine(HideGridMenu());
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.QUESTS && !buttonPressed && !QuestClicked) //if cancel is pressed on quests menu
+        {
+            StartCoroutine(HideQuestMenu());
+        }
+
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.BESTIARY && !buttonPressed && !BestiaryEntryClicked) //if cancel is pressed on bestiary menu
+        {
+            StartCoroutine(HideBestiaryMenu());
         }
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && inEquipList)
         {
             CancelFromEquipList();
             inEquipList = false;
-        }
-
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.STATUS && !buttonPressed) //if cancel is pressed on status menu
-        {
-            HideStatusMenu();
-            ShowMainMenu();
-        }
-
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.GRID && !buttonPressed) //if cancel is pressed on grid menu
-        {
-            HideGridMenu();
-            ShowMainMenu();
-        }
-
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.PARTY && !buttonPressed && (PartyHeroSelected == null)) //if cancel is pressed on party menu
-        {
-            HidePartyMenu();
-            ShowMainMenu();
-        }
-
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.TALENTS && !buttonPressed) //if cancel is pressed on talents menu
-        {
-            HideTalentsMenu();
-            ShowMainMenu();
-        }
-
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.QUESTS && !buttonPressed && !QuestClicked) //if cancel is pressed on quests menu
-        {
-            HideQuestMenu();
-            ShowMainMenu();
-        }
-
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.BESTIARY && !buttonPressed && !BestiaryEntryClicked) //if cancel is pressed on quests menu
-        {
-            HideBestiaryMenu();
-            ShowMainMenu();
         }
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && QuestClicked)
@@ -526,7 +636,16 @@ public class GameMenu : MonoBehaviour
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && itemCustomizeModeOn)
         {
+            PlaySE(backSE);
+
             CancelCustomizeMode();
+        }
+
+        if (Input.GetButtonDown("Cancel") && !buttonPressed && inArrangeMenu)
+        {
+            PlaySE(backSE);
+
+            StartCoroutine(HideArrangeMenu());
         }
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && itemChoosingHero)
@@ -536,16 +655,21 @@ public class GameMenu : MonoBehaviour
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && choosingHeroForMagicMenu)
         {
-            CancelMagicChoosingHero();
+            StartCoroutine(CancelMagicChoosingHero());
         }
 
         CheckCancelPressed(); //makes sure cancel is only pressed once
     }
 
-    //Main menu panels
+    #region Main Menu
 
-    void ShowMainMenu() //draws main menu
+    /// <summary>
+    /// Draws main menu, including hero stats (HP, MP, etc) as well as current location and gold.  Also resets heroToCheck to null
+    /// </summary>
+    void ShowMainMenu()
     {
+        StartCoroutine(AnimateMainMenu());
+
         mainMenuCanvasGroup.alpha = 1;
         mainMenuCanvasGroup.blocksRaycasts = true;
         mainMenuCanvasGroup.interactable = true;
@@ -555,6 +679,49 @@ public class GameMenu : MonoBehaviour
         heroToCheck = null;
     }
 
+    /// <summary>
+    /// Coroutine.  Animates the exit of the main menu, hides all main menu elements, returns camera to original position, and unpauses the background
+    /// </summary>
+    IEnumerator ExitMainMenu()
+    {
+        yield return (AnimateMainMenu());
+
+        drawingGUI = false;
+        mainMenuCanvasGroup.alpha = 0;
+        mainMenuCanvasGroup.interactable = false;
+        mainMenuCanvasGroup.blocksRaycasts = false;
+
+        UnboldButton(MagicButton);
+        UnboldButton(EquipButton);
+        UnboldButton(StatusButton);
+        UnboldButton(TalentsButton);
+        GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero1Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero2Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero3Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero4Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+        GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero5Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+        heroToCheck = null;
+        choosingHero = false;
+
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        gameCameraObj.transform.parent = GameObject.Find("Player").transform;
+        gameCameraObj.transform.position = currentCameraPosition;
+        gameCamera.orthographicSize = currentCameraSize;
+
+        //DeleteScreenshot();
+
+        PauseBackground(false);
+        menuCalled = false;
+        menuState = MenuStates.IDLE;
+    }
+
+    /// <summary>
+    /// Displays hero's stats for all active heroes into HeroInfoPanel
+    /// </summary>
     void DrawHeroStats()
     {
         int heroCount = GameManager.instance.activeHeroes.Count;
@@ -562,16 +729,20 @@ public class GameMenu : MonoBehaviour
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
-            DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
-            GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + HeroDB.instance.levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
-            DrawHeroSpawnPoint(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/HeroInfoPanel").transform.GetChild(i).Find("GridPanel").gameObject);
+            DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
+            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
+            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
+            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
+            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
+            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + HeroDB.instance.levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
+            DrawHeroSpawnPoint(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("GridPanel").gameObject);
         }
     }
 
+    /// <summary>
+    /// Shows canvas for each active hero, and hides canvas for inactive heroes
+    /// </summary>
+    /// <param name="count">Number of active heroes</param>
     void DrawHeroPanels(int count)
     {
         if (count == 1)
@@ -618,6 +789,9 @@ public class GameMenu : MonoBehaviour
         DrawHeroPanelBars();
     }
 
+    /// <summary>
+    /// Draws HP and MP bars for all active heroes
+    /// </summary>
     void DrawHeroPanelBars()
     {
         if (GameManager.instance.activeHeroes.Count == 1)
@@ -689,6 +863,11 @@ public class GameMenu : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Draws spawn point in GridPanel for given hero
+    /// </summary>
+    /// <param name="hero">Hero to obtain spawn point from</param>
+    /// <param name="panel">Panel to draw the spawn point</param>
     void DrawHeroSpawnPoint(BaseHero hero, GameObject panel)
     {
         foreach (Transform child in panel.transform)
@@ -700,18 +879,29 @@ public class GameMenu : MonoBehaviour
         panel.gameObject.transform.Find("Grid - " + spawnPoint).GetComponent<Image>().color = Color.black;
     }
 
-    void DisplayLocation() //draws location area (could be updated eventually so it's easier to update location being displayed)
+    /// <summary>
+    /// Displays sector and city in Location Panel - Sector = Scene name; City = customized in 'DisplayCity' (will likely be updated)
+    /// </summary>
+    void DisplayLocation()
     {
         string sector = SceneManager.GetActiveScene().name; //sector is the scene name
         DisplayCity(sector);
         DisplaySector(sector); //city is which area the sector is located in
     }
 
+    /// <summary>
+    /// Draws sector in the Location Panel
+    /// </summary>
+    /// <param name="sector">Name of the sector to be drawn</param>
     void DisplaySector(string sector)
     {
         GameObject.Find("LocationPanel").transform.GetChild(1).GetComponent<Text>().text = sector;
     }
 
+    /// <summary>
+    /// Displays city based on sector - city is customized in this method
+    /// </summary>
+    /// <param name="sector">Based on the scene name</param>
     void DisplayCity(string sector) //could be updated for easier access
     {
         string city = "";
@@ -729,11 +919,17 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("LocationPanel").transform.GetChild(0).GetComponent<Text>().text = city;
     }
 
+    /// <summary>
+    /// Draws gold value to Gold Panel
+    /// </summary>
     void DisplayGold()
     {
-        GameObject.Find("GameManager/Menus/MainMenuCanvas/TimeGoldPanel").transform.Find("GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
+        GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/TimeGoldPanel").transform.Find("GoldText").GetComponent<Text>().text = GameManager.instance.gold.ToString();
     }
 
+    /// <summary>
+    /// Gets hour/minute/second values from GameManager.instance and draws them to the menu
+    /// </summary>
     void DisplayTime() //shows the current time
     {
         if (menuState == MenuStates.MAIN)
@@ -757,50 +953,88 @@ public class GameMenu : MonoBehaviour
                 seconds = "0" + seconds;
             }
 
-            GameObject.Find("GameManager/Menus/MainMenuCanvas/TimeGoldPanel").transform.Find("TimeText").GetComponent<Text>().text = hours + ":" + minutes + ":" + seconds;
+            GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/TimeGoldPanel").transform.Find("TimeText").GetComponent<Text>().text = hours + ":" + minutes + ":" + seconds;
         }
     }
+    
+    #endregion
 
-    //--------------------
+    #region Item Menu
 
-    //Item Menu
-
-    public void ShowItemMenu() //displays item menu
+    /// <summary>
+    /// Public method to call item menu from gui
+    /// </summary>
+    public void ShowItemMenu()
     {
-        DrawItemMenu();
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        StartCoroutine(DrawItemMenu());
     }
 
-    void DrawItemMenu()
+    /// <summary>
+    /// Coroutine. Changes menu state to ITEM and draws elements for item menu
+    /// </summary>
+    IEnumerator DrawItemMenu()
     {
+        yield return (AnimateMainMenu());
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(ItemMenuCanvas);
         menuState = MenuStates.ITEM;
         EraseItemDescText();
         DrawHeroItemMenuStats();
         DrawItemList();
-        ShowUseItemMenu();
 
-        HideArrangeMenu();
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/UseButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+
+        //HideArrangeMenu();
         itemCustomizeModeOn = false;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+
+        yield return (AnimateItemMenu());
     }
 
-    void HideItemMenu()
+    /// <summary>
+    /// Coroutine. Hides item menu and goes back to main menu
+    /// </summary>
+    IEnumerator HideItemMenu()
     {
+        yield return (AnimateItemMenu());
+
         ResetItemList();
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(ItemMenuCanvas);
         menuState = MenuStates.MAIN;
         heroToCheck = null;
         itemCustomizeModeOn = false;
+        
+        ShowMainMenu();
     }
 
+    /// <summary>
+    /// Sets the item description panel to blank ("")
+    /// </summary>
     void EraseItemDescText()
     {
         GameObject.Find("ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>().text = "";
     }
 
-    public void DrawItemList() //draws items in inventory to item list
+    /// <summary>
+    /// Draws items in inventory to item list
+    /// </summary>
+    public void DrawItemList()
     {
         ResetItemList();
 
@@ -850,6 +1084,9 @@ public class GameMenu : MonoBehaviour
         itemsAccountedFor.Clear();
     }
 
+    /// <summary>
+    /// Clears the item and key item list
+    /// </summary>
     public void ResetItemList()
     {
         foreach (Transform child in ItemListSpacer.transform)
@@ -863,10 +1100,13 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Draws hero stats for all active heroes in item menu
+    /// </summary>
     public void DrawHeroItemMenuStats()
     {
         int heroCount = GameManager.instance.activeHeroes.Count;
-        DrawHeroItemMenuPanels(heroCount);
+        DrawHeroItemMenuPanels();
 
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
@@ -878,9 +1118,14 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void DrawHeroItemMenuPanels(int count)
+    /// <summary>
+    /// Shows item menu panel for each active hero, and hides item menu panel for inactive heroes
+    /// </summary>
+    void DrawHeroItemMenuPanels()
     {
-        if (count == 1)
+        int heroCount = GameManager.instance.activeHeroes.Count;
+
+        if (heroCount == 1)
         {
             DisplayCanvas(Hero1ItemPanel);
             HideCanvas(Hero2ItemPanel);
@@ -888,7 +1133,7 @@ public class GameMenu : MonoBehaviour
             HideCanvas(Hero4ItemPanel);
             HideCanvas(Hero5ItemPanel);
         }
-        else if (count == 2)
+        else if (heroCount == 2)
         {
             DisplayCanvas(Hero1ItemPanel);
             DisplayCanvas(Hero2ItemPanel);
@@ -896,7 +1141,7 @@ public class GameMenu : MonoBehaviour
             HideCanvas(Hero4ItemPanel);
             HideCanvas(Hero5ItemPanel);
         }
-        else if (count == 3)
+        else if (heroCount == 3)
         {
             DisplayCanvas(Hero1ItemPanel);
             DisplayCanvas(Hero2ItemPanel);
@@ -904,7 +1149,7 @@ public class GameMenu : MonoBehaviour
             HideCanvas(Hero4ItemPanel);
             HideCanvas(Hero5ItemPanel);
         }
-        else if (count == 4)
+        else if (heroCount == 4)
         {
             DisplayCanvas(Hero1ItemPanel);
             DisplayCanvas(Hero2ItemPanel);
@@ -912,7 +1157,7 @@ public class GameMenu : MonoBehaviour
             DisplayCanvas(Hero4ItemPanel);
             HideCanvas(Hero5ItemPanel);
         }
-        else if (count == 5)
+        else if (heroCount == 5)
         {
             DisplayCanvas(Hero1ItemPanel);
             DisplayCanvas(Hero2ItemPanel);
@@ -924,6 +1169,9 @@ public class GameMenu : MonoBehaviour
         DrawHeroItemMenuPanelBars();
     }
 
+    /// <summary>
+    /// Draws HP and MP bars in item menu for all active heroes
+    /// </summary>
     void DrawHeroItemMenuPanelBars()
     {
         if (GameManager.instance.activeHeroes.Count == 1)
@@ -984,8 +1232,13 @@ public class GameMenu : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Displays item use menu
+    /// </summary>
     public void ShowUseItemMenu()
     {
+        PlaySE(confirmSE);
+
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 1;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = true;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
@@ -998,8 +1251,13 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
     }
 
+    /// <summary>
+    /// Displays key item menu
+    /// </summary>
     public void ShowKeyItemMenu()
     {
+        PlaySE(confirmSE);
+
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = false;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
@@ -1012,38 +1270,75 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
     }
 
+    /// <summary>
+    /// Displays Arrangement menu (when organizing items)
+    /// </summary>
     public void ShowArrangeMenu()
     {
-        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha = 1;
-        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().interactable = true;
-        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+        StartCoroutine(DrawArrangeMenu());
     }
 
-    void HideArrangeMenu()
+    /// <summary>
+    /// Coroutine. Displays Arrangement menu (when organizing items)
+    /// </summary>
+    public IEnumerator DrawArrangeMenu()
     {
+        if (!inArrangeMenu)
+        {
+            PlaySE(confirmSE);
+            inArrangeMenu = true;
+
+            GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha = 1;
+            GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().interactable = true;
+            GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+            yield return AnimateArrangeOptionsPanel();
+        }
+    }
+
+    /// <summary>
+    /// Coroutine. Hides Arrangement menu
+    /// </summary>
+    IEnumerator HideArrangeMenu()
+    {
+        inArrangeMenu = false;
+
+        yield return AnimateArrangeOptionsPanel();
+
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().interactable = false;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
     }
 
+    /// <summary>
+    /// Processes the sorting for manual arrange mode and processes item sort if given mode is other than 'Customize'
+    /// </summary>
+    /// <param name="mode">'Customize' is for manually organizing items, other options are "Field", "Battle", "Type", "Name", "Most", and "Least"</param>
     public void ItemArrange(string mode)
     {
         if (mode == "Customize")
         {
             itemCustomizeModeOn = true;
             GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+            PlaySE(confirmSE);
         } else
         {
             SortItems(mode);
             DrawItemList();
         }
 
-        HideArrangeMenu();
+        StartCoroutine(HideArrangeMenu());
     }
 
+    /// <summary>
+    /// Processes the sorting for item arrangement
+    /// </summary>
+    /// <param name="mode">Options are: "Field", "Battle", "Type", "Name", "Most", and "Least"</param>
     void SortItems(string option)
     {
         CancelCustomizeMode();
+
+        PlaySE(confirmSE);
 
         List<Item> items = Inventory.instance.items;
 
@@ -1378,14 +1673,22 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Turns off customize mode so items can be used
+    /// </summary>
     void CancelCustomizeMode()
     {
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
         itemCustomizeModeOn = false;
     }
 
+    /// <summary>
+    /// Cancels the hero choosing menu after clicking an item
+    /// </summary>
     void CancelItemChoosingHero()
     {
+        PlaySE(backSE);
+
         foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
         {
             child.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
@@ -1394,16 +1697,29 @@ public class GameMenu : MonoBehaviour
         itemChoosingHero = false;
     }
 
-    //--------------------
+    #endregion
 
-    //Magic Menu
+    #region Magic Menu
 
-    public void ShowMagicMenu() //shows magic menu
+    /// <summary>
+    /// Public method to call magic menu from gui
+    /// </summary>
+    public void ShowMagicMenu()
     {
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        PlaySE(confirmSE);
+
         Debug.Log("Magic button clicked - choose a hero");
-        StartCoroutine(ChooseHeroForMagicMenu());
+        menuToDraw = StartCoroutine(ChooseHeroForMagicMenu());
     }
 
+    /// <summary>
+    /// Coroutine. Facilitates drawing magic menu with chosen hero
+    /// </summary>
     IEnumerator ChooseHeroForMagicMenu()
     {
         choosingHero = true;
@@ -1414,11 +1730,17 @@ public class GameMenu : MonoBehaviour
             yield return null;
         }
         UnboldButton(MagicButton);
-        DrawMagicMenu(heroToCheck);
+
+        StartCoroutine(DrawMagicMenu());
     }
 
-    void DrawMagicMenu(BaseHero hero)
+    /// <summary>
+    /// Coroutine. Changes menu state to MAGIC and draws magic menu stats and attacks with chosen hero
+    /// </summary>
+    IEnumerator DrawMagicMenu()
     {
+        yield return (AnimateMainMenu());
+        
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(MagicMenuCanvas);
         DisplayCanvas(WhiteMagicListPanel);
@@ -1431,17 +1753,42 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/BlackMagicButton/BlackMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/SorceryMagicButton/SorceryMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
 
-        DrawMagicMenuStats(hero);
-        DrawMagicListPanels(hero);
+        DrawMagicMenuStats();
+        DrawMagicListPanels();
         menuState = MenuStates.MAGIC;
+
+        yield return (AnimateMagicMenu());
     }
 
-    void DrawMagicListPanels(BaseHero hero)
+    /// <summary>
+    /// Coroutine. Hides magic menu to go back to main menu
+    /// </summary>
+    IEnumerator HideMagicMenu()
     {
-        foreach (BaseAttack magicAttack in hero.MagicAttacks)
+        yield return (AnimateMagicMenu());
+
+        ResetMagicList();
+        DisplayCanvas(MainMenuCanvas);
+        HideCanvas(MagicMenuCanvas);
+        HideCanvas(WhiteMagicListPanel);
+        HideCanvas(BlackMagicListPanel);
+        HideCanvas(SorceryMagicListPanel);
+        menuState = MenuStates.MAIN;
+        heroToCheck = null;
+
+        ShowMainMenu();
+    }
+
+    /// <summary>
+    /// Facilitates drawing of chosen hero's attacks
+    /// </summary>
+    void DrawMagicListPanels()
+    {
+        foreach (BaseAttack magicAttack in heroToCheck.MagicAttacks)
         {
             NewMagicPanel = Instantiate(PrefabManager.Instance.magicPrefab);
-            NewMagicPanel.transform.GetChild(0).GetComponent<Text>().text = magicAttack.name;
+            NewMagicPanel.transform.Find("Name").GetComponent<Text>().text = magicAttack.name;
+            NewMagicPanel.transform.Find("Icon").GetComponent<Image>().sprite = magicAttack.icon;
 
             if (magicAttack.magicClass == BaseAttack.MagicClass.WHITE)
             {
@@ -1455,7 +1802,7 @@ public class GameMenu : MonoBehaviour
             {
                 NewMagicPanel.transform.SetParent(SorceryMagicListSpacer, false);
             }
-            if (hero.curMP < magicAttack.MPCost)
+            if (heroToCheck.curMP < magicAttack.MPCost)
             {
                 magicAttack.enoughMP = false;
                 NewMagicPanel.transform.GetChild(0).GetComponent<Text>().color = Color.gray;
@@ -1472,6 +1819,9 @@ public class GameMenu : MonoBehaviour
         HideCanvas(SorceryMagicListPanel);
     }
 
+    /// <summary>
+    /// Public method to display white magic panel after clicking 'White Magic' button in gui
+    /// </summary>
     public void ShowWhiteMagicListPanel()
     {
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
@@ -1481,8 +1831,13 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(WhiteMagicListPanel);
         HideCanvas(BlackMagicListPanel);
         HideCanvas(SorceryMagicListPanel);
+
+        PlaySE(confirmSE);
     }
 
+    /// <summary>
+    /// Public method to display white magic panel after clicking 'Black Magic' button in gui
+    /// </summary>
     public void ShowBlackMagicListPanel()
     { 
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
@@ -1492,8 +1847,13 @@ public class GameMenu : MonoBehaviour
         HideCanvas(WhiteMagicListPanel);
         DisplayCanvas(BlackMagicListPanel);
         HideCanvas(SorceryMagicListPanel);
+
+        PlaySE(confirmSE);
     }
 
+    /// <summary>
+    /// Public method to display white magic panel after clicking 'Sorcery Magic' button in gui
+    /// </summary>
     public void ShowSorceryMagicListPanel()
     {
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
@@ -1503,20 +1863,28 @@ public class GameMenu : MonoBehaviour
         HideCanvas(WhiteMagicListPanel);
         HideCanvas(BlackMagicListPanel);
         DisplayCanvas(SorceryMagicListPanel);
+
+        PlaySE(confirmSE);
     }
 
-    public void DrawMagicMenuStats(BaseHero hero)
+    /// <summary>
+    /// Draws hero stats for chosen hero for magic menu 
+    /// </summary>
+    public void DrawMagicMenuStats()
     {
-        DrawHeroFace(hero, GameObject.Find("HeroMagicPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
-        GameObject.Find("HeroMagicPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
-        GameObject.Find("HeroMagicPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("HeroMagicPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
-        GameObject.Find("HeroMagicPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
+        DrawHeroFace(heroToCheck, GameObject.Find("HeroMagicPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
+        GameObject.Find("HeroMagicPanel/NameText").GetComponent<Text>().text = heroToCheck.name; //Name text
+        GameObject.Find("HeroMagicPanel/LevelText").GetComponent<Text>().text = heroToCheck.currentLevel.ToString(); //Level text
+        GameObject.Find("HeroMagicPanel/HPText").GetComponent<Text>().text = (heroToCheck.curHP.ToString() + " / " + heroToCheck.finalMaxHP.ToString()); //HP text
+        GameObject.Find("HeroMagicPanel/MPText").GetComponent<Text>().text = (heroToCheck.curMP.ToString() + " / " + heroToCheck.finalMaxMP.ToString()); //MP text
 
-        MagicPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), MagicPanelHPProgressBar.transform.localScale.y);
-        MagicPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), MagicPanelMPProgressBar.transform.localScale.y);
+        MagicPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(heroToCheck), 0, 1), MagicPanelHPProgressBar.transform.localScale.y);
+        MagicPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(heroToCheck), 0, 1), MagicPanelMPProgressBar.transform.localScale.y);
     }
 
+    /// <summary>
+    /// Clears magic attacks in gui
+    /// </summary>
     void ResetMagicList()
     {
         foreach (Transform child in GameObject.Find("WhiteMagicListPanel/WhiteMagicScroller/WhiteMagicListSpacer").transform)
@@ -1533,8 +1901,14 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void CancelMagicChoosingHero()
+    /// <summary>
+    /// Cancels the hero choosing menu after clicking a magic attack to cast on a hero
+    /// </summary>
+    IEnumerator CancelMagicChoosingHero()
     {
+        yield return AnimateMagicHeroSelectPanel();
+        PlaySE(backSE);
+        
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero1SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero2SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero3SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
@@ -1545,30 +1919,31 @@ public class GameMenu : MonoBehaviour
 
         choosingHeroForMagicMenu = false;
     }
+    
+    #endregion
 
-    void HideMagicMenu()
-    {
-        ResetMagicList();
-        DisplayCanvas(MainMenuCanvas);
-        HideCanvas(MagicMenuCanvas);
-        HideCanvas(WhiteMagicListPanel);
-        HideCanvas(BlackMagicListPanel);
-        HideCanvas(SorceryMagicListPanel);
-        menuState = MenuStates.MAIN;
-        heroToCheck = null;
-    }
+    #region Equip Menu
 
-    //--------------------
-
-    //Equip Menu
-
+    /// <summary>
+    /// Public method to call Equip Menu from gui
+    /// </summary>
     public void ShowEquipMenu()
     {
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        PlaySE(confirmSE);
+
         Debug.Log("Equip button clicked - choose a hero");
-        StartCoroutine(ChooseHeroToCheck());
+        menuToDraw = StartCoroutine(ChooseHeroForEquipMenu());
     }
 
-    IEnumerator ChooseHeroToCheck()
+    /// <summary>
+    /// Coroutine. Facilitates drawing Equip menu for chosen hero
+    /// </summary>
+    IEnumerator ChooseHeroForEquipMenu()
     {
         choosingHero = true;
         BoldButton(EquipButton);
@@ -1578,26 +1953,40 @@ public class GameMenu : MonoBehaviour
             yield return null;
         }
         UnboldButton(EquipButton);
-        DrawEquipMenu(heroToCheck);
+        StartCoroutine(DrawEquipMenu());
     }
 
-    void DrawEquipMenu(BaseHero hero)
+    /// <summary>
+    /// Coroutine. Changes menu state to EQUIP and draws Equip menu
+    /// </summary>
+    IEnumerator DrawEquipMenu()
     {
+        yield return AnimateMainMenu();
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(EquipMenuCanvas);
         GameObject.Find("EquipMenuCanvas/EquipMenuPanel/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
-        ChangeEquipMode("Equip");
-        DrawInitialArrows();
-        DrawEquipMenuStats(hero);
-        DrawCurrentEquipment(hero);
+
+        equipMode = "Equip";
+        GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipOptionsPanel/EquipOptionButton/EquipButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipOptionsPanel/RemoveOptionButton/RemoveButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
+
+        UpdateEquipmentArrowsToNeutral();
+        DrawEquipMenuStats();
+        DrawCurrentEquipment();
         menuState = MenuStates.EQUIP;
+
+        yield return AnimateEquipMenu();
     }
 
-    void DrawCurrentEquipment(BaseHero hero)
+    /// <summary>
+    /// Draw equipment name and icon into gui equipment slots for chosen hero
+    /// </summary>
+    void DrawCurrentEquipment()
     {
         string baseEquipPath = "GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipSlotsPanel/";
 
-        if (hero.equipment[0] == null)
+        if (heroToCheck.equipment[0] == null)
         {
             GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().sprite = null;
@@ -1608,14 +1997,14 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotText").GetComponent<Text>().text = hero.equipment[0].name;
-            GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().sprite = hero.equipment[0].icon;
+            GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotText").GetComponent<Text>().text = heroToCheck.equipment[0].name;
+            GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[0].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
             GameObject.Find(baseEquipPath + "HeadSlot/HeadButton/HeadSlotIcon").GetComponent<Image>().color = temp;
         }
-        if (hero.equipment[1] == null)
+        if (heroToCheck.equipment[1] == null)
         {
             GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().sprite = null;
@@ -1626,14 +2015,14 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotText").GetComponent<Text>().text = hero.equipment[1].name;
-            GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().sprite = hero.equipment[1].icon;
+            GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotText").GetComponent<Text>().text = heroToCheck.equipment[1].name;
+            GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[1].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
             GameObject.Find(baseEquipPath + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color = temp;
         }
-        if (hero.equipment[2] == null)
+        if (heroToCheck.equipment[2] == null)
         {
             GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = null;
@@ -1644,14 +2033,14 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = hero.equipment[2].name;
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = hero.equipment[2].icon;
+            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = heroToCheck.equipment[2].name;
+            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[2].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
             GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
         }
-        if (hero.equipment[3] == null)
+        if (heroToCheck.equipment[3] == null)
         {
             GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().sprite = null;
@@ -1662,14 +2051,14 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotText").GetComponent<Text>().text = hero.equipment[3].name;
-            GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().sprite = hero.equipment[3].icon;
+            GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotText").GetComponent<Text>().text = heroToCheck.equipment[3].name;
+            GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[3].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
             GameObject.Find(baseEquipPath + "LegsSlot/LegsButton/LegsSlotIcon").GetComponent<Image>().color = temp;
         }
-        if (hero.equipment[4] == null)
+        if (heroToCheck.equipment[4] == null)
         {
             GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().sprite = null;
@@ -1680,10 +2069,10 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotText").GetComponent<Text>().text = hero.equipment[4].name;
-            GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().sprite = hero.equipment[4].icon;
+            GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotText").GetComponent<Text>().text = heroToCheck.equipment[4].name;
+            GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[4].icon;
         }
-        if (hero.equipment[5] == null)
+        if (heroToCheck.equipment[5] == null)
         {
             GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().sprite = null;
@@ -1694,14 +2083,14 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotText").GetComponent<Text>().text = hero.equipment[5].name;
-            GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().sprite = hero.equipment[5].icon;
+            GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotText").GetComponent<Text>().text = heroToCheck.equipment[5].name;
+            GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[5].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
             GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().color = temp;
         }
-        if (hero.equipment[6] == null)
+        if (heroToCheck.equipment[6] == null)
         {
             GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = null;
@@ -1711,14 +2100,14 @@ public class GameMenu : MonoBehaviour
             GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
         } else
         {
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = hero.equipment[6].name;
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = hero.equipment[6].icon;
+            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = heroToCheck.equipment[6].name;
+            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[6].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
             GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
         }
-        if (hero.equipment[7] == null)
+        if (heroToCheck.equipment[7] == null)
         {
             GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = "";
             GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = null;
@@ -1729,8 +2118,8 @@ public class GameMenu : MonoBehaviour
         }
         else
         {
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = hero.equipment[7].name;
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = hero.equipment[7].icon;
+            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = heroToCheck.equipment[7].name;
+            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[7].icon;
 
             Color temp = GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
@@ -1739,102 +2128,83 @@ public class GameMenu : MonoBehaviour
 
     }
 
-    public void DrawEquipMenuStats(BaseHero hero)
+    /// <summary>
+    /// Draws chosen hero's stats after current equipment is taken into account
+    /// </summary>
+    public void DrawEquipMenuStats()
     {
         //For HeroEquipPanel
-        DrawHeroFace(hero, GameObject.Find("HeroEquipPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
-        GameObject.Find("HeroEquipPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
-        GameObject.Find("HeroEquipPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("HeroEquipPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
-        GameObject.Find("HeroEquipPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
+        DrawHeroFace(heroToCheck, GameObject.Find("HeroEquipPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
+        GameObject.Find("HeroEquipPanel/NameText").GetComponent<Text>().text = heroToCheck.name; //Name text
+        GameObject.Find("HeroEquipPanel/LevelText").GetComponent<Text>().text = heroToCheck.currentLevel.ToString(); //Level text
+        GameObject.Find("HeroEquipPanel/HPText").GetComponent<Text>().text = (heroToCheck.curHP.ToString() + " / " + heroToCheck.finalMaxHP.ToString()); //HP text
+        GameObject.Find("HeroEquipPanel/MPText").GetComponent<Text>().text = (heroToCheck.curMP.ToString() + " / " + heroToCheck.finalMaxMP.ToString()); //MP text
 
-        EquipPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), EquipPanelHPProgressBar.transform.localScale.y);
-        EquipPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), EquipPanelMPProgressBar.transform.localScale.y);
+        EquipPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(heroToCheck), 0, 1), EquipPanelHPProgressBar.transform.localScale.y);
+        EquipPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(heroToCheck), 0, 1), EquipPanelMPProgressBar.transform.localScale.y);
         
         //For EquipStatsPanel
         //STR-SPI
-        GameObject.Find("EquipStatsPanel/BaseStrengthText").GetComponent<Text>().text = hero.finalStrength.ToString();
-        GameObject.Find("EquipStatsPanel/BaseStaminaText").GetComponent<Text>().text = hero.finalStamina.ToString();
-        GameObject.Find("EquipStatsPanel/BaseAgilityText").GetComponent<Text>().text = hero.finalAgility.ToString();
-        GameObject.Find("EquipStatsPanel/BaseDexterityText").GetComponent<Text>().text = hero.finalDexterity.ToString();
-        GameObject.Find("EquipStatsPanel/BaseIntelligenceText").GetComponent<Text>().text = hero.finalIntelligence.ToString();
-        GameObject.Find("EquipStatsPanel/BaseSpiritText").GetComponent<Text>().text = hero.finalSpirit.ToString();
+        GameObject.Find("EquipStatsPanel/BaseStrengthText").GetComponent<Text>().text = heroToCheck.finalStrength.ToString();
+        GameObject.Find("EquipStatsPanel/BaseStaminaText").GetComponent<Text>().text = heroToCheck.finalStamina.ToString();
+        GameObject.Find("EquipStatsPanel/BaseAgilityText").GetComponent<Text>().text = heroToCheck.finalAgility.ToString();
+        GameObject.Find("EquipStatsPanel/BaseDexterityText").GetComponent<Text>().text = heroToCheck.finalDexterity.ToString();
+        GameObject.Find("EquipStatsPanel/BaseIntelligenceText").GetComponent<Text>().text = heroToCheck.finalIntelligence.ToString();
+        GameObject.Find("EquipStatsPanel/BaseSpiritText").GetComponent<Text>().text = heroToCheck.finalSpirit.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = hero.finalStrength.ToString();
-        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = hero.finalStamina.ToString();
-        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = hero.finalAgility.ToString();
-        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = hero.finalDexterity.ToString();
-        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = hero.finalIntelligence.ToString();
-        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = hero.finalSpirit.ToString();
+        GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = heroToCheck.finalStrength.ToString();
+        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = heroToCheck.finalStamina.ToString();
+        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = heroToCheck.finalAgility.ToString();
+        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = heroToCheck.finalDexterity.ToString();
+        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = heroToCheck.finalIntelligence.ToString();
+        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = heroToCheck.finalSpirit.ToString();
 
         //HP & MP
-        GameObject.Find("EquipStatsPanel/BaseHPText").GetComponent<Text>().text = hero.finalMaxHP.ToString();
-        GameObject.Find("EquipStatsPanel/BaseMPText").GetComponent<Text>().text = hero.finalMaxMP.ToString();
+        GameObject.Find("EquipStatsPanel/BaseHPText").GetComponent<Text>().text = heroToCheck.finalMaxHP.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMPText").GetComponent<Text>().text = heroToCheck.finalMaxMP.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = hero.finalMaxHP.ToString();
-        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = hero.finalMaxMP.ToString();
+        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = heroToCheck.finalMaxHP.ToString();
+        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = heroToCheck.finalMaxMP.ToString();
 
         //ATK-MDEF
-        GameObject.Find("EquipStatsPanel/BaseAttackText").GetComponent<Text>().text = hero.finalATK.ToString();
-        GameObject.Find("EquipStatsPanel/BaseMagicAttackText").GetComponent<Text>().text = hero.finalMATK.ToString();
-        GameObject.Find("EquipStatsPanel/BaseDefenseText").GetComponent<Text>().text = hero.finalDEF.ToString();
-        GameObject.Find("EquipStatsPanel/BaseMagicDefenseText").GetComponent<Text>().text = hero.finalMDEF.ToString();
+        GameObject.Find("EquipStatsPanel/BaseAttackText").GetComponent<Text>().text = heroToCheck.finalATK.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMagicAttackText").GetComponent<Text>().text = heroToCheck.finalMATK.ToString();
+        GameObject.Find("EquipStatsPanel/BaseDefenseText").GetComponent<Text>().text = heroToCheck.finalDEF.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = hero.finalATK.ToString();
-        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = hero.finalMATK.ToString();
-        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = hero.finalDEF.ToString();
-        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = hero.finalMDEF.ToString();
+        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = heroToCheck.finalATK.ToString();
+        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = heroToCheck.finalMATK.ToString();
+        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = heroToCheck.finalDEF.ToString();
+        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString();
 
         //Other stats
-        GameObject.Find("EquipStatsPanel/BaseHitText").GetComponent<Text>().text = hero.GetHitChance(hero.finalHitRating, hero.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/BaseCritText").GetComponent<Text>().text = hero.GetCritChance(hero.finalCritRating, hero.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseMPRegenText").GetComponent<Text>().text = hero.GetRegen(hero.finalRegenRating, hero.finalSpirit).ToString();
-        GameObject.Find("EquipStatsPanel/BaseMoveText").GetComponent<Text>().text = hero.GetMoveRating(hero.finalMoveRating, hero.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseDodgeText").GetComponent<Text>().text = hero.GetDodgeChance(hero.finalDodgeRating, hero.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/BaseBlockText").GetComponent<Text>().text = hero.GetBlockChance(hero.finalBlockRating).ToString();
-        GameObject.Find("EquipStatsPanel/BaseParryText").GetComponent<Text>().text = hero.GetParryChance(hero.finalParryRating, hero.finalStrength, hero.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.finalThreatRating).ToString();
+        GameObject.Find("EquipStatsPanel/BaseHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/BaseCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/BaseMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString();
+        GameObject.Find("EquipStatsPanel/BaseMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/BaseDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/BaseBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString();
+        GameObject.Find("EquipStatsPanel/BaseParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/BaseThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString();
 
-        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = hero.GetHitChance(hero.finalHitRating, hero.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = hero.GetCritChance(hero.finalCritRating, hero.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = hero.GetRegen(hero.finalRegenRating, hero.finalSpirit).ToString();
-        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = hero.GetMoveRating(hero.finalMoveRating, hero.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = hero.GetDodgeChance(hero.finalDodgeRating, hero.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = hero.GetBlockChance(hero.finalBlockRating).ToString();
-        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = hero.GetParryChance(hero.finalParryRating, hero.finalStrength, hero.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.finalThreatRating).ToString();
+        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString();
+        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString();
+        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString();
+        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString();
+        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString();
     }
 
-    void DrawInitialArrows()
+    /// <summary>
+    /// Hides all arrows for corresponding stat, and displays the one given in 'arrow' parameter
+    /// </summary>
+    /// <param name="obj">Given stat arrow parent</param>
+    /// <param name="arrow">"Up", "Down", or "Neutral"</param>
+    void ChangeArrow(GameObject obj, string arrow)
     {
-        ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
-
-        ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
-
-        ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
-
-        ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
-        ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
-    }
-
-    void ChangeArrow(GameObject GO, string arrow)
-    {
-        foreach (Image arrowImage in GO.GetComponentsInChildren<Image>())
+        foreach (Image arrowImage in obj.GetComponentsInChildren<Image>())
         {
             Color temp = arrowImage.color;
             if (arrowImage.gameObject.name == arrow)
@@ -1848,16 +2218,28 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void HideEquipMenu()
+    /// <summary>
+    /// Hides Equip menu and changes state back to main menu
+    /// </summary>
+    IEnumerator HideEquipMenu()
     {
+        yield return (AnimateEquipMenu());
+
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(EquipMenuCanvas);
         menuState = MenuStates.MAIN;
         heroToCheck = null;
+
+        ShowMainMenu();
     }
 
+    /// <summary>
+    /// Public method for listing equipment when clicking equipment slot
+    /// </summary>
     public void ListEquipment()
     {
+        PlaySE(confirmSE);
+
         string buttonName = EventSystem.current.currentSelectedGameObject.name;
         equipButtonClicked = buttonName;
 
@@ -2215,12 +2597,15 @@ public class GameMenu : MonoBehaviour
             heroToCheck.GetCurrentStatsFromEquipment();
             heroToCheck.UpdateStatsFromTalents();
 
-            DrawEquipMenuStats(heroToCheck);
+            DrawEquipMenuStats();
             
             UpdateEquipmentArrowsToNeutral();
         }
     }
 
+    /// <summary>
+    /// Public method to unequip all currently equipped items
+    /// </summary>
     public void RemoveAllEquipment()
     {
         string equipMenuBase = "GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipSlotsPanel/";
@@ -2309,9 +2694,15 @@ public class GameMenu : MonoBehaviour
 
         UpdateEquipmentArrowsToNeutral();
 
-        DrawEquipMenuStats(heroToCheck);
+        DrawEquipMenuStats();
+
+        inEquipList = false;
     }
 
+    /// <summary>
+    /// Public method to change equipment from choosing a given equipment item in gui
+    /// </summary>
+    /// <param name="toEquip">Equipment to be equipped.  If equip is null, equipment is unequipped</param>
     public void ChangeEquipment(Equipment toEquip)
     {
         string equipMenuBase = "GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipSlotsPanel/";
@@ -2420,7 +2811,9 @@ public class GameMenu : MonoBehaviour
 
                 heroToCheck.UpdateStatsFromTalents();
 
-                DrawEquipMenuStats(heroToCheck);
+                DrawEquipMenuStats();
+
+                inEquipList = false;
 
                 return;
             }
@@ -2519,7 +2912,7 @@ public class GameMenu : MonoBehaviour
 
             heroToCheck.UpdateStatsFromTalents();
 
-            DrawEquipMenuStats(heroToCheck);
+            DrawEquipMenuStats();
 
             inEquipList = false;
 
@@ -2533,7 +2926,10 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    private void UpdateEquipmentArrowsToNeutral()
+    /// <summary>
+    /// Changes all arrows to neutral
+    /// </summary>
+    void UpdateEquipmentArrowsToNeutral()
     {
         ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
@@ -2561,6 +2957,9 @@ public class GameMenu : MonoBehaviour
         ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
     }
 
+    /// <summary>
+    /// Returns equipment that is currently equipped in clicked slot from gui
+    /// </summary>
     Equipment GetCurrentEquippedInSlot()
     {
         if (equipButtonClicked == "HeadButton")
@@ -2606,6 +3005,9 @@ public class GameMenu : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Returns index of equipment button clicked
+    /// </summary>
     int GetCurrentEquippedSlotIndex()
     {
         if (equipButtonClicked == "HeadButton")
@@ -2652,6 +3054,9 @@ public class GameMenu : MonoBehaviour
         return 0;
     }
 
+    /// <summary>
+    /// Returns a temporary hero with same stats as chosen hero for equip menu
+    /// </summary>
     BaseHero TempHeroForEquip()
     {
         BaseHero tempHero = new BaseHero();
@@ -2731,6 +3136,10 @@ public class GameMenu : MonoBehaviour
         return tempHero;
     }
 
+    /// <summary>
+    /// Returns a temporary equip with same stats as current equipment
+    /// </summary>
+    /// <param name="toEquip">Current equipment to be copied</param>
     Equipment TempEquip(Equipment toEquip)
     {
         Equipment newEquip = ScriptableObject.CreateInstance("Equipment") as Equipment;
@@ -2763,6 +3172,11 @@ public class GameMenu : MonoBehaviour
         return newEquip;
 }
 
+    /// <summary>
+    /// Public method to show potential stat changes with equipment chosen compared to temporary hero (copied from chosen hero) 
+    /// and temporary equipment (copied from current equipment)
+    /// </summary>
+    /// <param name="toEquip">Potential equipment that has cursor hovered over</param>
     public void ShowEquipmentStatUpdates(Equipment toEquip)
     {
         //heroToCheck.GetCurrentStatsFromEquipment();
@@ -3075,6 +3489,9 @@ public class GameMenu : MonoBehaviour
             }
     }
 
+    /// <summary>
+    /// Public method to changes all arrows to neutral, and updates equip menu gui with newly updated stats after equipment is equipped
+    /// </summary>
     public void ResetEquipmentStatUpdates()
     {
         //heroToCheck.GetCurrentStatsFromEquipment();
@@ -3130,8 +3547,13 @@ public class GameMenu : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Cancels from choosing an equipment after clicking a slot in the gui
+    /// </summary>
     void CancelFromEquipList()
     {
+        PlaySE(backSE);
+
         equipButtonClicked = null;
 
         foreach (Transform child in GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform)
@@ -3140,8 +3562,14 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Public method to change equip mode when clicking option in gui - sets equipMode to given mode
+    /// </summary>
+    /// <param name="mode">"Equip" or "Remove"</param>
     public void ChangeEquipMode(string mode)
     {
+        PlaySE(confirmSE);
+
         if (mode == "Equip")
         {
             equipMode = "Equip";
@@ -3159,16 +3587,29 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    //--------------------
+    #endregion
 
-    //Status Menu
+    #region Status Menu
 
-    public void ShowStatusMenu() //displays status menu
+    /// <summary>
+    /// Public method to call Status Menu from gui
+    /// </summary>
+    public void ShowStatusMenu()
     {
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        PlaySE(confirmSE);
+
         Debug.Log("Status button clicked - choose a hero");
-        StartCoroutine(ChooseHeroForStatusMenu());
+        menuToDraw = StartCoroutine(ChooseHeroForStatusMenu());
     }
 
+    /// <summary>
+    /// Coroutine. Facilitates drawing Status menu for chosen hero
+    /// </summary>
     IEnumerator ChooseHeroForStatusMenu()
     {
         choosingHero = true;
@@ -3179,89 +3620,294 @@ public class GameMenu : MonoBehaviour
             yield return null;
         }
         UnboldButton(StatusButton);
-        DrawStatusMenu(heroToCheck);
+
+        StartCoroutine(DrawStatusMenu());
     }
 
-    void DrawStatusMenu(BaseHero hero)
+    /// <summary>
+    /// Coroutine. Changes menu state to STATUS and draws Status menu
+    /// </summary>
+    IEnumerator DrawStatusMenu()
     {
+        yield return (AnimateMainMenu());
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(StatusMenuCanvas);
+
         menuState = MenuStates.STATUS;
-        DrawStatusMenuBaseStats(hero);
-        DrawStatusMenuStats(hero);
+        DrawStatusMenuBaseStats();
+        DrawStatusMenuStats();
+
+        yield return (AnimateStatusMenu());
     }
 
-    void DrawStatusMenuBaseStats(BaseHero hero)
+    /// <summary>
+    /// Coroutine. Hides status menu and sets menu state to MAIN
+    /// </summary>
+    IEnumerator HideStatusMenu()
     {
-        DrawHeroFace(hero, GameObject.Find("StatusMenuPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/EXPText").GetComponent<Text>().text = (hero.currentExp + " / " + HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1]); //EXP text
-        GameObject.Find("StatusMenuPanel/BaseStatsPanel/ToNextLevelText").GetComponent<Text>().text = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - hero.currentExp).ToString(); //To next level text
+        yield return (AnimateStatusMenu());
 
-        StatusPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), StatusPanelHPProgressBar.transform.localScale.y);
-        StatusPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), StatusPanelMPProgressBar.transform.localScale.y);
-        StatusPanelEXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(hero), 0, 1), StatusPanelEXPProgressBar.transform.localScale.y);
-    }
-
-    void DrawStatusMenuStats(BaseHero hero)
-    {
-        GameObject.Find("StatusMenuPanel/StatsPanel/StrengthText").GetComponent<Text>().text = hero.finalStrength.ToString(); //Strength text
-        GameObject.Find("StatusMenuPanel/StatsPanel/StaminaText").GetComponent<Text>().text = hero.finalStamina.ToString(); //Stamina text
-        GameObject.Find("StatusMenuPanel/StatsPanel/AgilityText").GetComponent<Text>().text = hero.finalAgility.ToString(); //Agility text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DexterityText").GetComponent<Text>().text = hero.finalDexterity.ToString(); //Dexterity text
-        GameObject.Find("StatusMenuPanel/StatsPanel/IntelligenceText").GetComponent<Text>().text = hero.finalIntelligence.ToString(); //Intelligence text
-        GameObject.Find("StatusMenuPanel/StatsPanel/SpiritText").GetComponent<Text>().text = hero.finalSpirit.ToString(); //Spirit text
-
-        GameObject.Find("StatusMenuPanel/StatsPanel/AttackText").GetComponent<Text>().text = hero.finalATK.ToString(); //Attack text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MagicAttackText").GetComponent<Text>().text = hero.finalMATK.ToString(); //Magic Attack text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DefenseText").GetComponent<Text>().text = hero.finalDEF.ToString(); //Defense text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MagicDefenseText").GetComponent<Text>().text = hero.finalMDEF.ToString(); //Magic Defense text
-
-        GameObject.Find("StatusMenuPanel/StatsPanel/HitChanceText").GetComponent<Text>().text = hero.GetHitChance(hero.finalHitRating, hero.finalAgility).ToString(); //Hit Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/CritChanceText").GetComponent<Text>().text = hero.GetCritChance(hero.finalCritRating, hero.finalDexterity).ToString(); //Crit Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MoveRatingText").GetComponent<Text>().text = hero.GetMoveRating(hero.finalMoveRating, hero.finalDexterity).ToString(); //Move Rating text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MPPerTurnText").GetComponent<Text>().text = hero.GetRegen(hero.finalRegenRating, hero.finalSpirit).ToString(); //MP Regen text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DodgeChanceText").GetComponent<Text>().text = hero.GetDodgeChance(hero.finalDodgeRating, hero.finalAgility).ToString(); //Dodge Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = hero.GetBlockChance(hero.finalBlockRating).ToString(); //Block Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = hero.GetParryChance(hero.finalParryRating, hero.finalStrength, hero.finalDexterity).ToString(); //Parry Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = hero.GetThreatRating(hero.finalThreatRating).ToString(); //Threat Rating text
-    }
-
-    void HideStatusMenu()
-    {
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(StatusMenuCanvas);
         menuState = MenuStates.MAIN;
         heroToCheck = null;
+
+        ShowMainMenu();
     }
 
-    //--------------------
+    /// <summary>
+    /// Draws chosen hero's base stats to BaseStatsPanel
+    /// </summary>
+    void DrawStatusMenuBaseStats()
+    {
+        DrawHeroFace(heroToCheck, GameObject.Find("StatusMenuPanel/BaseStatsPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/NameText").GetComponent<Text>().text = heroToCheck.name; //Name text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/LevelText").GetComponent<Text>().text = heroToCheck.currentLevel.ToString(); //Level text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/HPText").GetComponent<Text>().text = (heroToCheck.curHP.ToString() + " / " + heroToCheck.finalMaxHP.ToString()); //HP text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/MPText").GetComponent<Text>().text = (heroToCheck.curMP.ToString() + " / " + heroToCheck.finalMaxMP.ToString()); //MP text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/EXPText").GetComponent<Text>().text = (heroToCheck.currentExp + " / " + HeroDB.instance.levelEXPThresholds[heroToCheck.currentLevel - 1]); //EXP text
+        GameObject.Find("StatusMenuPanel/BaseStatsPanel/ToNextLevelText").GetComponent<Text>().text = (HeroDB.instance.levelEXPThresholds[heroToCheck.currentLevel - 1] - heroToCheck.currentExp).ToString(); //To next level text
 
-    //Party Menu
+        StatusPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(heroToCheck), 0, 1), StatusPanelHPProgressBar.transform.localScale.y);
+        StatusPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(heroToCheck), 0, 1), StatusPanelMPProgressBar.transform.localScale.y);
+        StatusPanelEXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(heroToCheck), 0, 1), StatusPanelEXPProgressBar.transform.localScale.y);
+    }
 
+    /// <summary>
+    /// Draws detailed stats to StatsPanel
+    /// </summary>
+    void DrawStatusMenuStats()
+    {
+        GameObject.Find("StatusMenuPanel/StatsPanel/StrengthText").GetComponent<Text>().text = heroToCheck.finalStrength.ToString(); //Strength text
+        GameObject.Find("StatusMenuPanel/StatsPanel/StaminaText").GetComponent<Text>().text = heroToCheck.finalStamina.ToString(); //Stamina text
+        GameObject.Find("StatusMenuPanel/StatsPanel/AgilityText").GetComponent<Text>().text = heroToCheck.finalAgility.ToString(); //Agility text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DexterityText").GetComponent<Text>().text = heroToCheck.finalDexterity.ToString(); //Dexterity text
+        GameObject.Find("StatusMenuPanel/StatsPanel/IntelligenceText").GetComponent<Text>().text = heroToCheck.finalIntelligence.ToString(); //Intelligence text
+        GameObject.Find("StatusMenuPanel/StatsPanel/SpiritText").GetComponent<Text>().text = heroToCheck.finalSpirit.ToString(); //Spirit text
+
+        GameObject.Find("StatusMenuPanel/StatsPanel/AttackText").GetComponent<Text>().text = heroToCheck.finalATK.ToString(); //Attack text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MagicAttackText").GetComponent<Text>().text = heroToCheck.finalMATK.ToString(); //Magic Attack text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DefenseText").GetComponent<Text>().text = heroToCheck.finalDEF.ToString(); //Defense text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString(); //Magic Defense text
+
+        GameObject.Find("StatusMenuPanel/StatsPanel/HitChanceText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString(); //Hit Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/CritChanceText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString(); //Crit Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MoveRatingText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString(); //Move Rating text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MPPerTurnText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString(); //MP Regen text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DodgeChanceText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString(); //Dodge Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString(); //Block Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString(); //Parry Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString(); //Threat Rating text
+    }
+
+    #endregion
+
+    #region Talent Menu
+
+    /// <summary>
+    /// Public method to call Talents Menu from gui
+    /// </summary>
+    public void ShowTalentsMenu()
+    {
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        PlaySE(confirmSE);
+
+        Debug.Log("Choose hero for talents menu");
+        menuToDraw = StartCoroutine(ChooseHeroForTalentsMenu());
+    }
+
+    /// <summary>
+    /// Coroutine. Facilitates drawing Talents menu for chosen hero
+    /// </summary>
+    IEnumerator ChooseHeroForTalentsMenu()
+    {
+        choosingHero = true;
+        BoldButton(TalentsButton);
+        while (heroToCheck == null)
+        {
+            GetHeroClicked();
+            yield return null;
+        }
+        UnboldButton(TalentsButton);
+        StartCoroutine(DrawTalentsMenu());
+        DrawHeroTalents();
+    }
+
+    /// <summary>
+    /// Coroutine.  Sets menu state to TALENTS and draws talents menu
+    /// </summary>
+    IEnumerator DrawTalentsMenu()
+    {
+        yield return (AnimateMainMenu());
+
+        HideCanvas(MainMenuCanvas);
+        DisplayCanvas(TalentsMenuCanvas);
+        menuState = MenuStates.TALENTS;
+
+        DrawTalentsMenuHeroPanel();
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
+
+        yield return (AnimateTalentsMenu());
+    }
+
+    /// <summary>
+    /// Coroutine. Sets menu state to MAIN and hides talents menu
+    /// </summary>
+    IEnumerator HideTalentsMenu()
+    {
+        yield return (AnimateTalentsMenu());
+
+        DisplayCanvas(MainMenuCanvas);
+        HideCanvas(TalentsMenuCanvas);
+        menuState = MenuStates.MAIN;
+        heroToCheck = null;
+
+        ShowMainMenu();
+    }
+
+    /// <summary>
+    /// Draws chosen hero stats to talents menu
+    /// </summary>
+    public void DrawTalentsMenuHeroPanel()
+    {
+        DrawHeroFace(heroToCheck, GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/NameText").GetComponent<Text>().text = heroToCheck.name; //Name text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/LevelText").GetComponent<Text>().text = heroToCheck.currentLevel.ToString(); //Level text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPText").GetComponent<Text>().text = (heroToCheck.curHP.ToString() + " / " + heroToCheck.finalMaxHP.ToString()); //HP text
+        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPText").GetComponent<Text>().text = (heroToCheck.curMP.ToString() + " / " + heroToCheck.finalMaxMP.ToString()); //MP text
+
+        TalentsPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(heroToCheck), 0, 1), TalentsPanelHPProgressBar.transform.localScale.y);
+        TalentsPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(heroToCheck), 0, 1), TalentsPanelMPProgressBar.transform.localScale.y);
+    }
+
+    /// <summary>
+    /// Draws talent icons for chosen hero to talents gui
+    /// </summary>
+    void DrawHeroTalents()
+    {
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent1Button/TalentIcon"), heroToCheck.level1Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent2Button/TalentIcon"), heroToCheck.level1Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent3Button/TalentIcon"), heroToCheck.level1Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent1Button/TalentIcon"), heroToCheck.level2Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent2Button/TalentIcon"), heroToCheck.level2Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent3Button/TalentIcon"), heroToCheck.level2Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent1Button/TalentIcon"), heroToCheck.level3Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent2Button/TalentIcon"), heroToCheck.level3Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent3Button/TalentIcon"), heroToCheck.level3Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent1Button/TalentIcon"), heroToCheck.level4Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent2Button/TalentIcon"), heroToCheck.level4Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent3Button/TalentIcon"), heroToCheck.level4Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent1Button/TalentIcon"), heroToCheck.level5Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent2Button/TalentIcon"), heroToCheck.level5Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent3Button/TalentIcon"), heroToCheck.level5Talents[2]);
+
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent1Button/TalentIcon"), heroToCheck.level6Talents[0]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent2Button/TalentIcon"), heroToCheck.level6Talents[1]);
+        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent3Button/TalentIcon"), heroToCheck.level6Talents[2]);
+    }
+
+    /// <summary>
+    /// Processes the drawing of talent icons to gui
+    /// </summary>
+    /// <param name="obj">GameObject that image component is attached to that should hold the icon image</param>
+    /// <param name="talent">The talent containing the icon to be drawn</param>
+    void DrawTalentIcon(GameObject obj, BaseTalent talent)
+    {
+        obj.GetComponent<Image>().sprite = talent.icon;
+        if (talent.isActive)
+        {
+            DrawActiveTalent(obj.GetComponent<Image>());
+        }
+        else
+        {
+            DrawInactiveTalent(obj.GetComponent<Image>());
+        }
+    }
+
+    /// <summary>
+    /// Sets given icon alpha to .25 to show it is inactive
+    /// </summary>
+    void DrawInactiveTalent(Image icon)
+    {
+        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, .25f);
+    }
+
+    /// <summary>
+    /// Sets given icon alpha to 1 to show it is active
+    /// </summary>
+    void DrawActiveTalent(Image icon)
+    {
+        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, 1f);
+    }
+
+    #endregion
+
+    #region Party Menu
+
+    /// <summary>
+    /// Public method to call Party Menu from gui
+    /// </summary>
     public void ShowPartyMenu()
     {
-        DrawPartyMenu();
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        PlaySE(confirmSE);
+
+        StartCoroutine(DrawPartyMenu());
     }
 
-    void DrawPartyMenu()
+    /// <summary>
+    /// Coroutine. Changes menu state to PARTY and draws Party menu
+    /// </summary>
+    IEnumerator DrawPartyMenu()
     {
+        yield return (AnimateMainMenu());
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(PartyMenuCanvas);
         menuState = MenuStates.PARTY;
-
+    
         DrawPartyActiveHeroes();
         DrawInactiveHeroButtons();
+
+        yield return (AnimatePartyMenu());
     }
 
+    /// <summary>
+    /// Coroutine. Hides party menu and sets menu state to MAIN
+    /// </summary>
+    IEnumerator HidePartyMenu()
+    {
+        yield return (AnimatePartyMenu());
+
+        DisplayCanvas(MainMenuCanvas);
+        HideCanvas(PartyMenuCanvas);
+        menuState = MenuStates.MAIN;
+
+        ShowMainMenu();
+    }
+
+    /// <summary>
+    /// Draws active party members into ActiveHeroesPanel
+    /// </summary>
     public void DrawPartyActiveHeroes()
     {
-        int heroCount = GameManager.instance.activeHeroes.Count;
-        DrawHeroPartyMenuPanels(heroCount);
+        DrawHeroPartyMenuPanels();
 
+        int heroCount = GameManager.instance.activeHeroes.Count;
         for (int i = 0; i < heroCount; i++) //Display hero stats
         {
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
@@ -3274,9 +3920,14 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void DrawHeroPartyMenuPanels(int count)
+    /// <summary>
+    /// Shows party menu panel for each active hero, and hides party menu panel for inactive heroes
+    /// </summary>
+    void DrawHeroPartyMenuPanels()
     {
-        if (count == 1)
+        int heroCount = GameManager.instance.activeHeroes.Count;
+
+        if (heroCount == 1)
         {
             DrawActivePanel(Hero1PartyPanel);
             DrawInactivePanel(Hero2PartyPanel);
@@ -3284,7 +3935,7 @@ public class GameMenu : MonoBehaviour
             DrawInactivePanel(Hero4PartyPanel);
             DrawInactivePanel(Hero5PartyPanel);
         }
-        else if (count == 2)
+        else if (heroCount == 2)
         {
             DrawActivePanel(Hero1PartyPanel);
             DrawActivePanel(Hero2PartyPanel);
@@ -3292,7 +3943,7 @@ public class GameMenu : MonoBehaviour
             DrawInactivePanel(Hero4PartyPanel);
             DrawInactivePanel(Hero5PartyPanel);
         }
-        else if (count == 3)
+        else if (heroCount == 3)
         {
             DrawActivePanel(Hero1PartyPanel);
             DrawActivePanel(Hero2PartyPanel);
@@ -3300,7 +3951,7 @@ public class GameMenu : MonoBehaviour
             DrawInactivePanel(Hero4PartyPanel);
             DrawInactivePanel(Hero5PartyPanel);
         }
-        else if (count == 4)
+        else if (heroCount == 4)
         {
             DrawActivePanel(Hero1PartyPanel);
             DrawActivePanel(Hero2PartyPanel);
@@ -3308,7 +3959,7 @@ public class GameMenu : MonoBehaviour
             DrawActivePanel(Hero4PartyPanel);
             DrawInactivePanel(Hero5PartyPanel);
         }
-        else if (count == 5)
+        else if (heroCount == 5)
         {
             DrawActivePanel(Hero1PartyPanel);
             DrawActivePanel(Hero2PartyPanel);
@@ -3320,6 +3971,10 @@ public class GameMenu : MonoBehaviour
         DrawHeroPartyMenuPanelBars();
     }
 
+    /// <summary>
+    /// Sets alpha value to given panel's CanvasGroup to 1
+    /// </summary>
+    /// <param name="panel">Panel to be displayed</param>
     void DrawActivePanel(GameObject panel)
     {
         panel.transform.Find("FacePanel").GetComponent<CanvasGroup>().alpha = 1;
@@ -3334,6 +3989,9 @@ public class GameMenu : MonoBehaviour
         panel.transform.Find("MPProgressBarBG").GetComponent<CanvasGroup>().alpha = 1;
     }
 
+    /// <summary>
+    /// Sets alpha value to given panel's CanvasGroup to 0
+    /// </summary>
     void DrawInactivePanel(GameObject panel)
     {
         panel.transform.Find("FacePanel").GetComponent<CanvasGroup>().alpha = 0;
@@ -3349,6 +4007,9 @@ public class GameMenu : MonoBehaviour
         panel.name = "Empty Hero Panel";
     }
 
+    /// <summary>
+    /// Draws HP and MP bars for each active hero to party menu
+    /// </summary>
     void DrawHeroPartyMenuPanelBars()
     {
         if (GameManager.instance.activeHeroes.Count == 1)
@@ -3409,13 +4070,15 @@ public class GameMenu : MonoBehaviour
 
     }
 
-    public void DrawInactiveHeroButtons() //draws inactive hero buttons to panel
+    /// <summary>
+    /// Draws inactive hero buttons to party menu
+    /// </summary>
+    public void DrawInactiveHeroButtons()
     {
         ResetInactiveHeroList();
 
         foreach (BaseHero hero in GameManager.instance.inactiveHeroes)
         {
-            //NewItemPanel = Instantiate(NewItemPanel) as GameObject; //creates gameobject of newItemPanel
             InactivePartyButton = Instantiate(PrefabManager.Instance.inactiveHeroButton);
             InactivePartyButton.transform.Find("NameText").GetComponent<Text>().text = hero.name;
             DrawHeroFace(hero, InactivePartyButton.transform.Find("FacePanel").GetComponent<Image>()); //Draws face graphic
@@ -3438,6 +4101,9 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clears inactive party buttons in inactive party list
+    /// </summary>
     public void ResetInactiveHeroList()
     {
         foreach (Transform child in PartyInactiveRow1Spacer.transform)
@@ -3458,48 +4124,67 @@ public class GameMenu : MonoBehaviour
         row3ChildCount = 0;
     }
 
-    void HidePartyMenu()
+    #endregion
+
+    #region Grid Menu
+
+    /// <summary>
+    /// Public method to call Grid Menu from gui
+    /// </summary>
+    public void ShowGridMenu()
     {
-        DisplayCanvas(MainMenuCanvas);
-        HideCanvas(PartyMenuCanvas);
-        menuState = MenuStates.MAIN;
-    }
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
 
-    //--------------------
-
-    //Grid Menu
-
-    public void ShowGridMenu() //displays grid menu
-    {
-        DrawGridMenu();
         DrawHeroGridMenuStats();
+
+        PlaySE(confirmSE);
+
+        StartCoroutine(DrawGridMenu());
     }
 
-    void DrawGridMenu()
+    /// <summary>
+    /// Coroutine. Draws Grid menu and sets menu state to GRID
+    /// </summary>
+    IEnumerator DrawGridMenu()
     {
+        yield return (AnimateMainMenu());
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(GridMenuCanvas);
         menuState = MenuStates.GRID;
+
+        yield return (AnimateGridMenu());
     }
 
-    void HideGridMenu()
+    /// <summary>
+    /// Coroutine. Hides grid menu and sets menu state to MAIN
+    /// </summary>
+    IEnumerator HideGridMenu()
     {
+        yield return (AnimateGridMenu());
+
         ResetItemList();
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(GridMenuCanvas);
         menuState = MenuStates.MAIN;
+
+        ShowMainMenu();
     }
 
+    /// <summary>
+    /// Draws grid menu base stats for each active hero
+    /// </summary>
     public void DrawHeroGridMenuStats()
     {
-        int heroCount = GameManager.instance.activeHeroes.Count;
-        DrawHeroGridMenuPanels(heroCount);
+        DrawHeroGridMenuPanels();
 
-        DrawGridFaces();
-
-        for (int i = 0; i < heroCount; i++) //Display hero stats
+        for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++) //Display hero stats
         {
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
+            GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + GameManager.instance.activeHeroes[i].spawnPoint).GetComponent<Image>().sprite = GameManager.instance.activeHeroes[i].faceImage;
             GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text
             GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
             GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
@@ -3507,17 +4192,13 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void DrawGridFaces()
+    /// <summary>
+    /// Shows grid menu panel for each active hero, and hides grid menu panel for inactive heroes
+    /// </summary>
+    void DrawHeroGridMenuPanels()
     {
-        foreach (BaseHero hero in GameManager.instance.activeHeroes)
-        {
-            GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + hero.spawnPoint).GetComponent<Image>().sprite = hero.faceImage;
-        }
-    }
-
-    void DrawHeroGridMenuPanels(int count)
-    {
-        if (count == 1)
+        int heroCount = GameManager.instance.activeHeroes.Count;
+        if (heroCount == 1)
         {
             DisplayCanvas(Hero1GridPanel);
             HideCanvas(Hero2GridPanel);
@@ -3525,7 +4206,7 @@ public class GameMenu : MonoBehaviour
             HideCanvas(Hero4GridPanel);
             HideCanvas(Hero5GridPanel);
         }
-        else if (count == 2)
+        else if (heroCount == 2)
         {
             DisplayCanvas(Hero1GridPanel);
             DisplayCanvas(Hero2GridPanel);
@@ -3533,7 +4214,7 @@ public class GameMenu : MonoBehaviour
             HideCanvas(Hero4GridPanel);
             HideCanvas(Hero5GridPanel);
         }
-        else if (count == 3)
+        else if (heroCount == 3)
         {
             DisplayCanvas(Hero1GridPanel);
             DisplayCanvas(Hero2GridPanel);
@@ -3541,7 +4222,7 @@ public class GameMenu : MonoBehaviour
             HideCanvas(Hero4GridPanel);
             HideCanvas(Hero5GridPanel);
         }
-        else if (count == 4)
+        else if (heroCount == 4)
         {
             DisplayCanvas(Hero1GridPanel);
             DisplayCanvas(Hero2GridPanel);
@@ -3549,7 +4230,7 @@ public class GameMenu : MonoBehaviour
             DisplayCanvas(Hero4GridPanel);
             HideCanvas(Hero5GridPanel);
         }
-        else if (count == 5)
+        else if (heroCount == 5)
         {
             DisplayCanvas(Hero1GridPanel);
             DisplayCanvas(Hero2GridPanel);
@@ -3561,6 +4242,9 @@ public class GameMenu : MonoBehaviour
         DrawHeroGridMenuPanelBars();
     }
 
+    /// <summary>
+    /// Draws HP and MP bars for active heroes
+    /// </summary>
     void DrawHeroGridMenuPanelBars()
     {
         if (GameManager.instance.activeHeroes.Count == 1)
@@ -3621,120 +4305,32 @@ public class GameMenu : MonoBehaviour
 
     }
 
-    //--------------------
+    #endregion
 
-    //Talent Menu
+    #region Quest Menu
 
-    public void ShowTalentsMenu()
+    /// <summary>
+    /// Public method to call Quest Menu from gui
+    /// </summary>
+    public void ShowQuestMenu()
     {
-        StartCoroutine(ChooseHeroForTalentsMenu());
-    }
-
-    IEnumerator ChooseHeroForTalentsMenu()
-    {
-        choosingHero = true;
-        BoldButton(TalentsButton);
-        while (heroToCheck == null)
+        if (menuToDraw != null)
         {
-            GetHeroClicked();
-            yield return null;
+            StopCoroutine(menuToDraw);
         }
-        UnboldButton(TalentsButton);
-        DrawTalentsMenu(heroToCheck);
-        DrawHeroTalents(heroToCheck);
+
+        PlaySE(confirmSE);
+
+        StartCoroutine(DrawQuestMenu());
     }
 
-    void DrawTalentsMenu(BaseHero hero)
+    /// <summary>
+    /// Coroutine. Sets menu state to QUESTS, and draws active/completed quests to quest menu
+    /// </summary>
+    IEnumerator DrawQuestMenu()
     {
-        HideCanvas(MainMenuCanvas);
-        DisplayCanvas(TalentsMenuCanvas);
-        menuState = MenuStates.TALENTS;
+        yield return (AnimateMainMenu());
 
-        DrawTalentsMenuHeroPanel(hero);
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
-    }
-
-    public void DrawTalentsMenuHeroPanel(BaseHero hero)
-    {
-        DrawHeroFace(hero, GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/NameText").GetComponent<Text>().text = hero.name; //Name text
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/LevelText").GetComponent<Text>().text = hero.currentLevel.ToString(); //Level text
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPText").GetComponent<Text>().text = (hero.curHP.ToString() + " / " + hero.finalMaxHP.ToString()); //HP text
-        GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPText").GetComponent<Text>().text = (hero.curMP.ToString() + " / " + hero.finalMaxMP.ToString()); //MP text
-
-        TalentsPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(hero), 0, 1), TalentsPanelHPProgressBar.transform.localScale.y);
-        TalentsPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hero), 0, 1), TalentsPanelMPProgressBar.transform.localScale.y);
-    }
-
-    void DrawHeroTalents(BaseHero hero)
-    {
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent1Button/TalentIcon"), hero.level1Talents[0]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent2Button/TalentIcon"), hero.level1Talents[1]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent1/Talent3Button/TalentIcon"), hero.level1Talents[2]);
-
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent1Button/TalentIcon"), hero.level2Talents[0]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent2Button/TalentIcon"), hero.level2Talents[1]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent2/Talent3Button/TalentIcon"), hero.level2Talents[2]);
-
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent1Button/TalentIcon"), hero.level3Talents[0]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent2Button/TalentIcon"), hero.level3Talents[1]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent3/Talent3Button/TalentIcon"), hero.level3Talents[2]);
-
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent1Button/TalentIcon"), hero.level4Talents[0]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent2Button/TalentIcon"), hero.level4Talents[1]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent4/Talent3Button/TalentIcon"), hero.level4Talents[2]);
-
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent1Button/TalentIcon"), hero.level5Talents[0]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent2Button/TalentIcon"), hero.level5Talents[1]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent5/Talent3Button/TalentIcon"), hero.level5Talents[2]);
-
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent1Button/TalentIcon"), hero.level6Talents[0]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent2Button/TalentIcon"), hero.level6Talents[1]);
-        DrawTalentIcon(GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent6/Talent3Button/TalentIcon"), hero.level6Talents[2]);
-    }
-
-    void DrawTalentIcon(GameObject obj, BaseTalent talent)
-    {
-        obj.GetComponent<Image>().sprite = talent.icon;
-        if (talent.isActive)
-        {
-            DrawActiveTalent(obj.GetComponent<Image>());
-        } else
-        {
-            DrawInactiveTalent(obj.GetComponent<Image>());
-        }
-    }
-
-    void DrawInactiveTalent(Image icon)
-    {
-        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, .25f);
-    }
-
-    void DrawActiveTalent(Image icon)
-    {
-        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, 1f);
-    }
-
-    void HideTalentsMenu()
-    {
-        DisplayCanvas(MainMenuCanvas);
-        HideCanvas(TalentsMenuCanvas);
-        menuState = MenuStates.MAIN;
-        heroToCheck = null;
-    }
-
-    //--------------------
-
-    //Quest Menu
-
-    public void ShowQuestMenu() //displays item menu
-    {
-        DrawQuestMenu();
-    }
-
-    void DrawQuestMenu()
-    {
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(QuestsMenuCanvas);
         menuState = MenuStates.QUESTS;
@@ -3742,20 +4338,32 @@ public class GameMenu : MonoBehaviour
         DrawActiveQuestList();
         DrawCompletedQuestList();
 
-        ShowActiveQuestsPanel();
+        FirstShowActiveQuestsPanel();
 
         ClearQuestMenuFields();
+
+        yield return (AnimateQuestMenu());
     }
 
-    void HideQuestMenu()
+    /// <summary>
+    /// Coroutine. Sets menu state to MAIN and hides quest menu
+    /// </summary>
+    IEnumerator HideQuestMenu()
     {
+        yield return (AnimateQuestMenu());
+
         ResetActiveQuestList();
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(QuestsMenuCanvas);
         menuState = MenuStates.MAIN;
+
+        ShowMainMenu();
     }
 
-    public void DrawActiveQuestList() //draws quest to active quest list
+    /// <summary>
+    /// Draws quests from GameManager.instance.activeQuests to active quest list in gui
+    /// </summary>
+    public void DrawActiveQuestList()
     {
         ResetActiveQuestList();
 
@@ -3770,7 +4378,10 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    public void DrawCompletedQuestList() //draws quest to active quest list
+    /// <summary>
+    /// Draws quests from GameManager.instance.completedQuests to completed quest list in gui
+    /// </summary>
+    public void DrawCompletedQuestList()
     {
         ResetCompletedQuestList();
 
@@ -3785,7 +4396,10 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    public void ShowActiveQuestsPanel()
+    /// <summary>
+    /// Hides completed quests panel and shows active quests panel
+    /// </summary>
+    public void FirstShowActiveQuestsPanel()
     {
         QuestOption = "Active";
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().alpha = 1;
@@ -3797,8 +4411,29 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
     }
 
+    /// <summary>
+    /// Hides completed quests panel and shows active quests panel
+    /// </summary>
+    public void ShowActiveQuestsPanel()
+    {
+        PlaySE(confirmSE);
+        QuestOption = "Active";
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    /// <summary>
+    /// Hides active quests panel and shows completed quests panel
+    /// </summary>
     public void ShowCompletedQuestsPanel()
     {
+        PlaySE(confirmSE);
+
         QuestOption = "Completed";
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().interactable = false;
@@ -3809,6 +4444,9 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 
+    /// <summary>
+    /// Clears all fields on Active and Completed quests fields
+    /// </summary>
     public void ClearQuestMenuFields()
     {
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestNamePanel/QuestNameText").GetComponent<Text>().text = "";
@@ -3850,6 +4488,9 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemDescription").GetComponent<Text>().text = "";
     }
 
+    /// <summary>
+    /// Clears quests in active quest list
+    /// </summary>
     public void ResetActiveQuestList()
     {
         foreach (Transform child in ActiveQuestListSpacer.transform)
@@ -3858,6 +4499,9 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clears quests in completed quest list
+    /// </summary>
     public void ResetCompletedQuestList()
     {
         foreach (Transform child in CompletedQuestListSpacer.transform)
@@ -3866,8 +4510,13 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// De-selects chosen quest so another quest can be chosen
+    /// </summary>
     void CancelQuestSelect()
     {
+        PlaySE(backSE);
+
         QuestClicked = false;
 
         foreach (Transform child in GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform)
@@ -3885,25 +4534,60 @@ public class GameMenu : MonoBehaviour
         ClearQuestMenuFields();
     }
 
-    //--------------------
+    #endregion
 
-    //Bestiary Menu
+    #region Bestiary Menu
 
+    /// <summary>
+    /// Public method to call Bestiary Menu from gui
+    /// </summary>
     public void ShowBestiaryMenu() //displays item menu
     {
-        DrawBestiaryMenu();
+        if (menuToDraw != null)
+        {
+            StopCoroutine(menuToDraw);
+        }
+
+        PlaySE(confirmSE);
+
+        StartCoroutine(DrawBestiaryMenu());
     }
 
-    void DrawBestiaryMenu()
+    /// <summary>
+    /// Coroutine. Changes menu state to BESTIARY and draws Bestiary menu
+    /// </summary>
+    IEnumerator DrawBestiaryMenu()
     {
+        yield return (AnimateMainMenu());
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(BestiaryMenuCanvas);
         menuState = MenuStates.BESTIARY;
 
         DrawBestiaryEntryList();
+
+        yield return (AnimateBestiaryMenu());
     }
 
-    public void DrawBestiaryEntryList() //draws quest to active quest list
+    /// <summary>
+    /// Coroutine. Sets menu state to MAIN and hides Bestiary menu
+    /// </summary>
+    IEnumerator HideBestiaryMenu()
+    {
+        yield return (AnimateBestiaryMenu());
+
+        ResetActiveQuestList();
+        DisplayCanvas(MainMenuCanvas);
+        HideCanvas(BestiaryMenuCanvas);
+        menuState = MenuStates.MAIN;
+
+        ShowMainMenu();
+    }
+
+    /// <summary>
+    /// Draws entries for bestiary menu for each enemy thats been defeated
+    /// </summary>
+    public void DrawBestiaryEntryList()
     {
         ResetBestiaryList();
 
@@ -3919,6 +4603,9 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clears fields for Bestiary menu when cursor exits an entry or player cancels the enemy selected
+    /// </summary>
     public void ClearBestiaryMenuFields()
     {
         GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyNamePanel/EnemyNameText").GetComponent<Text>().text = "";
@@ -3934,8 +4621,13 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDescriptionPanel/EnemyDescriptionText").GetComponent<Text>().text = "";
     }
 
+    /// <summary>
+    /// Clears enemy selected when cancelled so 'cancel' input doesn't go straight to main menu
+    /// </summary>
     void CancelBestiarySelect()
     {
+        PlaySE(backSE);
+
         BestiaryEntryClicked = false;
 
         foreach (Transform child in GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform)
@@ -3945,6 +4637,9 @@ public class GameMenu : MonoBehaviour
         ClearBestiaryMenuFields();
     }
 
+    /// <summary>
+    /// Clears all bestiary entries
+    /// </summary>
     public void ResetBestiaryList()
     {
         foreach (Transform child in BestiaryEnemyListSpacer.transform)
@@ -3953,19 +4648,518 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void HideBestiaryMenu()
+    #endregion
+
+    #region -----Menu Animations-----
+
+    /// <summary>
+    /// Plays given sound effect once
+    /// </summary>
+    /// <param name="SE">Sound effect to play</param>
+    public void PlaySE(AudioClip SE)
     {
-        ResetActiveQuestList();
-        DisplayCanvas(MainMenuCanvas);
-        HideCanvas(BestiaryMenuCanvas);
-        menuState = MenuStates.MAIN;
+        menuAudioSource.PlayOneShot(SE);
     }
 
-    //--------------------
+    /// <summary>
+    /// Plays given sound effect once
+    /// </summary>
+    /// <param name="SE">Sound effect to play</param>
+    public void PlayAnimSE(AudioClip SE)
+    {
+        animAudioSource.PlayOneShot(SE);
+    }
 
-    //Methods for running above menus
+    /// <summary>
+    /// Coroutine.  Facilitates processing of main menu panel animations
+    /// </summary>
+    IEnumerator AnimateMainMenu()
+    {
+        PlayAnimSE(openMenuSE);
 
-    public void PauseBackground(bool pause) //keeps background objects from processing while pause=true by enabling the script's inMenu
+        if (MM_infoPanelAnimator != null)
+        {
+            bool isOpen = MM_infoPanelAnimator.GetBool("open");
+
+            MM_infoPanelAnimator.SetBool("open", !isOpen);
+        }
+
+        if (MM_menuButtonsPanelAnimator != null)
+        {
+            bool isOpen = MM_menuButtonsPanelAnimator.GetBool("open");
+
+            MM_menuButtonsPanelAnimator.SetBool("open", !isOpen);
+        }
+
+        if (MM_timeGoldPanelAnimator != null)
+        {
+            bool isOpen = MM_timeGoldPanelAnimator.GetBool("open");
+
+            MM_timeGoldPanelAnimator.SetBool("open", !isOpen);
+        }
+
+        if (MM_locationPanelAnimator != null)
+        {
+            bool isOpen = MM_locationPanelAnimator.GetBool("open");
+
+            MM_locationPanelAnimator.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(MM_infoPanelAnimator));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of item menu panel animations
+    /// </summary>
+    IEnumerator AnimateItemMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Items_itemOptionsPanel != null)
+        {
+            bool isOpen = Items_itemOptionsPanel.GetBool("open");
+
+            Items_itemOptionsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Items_itemDescriptionPanel != null)
+        {
+            bool isOpen = Items_itemDescriptionPanel.GetBool("open");
+
+            Items_itemDescriptionPanel.SetBool("open", !isOpen);
+        }
+
+        if (Items_heroItemPanel != null)
+        {
+            bool isOpen = Items_heroItemPanel.GetBool("open");
+
+            Items_heroItemPanel.SetBool("open", !isOpen);
+        }
+
+        if (Items_itemListPanel != null)
+        {
+            bool isOpen = Items_itemListPanel.GetBool("open");
+
+            Items_itemListPanel.SetBool("open", !isOpen);
+        }
+
+        if (Items_keyItemListPanel != null)
+        {
+            bool isOpen = Items_keyItemListPanel.GetBool("open");
+
+            Items_keyItemListPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Items_itemOptionsPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of magic menu panel animations
+    /// </summary>
+    IEnumerator AnimateMagicMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Magic_heroMagicPanel != null)
+        {
+            bool isOpen = Magic_heroMagicPanel.GetBool("open");
+
+            Magic_heroMagicPanel.SetBool("open", !isOpen);
+        }
+
+        if (Magic_magicOptionsPanel != null)
+        {
+            bool isOpen = Magic_magicOptionsPanel.GetBool("open");
+
+            Magic_magicOptionsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Magic_magicDetailsPanel != null)
+        {
+            bool isOpen = Magic_magicDetailsPanel.GetBool("open");
+
+            Magic_magicDetailsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Magic_magicDescriptionPanel != null)
+        {
+            bool isOpen = Magic_magicDescriptionPanel.GetBool("open");
+
+            Magic_magicDescriptionPanel.SetBool("open", !isOpen);
+        }
+
+        if (Magic_whiteMagicListPanel != null)
+        {
+            bool isOpen = Magic_whiteMagicListPanel.GetBool("open");
+
+            Magic_whiteMagicListPanel.SetBool("open", !isOpen);
+        }
+
+        if (Magic_blackMagicListPanel != null)
+        {
+            bool isOpen = Magic_blackMagicListPanel.GetBool("open");
+
+            Magic_blackMagicListPanel.SetBool("open", !isOpen);
+        }
+
+        if (Magic_sorceryMagicListPanel != null)
+        {
+            bool isOpen = Magic_sorceryMagicListPanel.GetBool("open");
+
+            Magic_sorceryMagicListPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Magic_heroMagicPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of equip menu panel animations
+    /// </summary>
+    IEnumerator AnimateEquipMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Equip_equipDescriptionPanel != null)
+        {
+            bool isOpen = Equip_equipDescriptionPanel.GetBool("open");
+
+            Equip_equipDescriptionPanel.SetBool("open", !isOpen);
+        }
+
+        if (Equip_heroEquipPanel != null)
+        {
+            bool isOpen = Equip_heroEquipPanel.GetBool("open");
+
+            Equip_heroEquipPanel.SetBool("open", !isOpen);
+        }
+
+        if (Equip_equipOptionsPanel != null)
+        {
+            bool isOpen = Equip_equipOptionsPanel.GetBool("open");
+
+            Equip_equipOptionsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Equip_equipSlotsPanel != null)
+        {
+            bool isOpen = Equip_equipSlotsPanel.GetBool("open");
+
+            Equip_equipSlotsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Equip_equipListPanel != null)
+        {
+            bool isOpen = Equip_equipListPanel.GetBool("open");
+
+            Equip_equipListPanel.SetBool("open", !isOpen);
+        }
+
+        if (Equip_equipStatsPanel != null)
+        {
+            bool isOpen = Equip_equipStatsPanel.GetBool("open");
+
+            Equip_equipStatsPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Equip_equipDescriptionPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of status menu panel animations
+    /// </summary>
+    IEnumerator AnimateStatusMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Status_baseStatsPanel != null)
+        {
+            bool isOpen = Status_baseStatsPanel.GetBool("open");
+
+            Status_baseStatsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Status_passivePanel != null)
+        {
+            bool isOpen = Status_passivePanel.GetBool("open");
+
+            Status_passivePanel.SetBool("open", !isOpen);
+        }
+
+        if (Status_statsPanel != null)
+        {
+            bool isOpen = Status_statsPanel.GetBool("open");
+
+            Status_statsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Status_equipPanel != null)
+        {
+            bool isOpen = Status_equipPanel.GetBool("open");
+
+            Status_equipPanel.SetBool("open", !isOpen);
+        }
+
+        if (Status_resistancesPanel != null)
+        {
+            bool isOpen = Status_resistancesPanel.GetBool("open");
+
+            Status_resistancesPanel.SetBool("open", !isOpen);
+        }
+
+        if (Status_skillsPanel != null)
+        {
+            bool isOpen = Status_skillsPanel.GetBool("open");
+
+            Status_skillsPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Status_baseStatsPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of talents menu panel animations
+    /// </summary>
+    IEnumerator AnimateTalentsMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Talents_heroPanel != null)
+        {
+            bool isOpen = Talents_heroPanel.GetBool("open");
+
+            Talents_heroPanel.SetBool("open", !isOpen);
+        }
+
+        if (Talents_talentsPanel != null)
+        {
+            bool isOpen = Talents_talentsPanel.GetBool("open");
+
+            Talents_talentsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Talents_talentDetailsPanel != null)
+        {
+            bool isOpen = Talents_talentDetailsPanel.GetBool("open");
+
+            Talents_talentDetailsPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Talents_heroPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of party menu panel animations
+    /// </summary>
+    IEnumerator AnimatePartyMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Party_activeHeroesPanel != null)
+        {
+            bool isOpen = Party_activeHeroesPanel.GetBool("open");
+
+            Party_activeHeroesPanel.SetBool("open", !isOpen);
+        }
+
+        if (Party_inactiveHeroesPanel != null)
+        {
+            bool isOpen = Party_inactiveHeroesPanel.GetBool("open");
+
+            Party_inactiveHeroesPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Party_activeHeroesPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of grid menu panel animations
+    /// </summary>
+    IEnumerator AnimateGridMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Grid_heroGridPanel != null)
+        {
+            bool isOpen = Grid_heroGridPanel.GetBool("open");
+
+            Grid_heroGridPanel.SetBool("open", !isOpen);
+        }
+
+        if (Grid_gridPanel != null)
+        {
+            bool isOpen = Grid_gridPanel.GetBool("open");
+
+            Grid_gridPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Grid_heroGridPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of quest menu panel animations
+    /// </summary>
+    IEnumerator AnimateQuestMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Quest_questListOptions != null)
+        {
+            bool isOpen = Quest_questListOptions.GetBool("open");
+
+            Quest_questListOptions.SetBool("open", !isOpen);
+        }
+
+        if (Quest_questListPanel != null)
+        {
+            bool isOpen = Quest_questListPanel.GetBool("open");
+
+            Quest_questListPanel.SetBool("open", !isOpen);
+        }
+
+        if (Quest_questNamePanel != null)
+        {
+            bool isOpen = Quest_questNamePanel.GetBool("open");
+
+            Quest_questNamePanel.SetBool("open", !isOpen);
+        }
+
+        if (Quest_questLevelRequirementsPanel != null)
+        {
+            bool isOpen = Quest_questLevelRequirementsPanel.GetBool("open");
+
+            Quest_questLevelRequirementsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Quest_questDetailsPanel != null)
+        {
+            bool isOpen = Quest_questDetailsPanel.GetBool("open");
+
+            Quest_questDetailsPanel.SetBool("open", !isOpen);
+        }
+
+        if (Quest_questRewardsPanel != null)
+        {
+            bool isOpen = Quest_questRewardsPanel.GetBool("open");
+
+            Quest_questRewardsPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Quest_questListOptions));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of bestiary menu panel animations
+    /// </summary>
+    IEnumerator AnimateBestiaryMenu()
+    {
+        PlayAnimSE(openMenuSE);
+
+        if (Bestiary_enemyListPanel != null)
+        {
+            bool isOpen = Bestiary_enemyListPanel.GetBool("open");
+
+            Bestiary_enemyListPanel.SetBool("open", !isOpen);
+        }
+
+        if (Bestiary_enemyNamePanel != null)
+        {
+            bool isOpen = Bestiary_enemyNamePanel.GetBool("open");
+
+            Bestiary_enemyNamePanel.SetBool("open", !isOpen);
+        }
+
+        if (Bestiary_enemyLevelPanel != null)
+        {
+            bool isOpen = Bestiary_enemyLevelPanel.GetBool("open");
+
+            Bestiary_enemyLevelPanel.SetBool("open", !isOpen);
+        }
+
+        if (Bestiary_enemyGraphicPanel != null)
+        {
+            bool isOpen = Bestiary_enemyGraphicPanel.GetBool("open");
+
+            Bestiary_enemyGraphicPanel.SetBool("open", !isOpen);
+        }
+
+        if (Bestiary_enemyDescriptionPanel != null)
+        {
+            bool isOpen = Bestiary_enemyDescriptionPanel.GetBool("open");
+
+            Bestiary_enemyDescriptionPanel.SetBool("open", !isOpen);
+        }
+
+        if (Bestiary_enemyDetailsPanel != null)
+        {
+            bool isOpen = Bestiary_enemyDetailsPanel.GetBool("open");
+
+            Bestiary_enemyDetailsPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Bestiary_enemyListPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of magic menu 'HeroSelectMagicPanel' animation
+    /// </summary>
+    public IEnumerator AnimateMagicHeroSelectPanel()
+    {
+        if (Magic_heroSelectMagicPanel != null)
+        {
+            bool isOpen = Magic_heroSelectMagicPanel.GetBool("open");
+
+            Magic_heroSelectMagicPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Magic_heroSelectMagicPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of item menu 'ArrangeOptionsPanel' animation
+    /// </summary>
+    public IEnumerator AnimateArrangeOptionsPanel()
+    {
+        if (Items_arrangeOptionsPanel != null)
+        {
+            bool isOpen = Items_arrangeOptionsPanel.GetBool("open");
+
+            Items_arrangeOptionsPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Items_arrangeOptionsPanel));
+    }
+
+    #endregion
+
+    #region -----Tools/Methods for above menu methods-----
+
+    /// <summary>
+    /// Shows given canvas GameObject and makes it interactable
+    /// </summary>
+    /// <param name="canvas">Canvas GameObject to be made visible/param>
+    public void DisplayCanvas(GameObject canvas)
+    {
+        canvas.GetComponent<CanvasGroup>().alpha = 1;
+        canvas.GetComponent<CanvasGroup>().interactable = true;
+        canvas.GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    /// <summary>
+    /// Hides given canvas and makes it non-interactable
+    /// </summary>
+    /// <param name="canvas">Canvas GameObject to hide</param>
+    public void HideCanvas(GameObject canvas)
+    {
+        canvas.GetComponent<CanvasGroup>().alpha = 0;
+        canvas.GetComponent<CanvasGroup>().interactable = false;
+        canvas.GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    /// <summary>
+    /// Keeps background objects from processing
+    /// </summary>
+    /// <param name="pause">If true, enables 'inMenu' so background processes will not run</param>
+    public void PauseBackground(bool pause)
     {
         GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
         player = GameObject.Find("Player");
@@ -3999,7 +5193,10 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void CheckCancelPressed() //makes sure cancel button is only processed once when pressed
+    /// <summary>
+    /// Makes sure cancel button is only processed once when pressed
+    /// </summary>
+    void CheckCancelPressed() //
     {
         if (Input.GetButtonDown("Cancel"))
         {
@@ -4016,7 +5213,10 @@ public class GameMenu : MonoBehaviour
         }
     }
 
-    void GetHeroClicked() //sets heroToCheck based on which hero panel is clicked
+    /// <summary>
+    /// Used by any menu option that needs a hero chosen (Magic, Equip, Status, Talents) to select the hero to open in the menu - hero chosen is set to 'heroToCheck'
+    /// </summary>
+    void GetHeroClicked()
     {
         //Check if the left Mouse button is clicked
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -4029,56 +5229,74 @@ public class GameMenu : MonoBehaviour
                 if (result.gameObject.name == "Hero1Panel")
                 {
                     choosingHero = false;
-                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero1Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero1Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[0];
                 }
                 if (result.gameObject.name == "Hero2Panel")
                 {
                     choosingHero = false;
-                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero2Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero2Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[1];
                 }
                 if (result.gameObject.name == "Hero3Panel")
                 {
                     choosingHero = false;
-                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero3Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero3Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[2];
                 }
                 if (result.gameObject.name == "Hero4Panel")
                 {
                     choosingHero = false;
-                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero4Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero4Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[3];
                 }
                 if (result.gameObject.name == "Hero5Panel")
                 {
                     choosingHero = false;
-                    GameObject.Find("GameManager/Menus/MainMenuCanvas/HeroInfoPanel/Hero5Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
+                    GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/HeroInfoPanel/Hero5Panel").GetComponent<MainMenuMouseEvents>().HideBorder();
                     heroToCheck = GameManager.instance.activeHeroes[4];
                 }
+            }
+
+            if (!choosingHero)
+            {
+                PlaySE(confirmSE);
             }
         }
     }
 
+    /// <summary>
+    /// Unbolds all menu buttons text, and then bolds the selected button text.  Used for selecting a menu option and choosing a hero
+    /// </summary>
+    /// <param name="button">Button to bold</param>
     void BoldButton(Button button)
     {
+        UnboldButton(ItemButton);
+        UnboldButton(MagicButton);
+        UnboldButton(EquipButton);
+        UnboldButton(StatusButton);
+        UnboldButton(TalentsButton);
+        UnboldButton(PartyButton);
+        UnboldButton(GridButton);
+        UnboldButton(QuestsButton);
+        UnboldButton(BestiaryButton);
+
         button.gameObject.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
     }
 
+    /// <summary>
+    /// Sets given button text to normal
+    /// </summary>
+    /// <param name="button">Button to set to normal</param>
     void UnboldButton(Button button)
     {
         button.gameObject.GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
     }
 
-    static List<RaycastResult> GetEventSystemRaycastResults()
-    {
-        PointerEventData eventData = new PointerEventData(EventSystem.current);
-        eventData.position = Input.mousePosition;
-        List<RaycastResult> raysastResults = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventData, raysastResults);
-        return raysastResults;
-    }
-
+    /// <summary>
+    /// Calculates the HP for progress bar for given hero - returns their current HP / their max HP
+    /// </summary>
+    /// <param name="hero">Hero to gather HP data from</param>
     float GetProgressBarValuesHP(BaseHero hero)
     {
         float heroHP = hero.curHP;
@@ -4090,6 +5308,10 @@ public class GameMenu : MonoBehaviour
         return calc_HP;
     }
 
+    /// <summary>
+    /// Calculates the MP for progress bar for given hero - returns their current MP / their max MP
+    /// </summary>
+    /// <param name="hero">Hero to gather MP data from</param>
     float GetProgressBarValuesMP(BaseHero hero)
     {
         float heroMP = hero.curMP;
@@ -4101,6 +5323,10 @@ public class GameMenu : MonoBehaviour
         return calc_MP;
     }
 
+    /// <summary>
+    /// Calculates the EXP for progress bar for given hero - returns a calculation of the EXP needed to reach the next level - their current EXP
+    /// </summary>
+    /// <param name="hero">Hero to gather EXP data from</param>
     float GetProgressBarValuesEXP(BaseHero hero)
     {
         float baseLineEXP;
@@ -4124,6 +5350,11 @@ public class GameMenu : MonoBehaviour
         return calcEXP;
     }
 
+    /// <summary>
+    /// Draws the given hero's face image onto the given image on UI
+    /// </summary>
+    /// <param name="hero">Hero to gather face image data from</param>
+    /// <param name="faceImage">Image component on GameObject that image should be drawn onto</param>
     public void DrawHeroFace(BaseHero hero, Image faceImage)
     {
         if (GameManager.instance.activeHeroes.Contains(hero))
@@ -4139,6 +5370,10 @@ public class GameMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Returns the hero by given ID based on HeroDB
+    /// </summary>
+    /// <param name="ID">ID of hero needing to be returned</param>
     BaseHero GetHeroByID(int ID)
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
@@ -4159,4 +5394,97 @@ public class GameMenu : MonoBehaviour
 
         return null;
     }
+
+    /// <summary>
+    /// Used by GetHeroClicked() to find which panel on main menu is clicked
+    /// </summary>
+    static List<RaycastResult> GetEventSystemRaycastResults()
+    {
+        PointerEventData eventData = new PointerEventData(EventSystem.current);
+        eventData.position = Input.mousePosition;
+        List<RaycastResult> raysastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, raysastResults);
+        return raysastResults;
+    }
+
+    /// <summary>
+    /// Returns full animation time in seconds by given animator component
+    /// </summary>
+    /// <param name="anim">Animator component to measure animation time</param>
+    float GetAnimationTime(Animator anim)
+    {
+        float animTime = 0f;
+        RuntimeAnimatorController ac = anim.runtimeAnimatorController;    //Get Animator controller
+        for (int i = 0; i < ac.animationClips.Length; i++)                 //For all animations
+        {
+            animTime = ac.animationClips[i].length;
+        }
+
+        return animTime;
+    }
+
+    /// <summary>
+    /// Takes screenshot of player camera, and sets menu BG image to this screenshot
+    /// </summary>
+    /*void ScreenshotBG()
+    {
+        ScreenCapture.CaptureScreenshot("Assets/Resources/Temp/BGScreenshot.png");
+        AssetDatabase.ImportAsset("Assets/Resources/Temp/BGScreenshot.png");
+        MenuBG.sprite = Resources.Load<Sprite>("Temp/BGScreenshot");
+
+    }
+
+    public IEnumerator ScreenShotCoroutine()
+    {
+        yield return new WaitForEndOfFrame();
+        string path = "Assets/Resources/Temp/BGScreenshot.png";
+
+        Texture2D screenImage = new Texture2D(Screen.width, Screen.height);
+
+        //Get Image from screen
+        screenImage.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+
+        //Wait for a long time
+        for (int i = 0; i < 15; i++)
+        {
+            yield return null;
+        }
+
+        screenImage.Apply();
+
+        //Wait for a long time
+        for (int i = 0; i < 15; i++)
+        {
+            yield return null;
+        }
+
+        //Convert to png(Expensive)
+        byte[] imageBytes = screenImage.EncodeToPNG();
+
+        //Wait for a long time
+        for (int i = 0; i < 15; i++)
+        {
+            yield return null;
+        }
+
+        //Create new thread then save image to file
+        new System.Threading.Thread(() =>
+        {
+            System.Threading.Thread.Sleep(100);
+            File.WriteAllBytes(path, imageBytes);
+        }).Start();
+
+        MenuBG.sprite = Resources.Load<Sprite>("Temp/BGScreenshot");
+    }
+
+    void DeleteScreenshot()
+    {
+        MenuBG.sprite = null;
+
+        File.Delete("Assets/Resources/Temp/BGScreenshot.png");
+        File.Delete("Assets/Resources/Temp/BGScreenshot.png.meta");
+    }*/
+
+    #endregion
+
 }

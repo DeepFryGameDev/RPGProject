@@ -45,6 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Fire 1
   description: Basic fireball which burns a lil bit
+  icon: {fileID: 21300000, guid: 7785feccd0fc9a641be238795ab11c0c, type: 3}
   damage: 30
   MPCost: 20
   cooldown: 0

@@ -100,11 +100,11 @@ public class StartUpThings : BaseScriptedEvent
 
     void DisableButtons()
     {
-        ChangeMenuButtonAccess(MenuButtons.Talents, "Disable");
-        ChangeMenuButtonAccess(MenuButtons.Party, "Disable");
-        ChangeMenuButtonAccess(MenuButtons.Grid, "Disable");
-        ChangeMenuButtonAccess(MenuButtons.Quests, "Disable");
-        ChangeMenuButtonAccess(MenuButtons.Bestiary, "Disable");
+        ChangeMenuButtonAccess(MenuButtons.Talents, false);
+        ChangeMenuButtonAccess(MenuButtons.Party, false);
+        ChangeMenuButtonAccess(MenuButtons.Grid, false);
+        ChangeMenuButtonAccess(MenuButtons.Quests, false);
+        ChangeMenuButtonAccess(MenuButtons.Bestiary, false);
     }
 
 }

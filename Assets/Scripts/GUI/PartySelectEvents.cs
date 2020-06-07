@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,28 +8,30 @@ public class PartySelectEvents : MonoBehaviour
     Image SelectedHeroMenuHPProgressBar;
     Image SelectedHeroMenuMPProgressBar;
     Image SelectedHeroMenuEXPProgressBar;
+    GameMenu menu;
 
     public void Awake()
     {
         SelectedHeroMenuHPProgressBar = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/HPProgressBarBG/HPProgressBar").GetComponent<Image>();
         SelectedHeroMenuMPProgressBar = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/MPProgressBarBG/MPProgressBar").GetComponent<Image>();
         SelectedHeroMenuEXPProgressBar = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/LevelProgressBarBG/LevelProgressBar").GetComponent<Image>();
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
     public void Update()
     {
-        if (Input.GetButtonDown("Cancel") && GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected != null) //if cancel is pressed after selecting a hero
+        if (Input.GetButtonDown("Cancel") && menu.PartyHeroSelected != null) //if cancel is pressed after selecting a hero
         {
-            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = null;
+            menu.PartyHeroSelected = null;
             HideSelectedHeroPanel();
-            unboldButtons();
-            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "";
+            UnboldButtons();
+            menu.PartySelectedHeroType = "";
         }
     }
 
     public void ShowSelectedHeroPanel()
     {
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected == null)
+        if (menu.PartyHeroSelected == null)
         {
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().alpha = 1;
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().interactable = true;
@@ -61,7 +63,7 @@ public class PartySelectEvents : MonoBehaviour
 
     public void ShowSelectedActiveHeroPanel()
     {
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected == null)
+        if (menu.PartyHeroSelected == null)
         {
             if (gameObject.name.Contains(" - ID"))
             {
@@ -96,7 +98,7 @@ public class PartySelectEvents : MonoBehaviour
 
     public void HideSelectedHeroPanel()
     {
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected == null)
+        if (menu.PartyHeroSelected == null)
         {
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().alpha = 0;
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().interactable = false;
@@ -106,16 +108,17 @@ public class PartySelectEvents : MonoBehaviour
 
     public void SelectHeroFromInactive()
     {
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected == null)
+        menu.PlaySE(menu.confirmSE);
+        if (menu.PartyHeroSelected == null)
         {
-            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", "")));
+            menu.PartyHeroSelected = GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", "")));
 
             gameObject.transform.Find("NameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
 
-            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "Inactive";
+            menu.PartySelectedHeroType = "Inactive";
         }
 
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected != null && GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType == "Active")
+        if (menu.PartyHeroSelected != null && menu.PartySelectedHeroType == "Active")
         {
             Debug.Log("process the switch from active to inactive");
             Debug.Log("Switching " + GameObject.Find("GameManager").GetComponent<GameMenu>().PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", ""))).name);
@@ -125,39 +128,63 @@ public class PartySelectEvents : MonoBehaviour
 
     public void SelectHeroFromActive()
     {
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected == null)
+        menu.PlaySE(menu.confirmSE);
+        if (menu.PartyHeroSelected == null)
         {
             if (gameObject.name.Contains(" - ID"))
             {
-                GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", "")));
+                menu.PartyHeroSelected = GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", "")));
 
                 gameObject.transform.Find("NameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
 
-                GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "Active";
+                menu.PartySelectedHeroType = "Active";
                 return;
             }
         }
 
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected != null && GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType == "Inactive")
+        if (menu.PartyHeroSelected != null && menu.PartySelectedHeroType == "Inactive")
         {
             Debug.Log("process the switch from inactive to active");
+
+            foreach (BaseHero hero in GameManager.instance.activeHeroes)
+            {
+                if (hero.spawnPoint == menu.PartyHeroSelected.spawnPoint)
+                {
+                    Debug.Log("Assigning new random spawn point for " + menu.PartyHeroSelected.name);
+
+                    while (hero.spawnPoint == menu.PartyHeroSelected.spawnPoint)
+                    {
+                        int randomColumn = Random.Range(1, 5);
+                        int randomRow = Random.Range(1, 5);
+
+                        string spawnPoint = randomColumn.ToString() + randomRow.ToString();
+
+                        menu.PartyHeroSelected.spawnPoint = spawnPoint;
+                        Debug.Log("Setting random spawn point for " + menu.PartyHeroSelected.name + " - " + spawnPoint);
+                    }
+                }
+            }
+
             if (gameObject.name == "Empty Hero Panel")
             {
                 Debug.Log("switching to empty panel");
-                AddInactiveToEmpty(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected);
+                AddInactiveToEmpty(menu.PartyHeroSelected);
+                
             } else
             {
-                Debug.Log("Switching " + GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))).name);
-                SwitchInactiveToActive(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected, GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))));
+                Debug.Log("Switching " + menu.PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))).name);
+                SwitchInactiveToActive(menu.PartyHeroSelected, GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))));
             }
         }
 
-        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected != null && GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType == "Active")
+        if (menu.PartyHeroSelected != null && menu.PartySelectedHeroType == "Active" && gameObject.name.Contains("Active Hero Panel - ID "))
         {
-            if (gameObject.name.Contains("Active Hero Panel - ID "))
+            BaseHero heroClicked = GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", "")));
+
+            if (heroClicked != menu.PartyHeroSelected)
             {
-                Debug.Log("Switching " + GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))).name);
-                SwitchActives(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected, GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))));
+                Debug.Log("Switching " + menu.PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))).name);
+                SwitchActives(menu.PartyHeroSelected, GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID ", ""))));
             }
         }
     }
@@ -167,13 +194,13 @@ public class PartySelectEvents : MonoBehaviour
         GameManager.instance.inactiveHeroes.Remove(hero);
         GameManager.instance.activeHeroes.Add(hero);
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawPartyActiveHeroes();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawInactiveHeroButtons();
+        menu.DrawPartyActiveHeroes();
+        menu.DrawInactiveHeroButtons();
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = null;
+        menu.PartyHeroSelected = null;
         HideSelectedHeroPanel();
-        unboldButtons();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "";
+        UnboldButtons();
+        menu.PartySelectedHeroType = "";
     }
 
     void SwitchInactiveToActive(BaseHero fromHero, BaseHero toHero)
@@ -187,13 +214,13 @@ public class PartySelectEvents : MonoBehaviour
         GameManager.instance.inactiveHeroes.Insert(inactiveHeroIndex, toHero);
         GameManager.instance.inactiveHeroes.Remove(fromHero);
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawPartyActiveHeroes();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawInactiveHeroButtons();
+        menu.DrawPartyActiveHeroes();
+        menu.DrawInactiveHeroButtons();
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = null;
+        menu.PartyHeroSelected = null;
         HideSelectedHeroPanel();
-        unboldButtons();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "";
+        UnboldButtons();
+        menu.PartySelectedHeroType = "";
     }
 
     void SwitchActiveToInactive(BaseHero fromHero, BaseHero toHero)
@@ -207,13 +234,13 @@ public class PartySelectEvents : MonoBehaviour
         GameManager.instance.inactiveHeroes.Insert(inactiveHeroIndex, fromHero);
         GameManager.instance.inactiveHeroes.Remove(toHero);
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawPartyActiveHeroes();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawInactiveHeroButtons();
+        menu.DrawPartyActiveHeroes();
+        menu.DrawInactiveHeroButtons();
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = null;
+        menu.PartyHeroSelected = null;
         HideSelectedHeroPanel();
-        unboldButtons();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "";
+        UnboldButtons();
+        menu.PartySelectedHeroType = "";
     }
 
     void SwitchActives(BaseHero fromHero, BaseHero toHero)
@@ -238,15 +265,15 @@ public class PartySelectEvents : MonoBehaviour
         }
         
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawPartyActiveHeroes();
+        menu.DrawPartyActiveHeroes();
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartyHeroSelected = null;
+        menu.PartyHeroSelected = null;
         HideSelectedHeroPanel();
-        unboldButtons();
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PartySelectedHeroType = "";
+        UnboldButtons();
+        menu.PartySelectedHeroType = "";
     }
 
-    void unboldButtons()
+    void UnboldButtons()
     {
         foreach (Transform child in GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform)
         {

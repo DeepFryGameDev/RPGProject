@@ -499,8 +499,8 @@ public class BaseHero : BaseClass
 
     void UpdatePanels()
     {
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck);
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawEquipMenuStats(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck);
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel();
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawEquipMenuStats();
     }
 
     void learnNewAttacks()

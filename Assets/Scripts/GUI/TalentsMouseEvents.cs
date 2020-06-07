@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +7,12 @@ public class TalentsMouseEvents : MonoBehaviour
 {
     TalentEffects effect = new TalentEffects();
     BaseHero hero = new BaseHero();
+    GameMenu menu;
+
+    public void Start()
+    {
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+    }
 
     public void OnMouseOver()
     {
@@ -130,6 +136,8 @@ public class TalentsMouseEvents : MonoBehaviour
     public void TalentButtonClicked()
     {
         hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
+
+        menu.PlaySE(menu.equipSE);
 
         if (gameObject.transform.parent.name == "Talent1") //for debugging -- when ready, add  && hero.currentLevel >= 15
         {
@@ -274,6 +282,6 @@ public class TalentsMouseEvents : MonoBehaviour
 
         DrawActiveTalent(GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/" + parent.name + "/" + talentChosen.name + "/TalentIcon").GetComponent<Image>());
         
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel(GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck);
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel();
     }
 }

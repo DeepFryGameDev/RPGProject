@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,8 +7,14 @@ using UnityEngine.UI;
 public class GridMenuMouseEvents : MonoBehaviour
 {
     string emptyGridSpriteName = "Textfield full";
+    GameMenu menu;
 
-   public void ChangeSpawnPoint()
+    public void Awake()
+    {
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+    }
+
+    public void ChangeSpawnPoint()
     {
         if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
@@ -25,6 +31,7 @@ public class GridMenuMouseEvents : MonoBehaviour
 
     public void SetHero()
     {
+        menu.PlaySE(menu.confirmSE);
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = GetHero(gameObject.transform.Find("NameText").GetComponent<Text>().text);
@@ -36,6 +43,7 @@ public class GridMenuMouseEvents : MonoBehaviour
 
     public void SetHero(BaseHero hero)
     {
+        menu.PlaySE(menu.confirmSE);
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = hero;
@@ -74,6 +82,8 @@ public class GridMenuMouseEvents : MonoBehaviour
 
     void SetSpawnPoint(string tile)
     {
+        menu.PlaySE(menu.confirmSE);
+
         tile = tile.Replace("Grid - ", "");
         BaseHero heroSwapping = null;
         string tempTile = null;

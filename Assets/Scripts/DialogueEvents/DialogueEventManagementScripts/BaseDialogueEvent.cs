@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,22 +22,7 @@ public class BaseDialogueEvent
 
     //graphic for face - to implement
 
-    public enum VoiceTones //for which voice tone to play during dialogue - to implement
-    {
-        ONE,
-        TWO,
-        THREE,
-        FOUR,
-        FIVE,
-        SIX,
-        SEVEN,
-        EIGHT,
-        NINE,
-        TEN
-    }
-
-
-    public VoiceTones voicetone; //to access Voice Tones
+    public AudioClip voiceTone;
 
     public List<BaseEvent> eventsBefore = new List<BaseEvent>(); //For events to trigger at start of event interaction
 

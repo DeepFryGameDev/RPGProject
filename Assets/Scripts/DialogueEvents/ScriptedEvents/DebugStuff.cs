@@ -1,9 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class DebugStuff : BaseScriptedEvent
 {
+    public AudioClip voice;
+
     public Item testItem;
     public Item testItem2;
 
@@ -67,20 +69,22 @@ public class DebugStuff : BaseScriptedEvent
 
 
         StartCoroutine(ShowDialogueChoices(
-            "WHATCHU WANT??",
+            "WHATCHU WANT??", voice,
             "Start Gather Quest", QuestTest1,
             "Start Kill Quest", QuestTest2,
             "Start Bool Quest", QuestTest3,
             "Nothing", DoNothing
             ));
 
+        //ChangeMenuAccess(false);
 
         //OpenMenu();
+
     }
 
     public void QuestTest1()
     {
-        StartCoroutine(ShowMessage("Go forth and bring me 5 potions!", baseTextSpeed, true, true));
+        StartCoroutine(ShowMessage("Go forth and bring me 5 potions!", voice, true, true));
 
         Debug.Log("Quest started!");
         StartQuest(0);
@@ -88,7 +92,7 @@ public class DebugStuff : BaseScriptedEvent
 
     public void QuestTest2()
     {
-        StartCoroutine(ShowMessage("Go forth and kill 1 test enemy!", baseTextSpeed, true, true));
+        StartCoroutine(ShowMessage("Go forth and kill 1 test enemy!", voice, true, true));
 
         Debug.Log("Quest started!");
         StartQuest(1);
@@ -96,7 +100,7 @@ public class DebugStuff : BaseScriptedEvent
 
     public void QuestTest3()
     {
-        StartCoroutine(ShowMessage("Go talk to that guy over there!", baseTextSpeed, true, true));
+        StartCoroutine(ShowMessage("Go talk to that guy over there!", voice, true, true));
 
         Debug.Log("Quest started!");
         StartQuest(2);

@@ -6,6 +6,6 @@ public class EquipShopTestScript : BaseScriptedEvent
 {
     public void EquipShopTest()
     {
-        OpenEquipShop();
+        OpenShop("Equip");
     }
 }

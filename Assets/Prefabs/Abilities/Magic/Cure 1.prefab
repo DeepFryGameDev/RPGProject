@@ -45,6 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Cure 1
   description: Basic heal
+  icon: {fileID: 21300000, guid: 7a56bb71e6ffd5940899b754e30f909f, type: 3}
   damage: 20
   MPCost: 10
   cooldown: 0

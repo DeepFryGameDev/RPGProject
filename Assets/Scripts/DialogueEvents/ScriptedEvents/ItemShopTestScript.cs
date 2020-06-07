@@ -11,6 +11,6 @@ public class ItemShopTestScript : BaseScriptedEvent
 
     void ShowItemShop()
     {
-        OpenItemShop();
+        OpenShop("Item");
     }
 }

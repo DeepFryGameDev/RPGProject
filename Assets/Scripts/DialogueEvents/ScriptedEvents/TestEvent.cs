@@ -1,13 +1,15 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TestEvent : BaseScriptedEvent
 {
+    public AudioClip voice;
+
     public void TestMethod()
     {
         StartCoroutine(ShowDialogueChoices(
-            "WHATCHU WANT??", 
+            "WHATCHU WANT??", voice,
             "Give 100,000 golds", GiveGold,
             "Give 300 gold pls", GiveSmallGold,
             "Fully heal everyone", HealAll,

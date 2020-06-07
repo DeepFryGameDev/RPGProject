@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -71,6 +71,7 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (menu.equipMode == "Equip" && !gameObject.name.Contains("Button"))
         {
+            menu.PlaySE(menu.equipSE);
             menu.ChangeEquipment(GetEquip(GetEquipName()));
         }
     }

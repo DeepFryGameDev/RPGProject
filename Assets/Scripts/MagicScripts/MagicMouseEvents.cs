@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,6 +15,9 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     BaseMagicScript magicScript;
     GameMenu menu;
     BaseAttack magicUsed;
+
+    Coroutine processMagic = null;
+    Coroutine chooseHero = null;
 
     private void Start()
     {
@@ -39,7 +42,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     string GetMagicName() //gets the spell name based on which panel is clicked
     {
-        return gameObject.transform.Find("NewMagicNameText").GetComponent<Text>().text;
+        return gameObject.transform.Find("Name").GetComponent<Text>().text;
     }
 
     public void OnPointerEnter(PointerEventData eventData) //sets magic details on magic menu based on which magic panel is being hovered
@@ -63,8 +66,11 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
             if (GetMagic(GetMagicName()).useState == BaseAttack.UseStates.HERO)
             {
                 magicUsed = GetMagic(GetMagicName());
-                StartCoroutine(ProcessMagic());
+                processMagic = StartCoroutine(ProcessMagic());
             }
+        } else
+        {
+            menu.PlaySE(menu.cantActionSE);
         }
     }
 
@@ -79,7 +85,13 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public IEnumerator ProcessMagic()
     {
-        yield return ChooseHero(); //choose hero to cast spell on
+        menu.DisplayCanvas(menu.HeroSelectMagicPanel);
+
+        //yield return ChooseHero(); //choose hero to cast spell on
+        chooseHero = StartCoroutine(ChooseHero());
+
+        yield return chooseHero;
+
         magicScript = new BaseMagicScript();
         magicScript.spell = magicUsed; //sets the spell to be cast in magic script
         magicScript.heroPerformingAction = heroFromMenu; //sets the casting hero in magic script
@@ -93,14 +105,30 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public IEnumerator ChooseHero() //chooses hero based on which hero panel is clicked
     {
-        Debug.Log("choose a hero");
+        menu.PlaySE(menu.confirmSE);
+
         DrawHeroSelectPanel();
+        yield return menu.AnimateMagicHeroSelectPanel();
+
         menu.choosingHeroForMagicMenu = true;
         while (heroToCastOn == null)
         {
+            if (Input.GetButtonDown("Cancel"))
+            {
+                StopCoroutine(processMagic);
+                StopCoroutine(chooseHero);
+            }
+
             GetHeroClicked();
             yield return null;
         }
+
+        if (heroToCastOn != null)
+        {
+            menu.PlaySE(menu.healSE);
+        }
+        
+        yield return menu.AnimateMagicHeroSelectPanel();
 
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero1SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero2SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
@@ -271,7 +299,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     void UpdateUI() //updates interface
     {
-        menu.DrawMagicMenuStats(heroFromMenu);
+        menu.DrawMagicMenuStats();
         foreach (Transform child in GameObject.Find("WhiteMagicListPanel/WhiteMagicScroller/WhiteMagicListSpacer").transform)
         {
             if (heroFromMenu.curMP < GetMagic(child.gameObject.GetComponentInChildren<Text>().text).MPCost)

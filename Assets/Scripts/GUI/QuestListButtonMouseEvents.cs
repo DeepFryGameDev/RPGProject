@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +6,12 @@ using UnityEngine.UI;
 
 public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    GameMenu menu;
+
+    public void Awake()
+    {
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+    }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -118,6 +124,8 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        menu.PlaySE(menu.confirmSE);
+
         GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked = true;
         gameObject.transform.Find("QuestNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
         gameObject.transform.Find("QuestLevelText").GetComponent<Text>().fontStyle = FontStyle.Bold;

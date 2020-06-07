@@ -45,6 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Bio 1
   description: Basic Poison attack
+  icon: {fileID: 21300000, guid: 4f196e1f760404d4e85d6dc5f7328000, type: 3}
   damage: 5
   MPCost: 5
   cooldown: 1
@@ -53,7 +54,7 @@ MonoBehaviour:
   threatMultiplier: 1.1
   type: 1
   statusEffects:
-  - _Name: Poison
+  - name: 
     effectType: 0
     turnsApplied: 5
     baseValue: 5

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -218,6 +218,20 @@ public class MenuScript : MonoBehaviour
             Debug.Log("Assigning ID " + GameObject.Find("GameManager/DBs/EquipmentDB").GetComponent<EquipmentDB>().equipment.IndexOf(entry) + " to enemy " + entry.equipment.name);
             entry.ID = GameObject.Find("GameManager/DBs/EquipmentDB").GetComponent<EquipmentDB>().equipment.IndexOf(entry);
             entry.name = entry.equipment.name;
+        }
+    }
+
+    [MenuItem("Dev Tools/Toggle Debug Camera")] //displays dialogue canvas in Unity editor
+    public static void ToggleDebugCamera()
+    {
+        if (GameObject.Find("DebugCamera").GetComponent<Camera>().enabled)
+        {
+            GameObject.Find("DebugCamera").GetComponent<Camera>().enabled = false;
+            GameObject.Find("MenuCamera").GetComponent<Camera>().enabled = true;
+        } else
+        {
+            GameObject.Find("DebugCamera").GetComponent<Camera>().enabled = true;
+            GameObject.Find("MenuCamera").GetComponent<Camera>().enabled = false;
         }
     }
 }

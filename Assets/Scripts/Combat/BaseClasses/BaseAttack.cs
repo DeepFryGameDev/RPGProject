@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +7,7 @@ public class BaseAttack : MonoBehaviour
 {
     new public string name; //Name of Attack
     public string description; //Used for menu interface - not yet implemented
+    public Sprite icon;
     public int damage; //Base Damage
     public int MPCost; //cost of attack
     public int cooldown; //not yet implemented - will be used for number of turns between each time spell can be cast

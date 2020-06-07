@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,12 +35,26 @@ public class DialogueEvents : MonoBehaviour
     Collider2D thisCollider; //collider for the game object
     Collider2D playerCollider; //collider for the player
 
+    Animator messagePanelAnimator;
+    AudioSource audioSource;
+    AudioClip openWindowSE;
+    AudioClip confirmSE;
+
+    AudioSource voiceAudioSource;
 
     // Start is called before the first frame update
     void Start()
     {
         playerGO = GameObject.Find("Player"); //assigns player game object to playerGO
         messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
+
+        messagePanelAnimator = GameObject.Find("GameManager/DialogueCanvas/MessagePanel").GetComponent<Animator>();
+
+        audioSource = GameObject.Find("GameManager/DialogueCanvas").GetComponent<AudioSource>();
+        openWindowSE = Resources.Load<AudioClip>("Sounds/OpenMenu");
+        confirmSE = Resources.Load<AudioClip>("Sounds/000 - Cursor Move");
+
+        voiceAudioSource = GameObject.Find("GameManager/DialogueCanvas/VoiceAudio").GetComponent<AudioSource>();
 
         attachedScripts = FindObjectsOfType(typeof(BaseScriptedEvent)); //gets all scripts attached to object
         //System.Array.Reverse(attachedScripts); //reverses array, as the scripts are added from bottom to top.  this makes the list more readable
@@ -85,7 +99,7 @@ public class DialogueEvents : MonoBehaviour
                 if (thisCollider.IsTouching(playerCollider))
                 {
                     //Debug.Log("ONACTION - event: " + i);
-                    CheckConfirmButtonStatus(); //keeps checking on button status to make sure event only triggers once
+                    //CheckConfirmButtonStatus(); //keeps checking on button status to make sure event only triggers once
                     pauseParallel = true;
                     yield return ProcessEvent(eventToRun);
                     pauseParallel = false;
@@ -136,14 +150,14 @@ public class DialogueEvents : MonoBehaviour
     IEnumerator ProcessEvent(BaseDialogueEvent eventToRun) //processes 'RunBeforeEvents', the dialogue (if any), 'RunAfterEvents', sets the booleans from the event, and sets the new current events based on bools changed
     {
         RunBeforeEvents(eventToRun); //runs events that should be run before dialogue
-
-        if (eventToRun.dialogText.Length > 0) //runs the dialogue event
+        
+        if (eventToRun.dialogText.Length > 0 && !buttonPressed) //runs the dialogue event
         {
             CheckPlayerMovement(eventToRun); //if player movement should be disabled, it is disabled
             yield return RunDialogue(eventToRun); //runs actual dialogue
             EnableMovementAfterDialogue(); //enables movement after dialogue is processed
         }
-        
+
         RunAfterEvents(eventToRun); //runs events that should be run after dialogue
 
         SetBools(eventToRun); //sets booleans configured in event
@@ -334,43 +348,52 @@ public class DialogueEvents : MonoBehaviour
 
     IEnumerator RunDialogue(BaseDialogueEvent eventToRun)
     {
-        dialogueStarted = true;
-        //bool messageFinished = false; //to check if message has finished processing
-        GameManager.instance.DisplayPanel(true); //shows message panel
-
-        TurnTowardPlayer();
-
-        DisableOtherScripts();
-        for (int j = 0; j < eventToRun.dialogText.Length; j++) //actual dialog texts
+        if (!buttonPressed)
         {
-            //messageFinished = false; //starting the dialogue text, sets to true once all text is added
-            var text = eventToRun.dialogText[j]; //gets the text to be put in dialogue UI
-            //var fullText = ""; //sets current fullText to blank as letters will be added individually
-            for (int i = 0; i < text.RichTextLength(); i++) //for each letter in the text
-            {
-                CheckConfirmButtonStatus(); //checks if confirm button is pressed to be able to skip message (not yet implemented)
-                //fullText += text[i]; //adds current letter to fullText
-                //messageText.text = fullText; //sets dialogue UI text to the current fullText
-                //fullText += text.RichTextSubString(i);
-                messageText.text = text.RichTextSubString(i+1);
-                yield return new WaitForSecondsRealtime(textSpeed); //waits before entering next letter, based on textSpeed
-            }
+            dialogueStarted = true;
+            //bool messageFinished = false; //to check if message has finished processing
+            GameManager.instance.DisplayPanel(true); //shows message panel
 
-            /*if (fullText == text) //if full message has been added to the dialogue text
-            {
-                messageFinished = true;
-            }
+            TurnTowardPlayer();
 
-            if (messageFinished)
+            DisableOtherScripts();
+            
+            yield return AnimateMessageBox();
+
+            for (int j = 0; j < eventToRun.dialogText.Length; j++) //actual dialog texts
             {
+                PlayVoice(eventToRun.voiceTone);
+
+                //messageFinished = false; //starting the dialogue text, sets to true once all text is added
+                var text = eventToRun.dialogText[j]; //gets the text to be put in dialogue UI
+                                                     //var fullText = ""; //sets current fullText to blank as letters will be added individually
+
+                
+                for (int i = 0; i < text.RichTextLength(); i++) //for each letter in the text
+                {
+                    CheckConfirmButtonStatus(); //checks if confirm button is pressed to be able to skip message (not yet implemented)
+                                                //fullText += text[i]; //adds current letter to fullText
+                                                //messageText.text = fullText; //sets dialogue UI text to the current fullText
+                                                //fullText += text.RichTextSubString(i);
+                    messageText.text = text.RichTextSubString(i + 1);
+                    yield return new WaitForSecondsRealtime(textSpeed); //waits before entering next letter, based on textSpeed
+                }
+
+                StopVoice();
+
                 yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
-            }*/
+                PlaySE(confirmSE);
+            }
         }
+        
 
         yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
 
+        yield return AnimateMessageBox();
+
         EnableOtherScripts();
         TurnBackToBefore();
+
         messageText.text = ""; //resets message text
         GameManager.instance.DisplayPanel(false); //hides message panel
         dialogueStarted = false;
@@ -425,7 +448,6 @@ public class DialogueEvents : MonoBehaviour
         }
     }
     
-
     void CheckConfirmButtonStatus() //keeps confirm button sensory to only be input once
     {
         if (Input.GetButtonDown("Confirm"))
@@ -441,6 +463,17 @@ public class DialogueEvents : MonoBehaviour
                 buttonPressed = false;
             }
         }
+    }
+
+    void PlayVoice(AudioClip voiceTone)
+    {
+        voiceAudioSource.clip = voiceTone;
+        voiceAudioSource.Play();
+    }
+
+    void StopVoice()
+    {
+        voiceAudioSource.Stop();
     }
 
     void TurnTowardPlayer() //turns object toward player for dialogue
@@ -533,5 +566,44 @@ public class DialogueEvents : MonoBehaviour
             activeScripts[i].otherEventRunning = false;
         }
     }
-    
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of message panel animations
+    /// </summary>
+    IEnumerator AnimateMessageBox()
+    {
+        if (messagePanelAnimator != null)
+        {
+            bool isOpen = messagePanelAnimator.GetBool("open");
+
+            messagePanelAnimator.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(messagePanelAnimator));
+    }
+
+    /// <summary>
+    /// Returns full animation time in seconds by given animator component
+    /// </summary>
+    /// <param name="anim">Animator component to measure animation time</param>
+    float GetAnimationTime(Animator anim)
+    {
+        float animTime = 0f;
+        RuntimeAnimatorController ac = anim.runtimeAnimatorController;    //Get Animator controller
+        for (int i = 0; i < ac.animationClips.Length; i++)                 //For all animations
+        {
+            animTime = ac.animationClips[i].length;
+        }
+
+        return animTime;
+    }
+
+    /// <summary>
+    /// Plays given sound effect once
+    /// </summary>
+    /// <param name="SE">Sound effect to play</param>
+    void PlaySE(AudioClip SE)
+    {
+        audioSource.PlayOneShot(SE);
+    }
 }

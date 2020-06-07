@@ -1,8 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using RichTextSubstringHelper;
 
 public class BaseScriptedEvent : MonoBehaviour
 {
@@ -32,6 +33,14 @@ public class BaseScriptedEvent : MonoBehaviour
     Button Choice4Button;
     string choiceMade;
 
+    bool confirmPressed;
+    bool checkForConfirmPressed;
+
+    AudioSource audioSource;
+    AudioClip confirmSE;
+
+    AudioSource voiceAudioSource;
+
     //Enums
     public enum MenuButtons
     {
@@ -54,10 +63,21 @@ public class BaseScriptedEvent : MonoBehaviour
         playerGameObject = GameObject.Find("Player"); //sets playerGameObject to gameobject of player
         playerTransform = playerGameObject.transform; //sets playerTransform to transform of gameobject of player
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>(); //sets gameManager to the game manager object in scene
+
+        audioSource = GameObject.Find("GameManager/DialogueCanvas").GetComponent<AudioSource>();
+        confirmSE = Resources.Load<AudioClip>("Sounds/000 - Cursor Move");
+        voiceAudioSource = GameObject.Find("GameManager/DialogueCanvas/VoiceAudio").GetComponent<AudioSource>();
+    }
+
+    private void Update()
+    {
+        if (checkForConfirmPressed) //Keeps confirm button considered 'pressed' once when player presses it
+        {
+            CheckConfirmButtonStatus();
+        }        
     }
 
     //DIFFERENT FUNCTIONS THAT CAN BE RUN BY ANY EVENT SCRIPT
-
 
     public IEnumerator MoveTest (GameObject GO, float timeToMove, float spacesToMove) //for testing
     {
@@ -78,18 +98,24 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---MOVEMENT---
 
-    public IEnumerator MoveLeft(GameObject GO, float timeToMove, float spacesToMove) //moves object left
+    /// <summary>
+    /// Coroutine.  Moves given GameObject to the left.  FacingState script is required to be attached to GameObject as well as rigidbody. Further changes needed.
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveLeft(GameObject obj, float timeToMove, float spacesToMove) //moves object left
     {
-        TurnLeft(GO);
+        FaceLeft(obj);
 
-        Rigidbody2D rb = GO.GetComponent<Rigidbody2D>(); //uses rigidbody as transform.move was causing collision issues
+        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>(); //uses rigidbody as transform.move was causing collision issues
 
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             DisablePlayerMovement();
         }
@@ -110,17 +136,23 @@ public class BaseScriptedEvent : MonoBehaviour
             }
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             EnablePlayerMovement();
         }       
-    }  
+    }
 
-    public IEnumerator MoveRight(GameObject GO, float timeToMove, float spacesToMove) //moves object right
+    /// <summary>
+    /// Coroutine.  Moves given GameObject to the right.  FacingState script is required to be attached to GameObject as well as rigidbody. Further changes needed.
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveRight(GameObject obj, float timeToMove, float spacesToMove) //moves object right
     {
-        TurnRight(GO);
+        FaceRight(obj);
 
-        Rigidbody2D rb = GO.GetComponent<Rigidbody2D>();
+        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
         
         
         if (timeToMove == baseMoveSpeed)
@@ -128,7 +160,7 @@ public class BaseScriptedEvent : MonoBehaviour
             timeToMove = GetBaseMoveSpeed(spacesToMove);
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             DisablePlayerMovement();
         }
@@ -149,24 +181,30 @@ public class BaseScriptedEvent : MonoBehaviour
             }
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveUp(GameObject GO, float timeToMove, float spacesToMove) //moves object up
+    /// <summary>
+    /// Coroutine.  Moves given GameObject upward.  FacingState script is required to be attached to GameObject as well as rigidbody. Further changes needed.
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveUp(GameObject obj, float timeToMove, float spacesToMove)
     {
-        TurnUp(GO);
+        FaceUp(obj);
 
-        Rigidbody2D rb = GO.GetComponent<Rigidbody2D>();
+        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
 
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             DisablePlayerMovement();
         }
@@ -187,23 +225,29 @@ public class BaseScriptedEvent : MonoBehaviour
             }
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveDown(GameObject GO, float timeToMove, float spacesToMove) //moves object down
+    /// <summary>
+    /// Coroutine.  Moves given GameObject downward.  FacingState script is required to be attached to GameObject as well as rigidbody. Further changes needed.
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveDown(GameObject obj, float timeToMove, float spacesToMove)
     {
-        TurnDown(GO);
-        Rigidbody2D rb = GO.GetComponent<Rigidbody2D>();
+        FaceDown(obj);
+        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
 
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             DisablePlayerMovement();
         }
@@ -224,15 +268,21 @@ public class BaseScriptedEvent : MonoBehaviour
             }
         }
 
-        if (GO == playerGameObject)
+        if (obj == playerGameObject)
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveLeftUp(GameObject GO, float timeToMove, int spacesToMove) //moves object diagonally left and up - needs rigidbody to be implemented
+    /// <summary>
+    /// Coroutine.  Moves object diagonally left and up.  Rigidbody is required.  Further changes needed (pathfinding to target, etc to include direction facing)
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveLeftUp(GameObject obj, float timeToMove, int spacesToMove)
     {
-        Transform transform = GO.transform;
+        Transform transform = obj.transform;
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
@@ -254,11 +304,17 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveRightUp(GameObject GO, float timeToMove, int spacesToMove) //moves object diagonally right and up - needs rigidbody to be implemented
+    /// <summary>
+    /// Coroutine.  Moves object diagonally right and up.  Rigidbody is required.  Further changes needed (pathfinding to target, etc to include direction facing)
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveRightUp(GameObject obj, float timeToMove, int spacesToMove)
     {
-        Transform transform = GO.transform;
+        Transform transform = obj.transform;
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
@@ -280,11 +336,17 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveLeftDown(GameObject GO, float timeToMove, int spacesToMove) //moves object diagonally left and down - needs rigidbody to be implemented
+    /// <summary>
+    /// Coroutine.  Moves object diagonally left and down.  Rigidbody is required.  Further changes needed (pathfinding to target, etc to include direction facing)
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveLeftDown(GameObject obj, float timeToMove, int spacesToMove)
     {
-        Transform transform = GO.transform;
+        Transform transform = obj.transform;
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
@@ -306,11 +368,17 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveRightDown(GameObject GO, float timeToMove, int spacesToMove) //moves object diagonally right and down - needs rigidbody to be implemented
+    /// <summary>
+    /// Coroutine.  Moves object diagonally right and down.  Rigidbody is required.  Further changes needed (pathfinding to target, etc to include direction facing)
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveRightDown(GameObject obj, float timeToMove, int spacesToMove)
     {
-        Transform transform = GO.transform;
+        Transform transform = obj.transform;
         if (timeToMove == baseMoveSpeed)
         {
             timeToMove = GetBaseMoveSpeed(spacesToMove);
@@ -332,11 +400,17 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveToTarget(GameObject GO, Vector2 target, float timeToMove) //moves object to target position - needs rigidbody to be implemented
+    /// <summary>
+    /// Coroutine.  Moves given GameObject in to target position.  Rigidbody is required.  Further changes needed (pathfinding to target, etc to include direction facing)
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="target">Target coordinates to move target to</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    public IEnumerator MoveToTarget(GameObject obj, Vector2 target, float timeToMove)
     {
-        Transform transform = GO.transform;
+        Transform transform = obj.transform;
         if (transform == playerTransform)
         {
             DisablePlayerMovement();
@@ -353,11 +427,17 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             EnablePlayerMovement();
         }
-    } 
+    }
 
-    public IEnumerator MoveRandom(GameObject GO, float timeToMove, int spacesToMove) //moves object randomly - needs rigidbody to be implemented
+    /// <summary>
+    /// Coroutine.  Moves given GameObject in random direction by choosing random value 0-3.  FacingState script is required to be attached to GameObject as well as rigidbody
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveRandom(GameObject obj, float timeToMove, int spacesToMove)
     {
-        Transform transform = GO.transform;
+        Transform transform = obj.transform;
 
         if (timeToMove == baseMoveSpeed)
         {
@@ -369,24 +449,30 @@ public class BaseScriptedEvent : MonoBehaviour
 
         if (randomDirection == 0)
         {
-            yield return MoveLeft(GO, timeToMove, spacesToMove); //left
+            yield return MoveLeft(obj, timeToMove, spacesToMove); //left
         }
         if (randomDirection == 1)
         {
-            yield return MoveRight(GO, timeToMove, spacesToMove); //right
+            yield return MoveRight(obj, timeToMove, spacesToMove); //right
         }
         if (randomDirection == 2)
         {
 
-            yield return MoveDown(GO, timeToMove, spacesToMove); //down
+            yield return MoveDown(obj, timeToMove, spacesToMove); //down
         }
         if (randomDirection == 3)
         {
-            yield return MoveUp(GO, timeToMove, spacesToMove); //up
+            yield return MoveUp(obj, timeToMove, spacesToMove); //up
         }
-    } 
+    }
 
-    public IEnumerator MoveTowardPlayer(GameObject GO, float timeToMove, int spacesToMove)  //moves object toward player
+    /// <summary>
+    /// Coroutine.  Moves given GameObject toward player.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveTowardPlayer(GameObject obj, float timeToMove, int spacesToMove)
     {
         RaycastHit2D[] hits = Physics2D.CircleCastAll(thisTransform.position, 100, Vector2.one); //radius may need to be adjusted if player isn't being picked up
 
@@ -409,26 +495,26 @@ public class BaseScriptedEvent : MonoBehaviour
                 {
                     if (hit.point.x < 0) //player is left of object
                     {
-                        TurnLeft(GO);
-                        yield return MoveLeft(GO, timeToMove, spacesToMove);
+                        FaceLeft(obj);
+                        yield return MoveLeft(obj, timeToMove, spacesToMove);
                     }
                     else //player is right of object
                     {
-                        TurnRight(GO);
-                        yield return MoveRight(GO, timeToMove, spacesToMove);
+                        FaceRight(obj);
+                        yield return MoveRight(obj, timeToMove, spacesToMove);
                     }
                 }
                 else if (dimToUse == "y")
                 {
                     if (hit.point.y < 0) //player is below object
                     {
-                        TurnDown(GO);
-                        yield return MoveDown(GO, timeToMove, spacesToMove);
+                        FaceDown(obj);
+                        yield return MoveDown(obj, timeToMove, spacesToMove);
                     }
                     else //player is above object
                     {
-                        TurnUp(GO);
-                        yield return MoveUp(GO, timeToMove, spacesToMove);
+                        FaceUp(obj);
+                        yield return MoveUp(obj, timeToMove, spacesToMove);
                     }
                 }
                 else
@@ -439,7 +525,13 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
-   public IEnumerator MoveAwayFromPlayer(GameObject GO, float timeToMove, int spacesToMove) //moves object away from player
+    /// <summary>
+    /// Coroutine.  Moves given GameObject away from the player.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator MoveAwayFromPlayer(GameObject obj, float timeToMove, int spacesToMove)
     {
         RaycastHit2D[] hits = Physics2D.CircleCastAll(thisTransform.position, 100, Vector2.one); //radius may need to be adjusted if player isn't being picked up
 
@@ -462,26 +554,26 @@ public class BaseScriptedEvent : MonoBehaviour
                 {
                     if (hit.point.x < 0) //player is left of object
                     {
-                        TurnRight(GO);
-                        yield return MoveRight(GO, timeToMove, spacesToMove);
+                        FaceRight(obj);
+                        yield return MoveRight(obj, timeToMove, spacesToMove);
                     }
                     else //player is right of object
                     {
-                        TurnLeft(GO);
-                        yield return MoveLeft(GO, timeToMove, spacesToMove);
+                        FaceLeft(obj);
+                        yield return MoveLeft(obj, timeToMove, spacesToMove);
                     }
                 }
                 else if (dimToUse == "y")
                 {
                     if (hit.point.y < 0) //player is below object
                     {
-                        TurnUp(GO);
-                        yield return MoveUp(GO, timeToMove, spacesToMove);
+                        FaceUp(obj);
+                        yield return MoveUp(obj, timeToMove, spacesToMove);
                     }
                     else //player is above object
                     {
-                        TurnDown(GO);
-                        yield return MoveDown(GO, timeToMove, spacesToMove);
+                        FaceDown(obj);
+                        yield return MoveDown(obj, timeToMove, spacesToMove);
                     }
                 }
                 else
@@ -492,112 +584,148 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
-    public IEnumerator StepForward(GameObject GO, float timeToMove, int spacesToMove) //moves object in direction they are facing
+    /// <summary>
+    /// Coroutine.  Moves given GameObject in direction they are facing.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator StepForward(GameObject obj, float timeToMove, int spacesToMove)
     {
-        if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
         {
-            yield return MoveUp(GO, timeToMove, spacesToMove);
+            yield return MoveUp(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
         {
-            yield return MoveDown(GO, timeToMove, spacesToMove);
+            yield return MoveDown(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
         {
-            yield return MoveLeft(GO, timeToMove, spacesToMove);
+            yield return MoveLeft(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
         {
-            yield return MoveRight(GO, timeToMove, spacesToMove);
+            yield return MoveRight(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
         {
-            string defaultDirection = GO.GetComponent<FacingState>().defaultDirection;
+            string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                yield return MoveUp(GO, timeToMove, spacesToMove);
+                yield return MoveUp(obj, timeToMove, spacesToMove);
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                yield return MoveDown(GO, timeToMove, spacesToMove);
+                yield return MoveDown(obj, timeToMove, spacesToMove);
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                yield return MoveLeft(GO, timeToMove, spacesToMove);
+                yield return MoveLeft(obj, timeToMove, spacesToMove);
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                yield return MoveRight(GO, timeToMove, spacesToMove);
+                yield return MoveRight(obj, timeToMove, spacesToMove);
             }
         }
     }
 
-    public IEnumerator StepBackward(GameObject GO, float timeToMove, int spacesToMove) //moves object in opposite direction they are facing
+    /// <summary>
+    /// Coroutine.  Moves given GameObject backwards from direction they are currently facing.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to move</param>
+    /// <param name="timeToMove">How quickly to move the object (smaller value is quicker, can use "baseMoveSpeed")</param>
+    /// <param name="spacesToMove">How many spaces/tiles to move</param>
+    public IEnumerator StepBackward(GameObject obj, float timeToMove, int spacesToMove)
     {
-        if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
         {
-            yield return MoveDown(GO, timeToMove, spacesToMove);
+            yield return MoveDown(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
         {
-            yield return MoveUp(GO, timeToMove, spacesToMove);
+            yield return MoveUp(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
         {
-            yield return MoveRight(GO, timeToMove, spacesToMove);
+            yield return MoveRight(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
         {
-            yield return MoveLeft(GO, timeToMove, spacesToMove);
+            yield return MoveLeft(obj, timeToMove, spacesToMove);
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
         {
-            string defaultDirection = GO.GetComponent<FacingState>().defaultDirection;
+            string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                yield return MoveDown(GO, timeToMove, spacesToMove);
+                yield return MoveDown(obj, timeToMove, spacesToMove);
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                yield return MoveUp(GO, timeToMove, spacesToMove);
+                yield return MoveUp(obj, timeToMove, spacesToMove);
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                yield return MoveRight(GO, timeToMove, spacesToMove);
+                yield return MoveRight(obj, timeToMove, spacesToMove);
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                yield return MoveLeft(GO, timeToMove, spacesToMove);
+                yield return MoveLeft(obj, timeToMove, spacesToMove);
             }
         }
     }
 
-    public void TurnDown(GameObject GO) //makes object face downward
+    /// <summary>
+    /// Faces given GameObject downward.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceDown(GameObject obj)
     {
-        GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
     }
 
-    public void TurnLeft(GameObject GO) //makes object face left
+    /// <summary>
+    /// Faces given GameObject to the left.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceLeft(GameObject obj)
     {
-        GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
     }
 
-    public void TurnRight(GameObject GO) //makes object face right
+    /// <summary>
+    /// Faces given GameObject to the right.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceRight(GameObject obj)
     {
-        GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
     }
 
-    public void TurnUp(GameObject GO) //makes object face upward
+    /// <summary>
+    /// Faces given GameObject upward.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceUp(GameObject obj)
     {
-        GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
     }
 
-    public void TurnDefault(GameObject GO) //makes object face their default state
+    /// <summary>
+    /// Faces given GameObject to their default direction.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceDefault(GameObject obj)
     {
-        GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DEFAULT;
+        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DEFAULT;
     }
 
-    public void TurnTowardPlayer(GameObject GO) //makes object face toward player
+    /// <summary>
+    /// Faces given GameObject toward the player.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceTowardPlayer(GameObject obj)
     {
         RaycastHit2D[] hits = Physics2D.CircleCastAll(thisTransform.position, 100, Vector2.one); //radius may need to be adjusted if player isn't being picked up
 
@@ -619,31 +747,35 @@ public class BaseScriptedEvent : MonoBehaviour
                 {
                     if (hit.point.x < 0) //player is left of object
                     {
-                        TurnLeft(GO);
+                        FaceLeft(obj);
                     } else //player is right of object
                     {
-                        TurnRight(GO);
+                        FaceRight(obj);
                     }
                 }
                 else if (dimToUse == "y")
                 {
                     if (hit.point.y < 0) //player is below object
                     {
-                        TurnDown(GO);
+                        FaceDown(obj);
                     }
                     else //player is above object
                     {
-                        TurnUp(GO);
+                        FaceUp(obj);
                     }
                 } else
                 {
-                    Debug.Log("TurnTowardPlayer - dimToUse not found!");
+                    Debug.Log("FaceTowardPlayer - dimToUse not found!");
                 }
             }
         }
     }
 
-    public void TurnAwayFromPlayer(GameObject GO) //makes object face away from player
+    /// <summary>
+    /// Faces given GameObject away from the player.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceAwayFromPlayer(GameObject obj)
     {
         RaycastHit2D[] hits = Physics2D.CircleCastAll(thisTransform.position, 100, Vector2.one); //radius may need to be adjusted if player isn't being picked up
 
@@ -666,162 +798,182 @@ public class BaseScriptedEvent : MonoBehaviour
                 {
                     if (hit.point.x < 0) //player is left of object
                     {
-                        TurnRight(GO);
+                        FaceRight(obj);
                     }
                     else //player is right of object
                     {
-                        TurnLeft(GO);
+                        FaceLeft(obj);
                     }
                 }
                 else if (dimToUse == "y")
                 {
                     if (hit.point.y < 0) //player is below object
                     {
-                        TurnUp(GO);
+                        FaceUp(obj);
                     }
                     else //player is above object
                     {
-                        TurnDown(GO);
+                        FaceDown(obj);
                     }
                 }
                 else
                 {
-                    Debug.Log("TurnAwayFromPlayer - dimToUse not found!");
+                    Debug.Log("FaceAwayFromPlayer - dimToUse not found!");
                 }
             }
         }
     }
 
-    public void Turn90Right (GameObject GO) //turns object 90 degrees to the right
+    /// <summary>
+    /// Faces given GameObject 90 degrees to the right.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void Face90Right (GameObject obj)
     {
-        if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
         {
-            string defaultDirection = GO.GetComponent<FacingState>().defaultDirection;
+            string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
             }
         }
     }
 
-    public void Turn90Left (GameObject GO) //turns object 90 degrees to the left
+    /// <summary>
+    /// Faces given GameObject 90 degrees to the left.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void Face90Left (GameObject obj)
     {
         
-        if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
-        } else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
         {
-            string defaultDirection = GO.GetComponent<FacingState>().defaultDirection;
+            string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
             }
         }
     }
 
-    public void Turn180 (GameObject GO) //turns object 180 degrees (turns them around)
+    /// <summary>
+    /// Faces given GameObject 180 degrees (faces them around to opposite direction).  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void Face180 (GameObject obj)
     {
-        if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
         {
-            GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
         }
-        else if (GO.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
         {
-            string defaultDirection = GO.GetComponent<FacingState>().defaultDirection;
+            string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                GO.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
             }
         }
     }
 
-    public void Turn90RightOrLeft(GameObject GO) //randomly chooses left or right, and turns object 90 degrees to that direction
+    /// <summary>
+    /// Randomly chooses left or right, and faces given GameObject 90 degrees to that direction.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void Face90RightOrLeft(GameObject obj)
     {
         Random.InitState(System.DateTime.Now.Millisecond);
         int randDir = Random.Range(0, 2);
         if (randDir == 0)
         {
-            Turn90Right(GO);
+            Face90Right(obj);
         } else if (randDir == 1)
         {
-            Turn90Left(GO);
+            Face90Left(obj);
         }
     }
 
-    public void TurnRandom(GameObject GO) //turns object in random direction
+    /// <summary>
+    /// Faces given GameObject in random direction by picking random value 0-3.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to change facing direction</param>
+    public void FaceRandom(GameObject obj)
     {
         bool sameDir = true;
-        FacingState fs = GO.GetComponent<FacingState>();
+        FacingState fs = obj.GetComponent<FacingState>();
         while (sameDir == true)
         {
             Random.InitState(System.DateTime.Now.Millisecond);
@@ -831,7 +983,7 @@ public class BaseScriptedEvent : MonoBehaviour
                 if (fs.faceState != FacingState.FaceState.UP || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Up" || fs.defaultDirection == "up")))
                 {
                     sameDir = false;
-                    TurnUp(GO);
+                    FaceUp(obj);
                 }
             }
             else if (randDir == 1)
@@ -839,7 +991,7 @@ public class BaseScriptedEvent : MonoBehaviour
                 if (fs.faceState != FacingState.FaceState.DOWN || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Down" || fs.defaultDirection == "down")))
                 {
                     sameDir = false;
-                    TurnDown(GO);
+                    FaceDown(obj);
                 }
             }
             else if (randDir == 2)
@@ -847,7 +999,7 @@ public class BaseScriptedEvent : MonoBehaviour
                 if (fs.faceState != FacingState.FaceState.LEFT || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Left" || fs.defaultDirection == "left")))
                 {
                     sameDir = false;
-                    TurnLeft(GO);
+                    FaceLeft(obj);
                 }
             }
             else if (randDir == 3)
@@ -855,48 +1007,76 @@ public class BaseScriptedEvent : MonoBehaviour
                 if (fs.faceState != FacingState.FaceState.RIGHT || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Right" || fs.defaultDirection == "right")))
                 {
                     sameDir = false;
-                    TurnRight(GO);
+                    FaceRight(obj);
                 }
             }
         }
     }
 
-    public void ChangeDefaultMoveSpeed(float newMoveSpeed) //changes default move speed
+    /// <summary>
+    /// Changes default move speed for player
+    /// </summary>
+    /// <param name="newMoveSpeed">Move speed to be set (higher = faster)</param>
+    public void ChangeDefaultMoveSpeed(float newMoveSpeed)
     {
         playerGameObject.GetComponent<PlayerController2D>().moveSpeed = newMoveSpeed;
     }
 
-    public void EnableWalkingAnimation() //enables walking animation for player
+    /// <summary>
+    /// Turns player walking animation on
+    /// </summary>
+    public void EnableWalkingAnimation()
     {
         playerGameObject.GetComponent<Animator>().SetBool("isMoving", true); 
     }
 
-    public void DisableWalkingAnimation() //disables walking animation for player
+    /// <summary>
+    /// Turns player walking animation off
+    /// </summary>
+    public void DisableWalkingAnimation()
     {
         playerGameObject.GetComponent<Animator>().SetBool("isMoving", false); 
     }
 
-    public void EnableForceDirection(GameObject GO) //keeps player from being able to change facing direction
+    /// <summary>
+    /// Keeps given GameObject from being able to change facing direction.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to keep from being able to change facing direction</param>
+    public void EnableForceDirection(GameObject obj)
     {
-        GO.GetComponent<FacingState>().forceDirection = true;
+        obj.GetComponent<FacingState>().forceDirection = true;
     }
 
-    public void DisableForceDirection(GameObject GO) //allows player to change facing direction
+    /// <summary>
+    /// Allows given GameObject to be able to change facing direction.  FacingState script is required to be attached to GameObject
+    /// </summary>
+    /// <param name="obj">GameObject to allow changing facing direction</param>
+    public void DisableForceDirection(GameObject obj)
     {
-        GO.GetComponent<FacingState>().forceDirection = false;
+        obj.GetComponent<FacingState>().forceDirection = false;
     }
 
-    public void DisablePlayerMovement() //disables player's movement
+    /// <summary>
+    /// Disables player's movement
+    /// </summary>
+    public void DisablePlayerMovement()
     {
         playerGameObject.GetComponent<PlayerController2D>().enabled = false;
-    } 
+    }
 
-    public void EnablePlayerMovement() //enables player's movement
+    /// <summary>
+    /// Enables player's movement
+    /// </summary>
+    public void EnablePlayerMovement()
     {
         playerGameObject.GetComponent<PlayerController2D>().enabled = true;
     }
 
-    public void SavePosition(GameObject objectToSave) //saves the position of player for loadPosition method
+    /// <summary>
+    /// Saves the position of player for loadPosition method (Not yet implemented)
+    /// </summary>
+    /// <param name="objectToSave">GameObject to save position</param>
+    public void SavePosition(GameObject objectToSave)
     {
         BasePositionSave thePosition = new BasePositionSave();
         thePosition.name = objectToSave.name;
@@ -911,18 +1091,34 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---BATTLE MANAGEMENT---
 
-    public void CallBattle(int troopIndex, string scene) //calls battle from script using the troop index and battle scene to be loaded
+    /// <summary>
+    /// Changes encounter chance from given encounter region
+    /// </summary>
+    /// <param name="troopIndex">Index of troop in TroopDB</param>
+    /// <param name="scene">Name of scene to open</param>
+    public void CallBattle(int troopIndex, string scene)
     {
         GameManager.instance.GetBattleFromScript(troopIndex, scene);
-    } 
+    }
 
-    public void ChangeBattleFrequency(int battleChance, int maxBattleChance) //changes global battle frequency
+    /// <summary>
+    /// Changes global battle frequency (The greater the difference, the longer it will take to enter battle)
+    /// </summary>
+    /// <param name="minBattleChance">Minimum value to check</param>
+    /// <param name="maxBattleChance">Maximum value to check</param>
+    public void ChangeBattleFrequency(int minBattleChance, int maxBattleChance)
     {
-        GameManager.instance.battleChance = battleChance;
+        GameManager.instance.battleChance = minBattleChance;
         GameManager.instance.maxBattleChance = maxBattleChance;
     }
 
-    public void ChangeEncounterChanceFromRegion(GameObject region, int index, float newEncounterChance) //changes encounter chance from given encounter region
+    /// <summary>
+    /// Changes encounter chance from given encounter region
+    /// </summary>
+    /// <param name="region">GameObject which the region is held</param>
+    /// <param name="index">Index of the encounter</param>
+    /// <param name="newEncounterChance">New encounter chance to be set (0-100)</param>
+    public void ChangeEncounterChanceFromRegion(GameObject region, int index, float newEncounterChance)
     {
         region.GetComponent<RegionData>().troopEncounters[index].encounterChance = newEncounterChance;
     }
@@ -933,25 +1129,34 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void TransitionToScene
 
-    public void OpenItemShop()
+    /// <summary>
+    /// Opens Item or Equipment shop
+    /// </summary>
+    /// <param name="type">Use "Item" or "Equip"</param>
+    public void OpenShop(string type)
     {
-        ItemShop itemShop = GetComponent<ItemShop>();
-        GameManager.instance.itemShopList = itemShop.itemShopList;
-        itemShop.ShowItemListInBuyGUI();
-        itemShop.DisplayItemShopGUI();
+        if (type == "Item")
+        {
+            ItemShop itemShop = GetComponent<ItemShop>();
+            GameManager.instance.itemShopList = itemShop.itemShopList;
+            itemShop.ShowItemListInBuyGUI();
+            itemShop.DisplayItemShopGUI();
+        }
+
+        if (type == "Equip")
+        {
+            EquipShop equipShop = GetComponent<EquipShop>();
+            GameManager.instance.equipShopList = equipShop.equipShopList;
+            equipShop.ShowEquipListInBuyGUI();
+            equipShop.DisplayEquipShopGUI();
+        }
         DisablePlayerMovement();
     }
 
-    public void OpenEquipShop()
-    {
-        EquipShop equipShop = GetComponent<EquipShop>();
-        GameManager.instance.equipShopList = equipShop.equipShopList;
-        equipShop.ShowEquipListInBuyGUI();
-        equipShop.DisplayEquipShopGUI();
-        DisablePlayerMovement();
-    }
-
-    public void OpenMenu() //forces menu to be opened
+    /// <summary>
+    /// Forces menu to be opened
+    /// </summary>
+    public void OpenMenu()
     {
         GameObject.Find("GameManager").GetComponent<GameMenu>().menuCalled = true;
     }
@@ -966,7 +1171,14 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---GAME MANAGEMENT---
 
-    public void ChangeSwitch(GameObject whichObject, int whichEvent, int whichSwitch, bool whichBool) //changes switch value
+    /// <summary>
+    /// Changes switch value (not yet implemented)
+    /// </summary>
+    /// <param name="whichObject">GameObject with the switch</param>
+    /// <param name="whichEvent">Switch's event index</param>
+    /// <param name="whichSwitch">The switch to be changed</param>
+    /// <param name="whichBool">To change the switch to true or false</param>
+    public void ChangeSwitch(GameObject whichObject, int whichEvent, int whichSwitch, bool whichBool)
     {
         BaseDialogueEvent e = whichObject.GetComponent<DialogueEvents>().eventOrDialogue[whichEvent];
 
@@ -977,9 +1189,15 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             e.switch2 = whichBool;
         }
-    } 
+    }
 
-    public bool GetSwitchBool(GameObject whichObject, int whichEvent, int whichSwitch) //returns if switch is true or false (not yet fully implemented)
+    /// <summary>
+    /// Returns if switch is true or false on given object (not yet fully implemented)
+    /// </summary>
+    /// <param name="whichObject">GameObject with the switch</param>
+    /// <param name="whichEvent">Switch's event index</param>
+    /// <param name="whichSwitch">The switch to be returned</param>
+    public bool GetSwitchBool(GameObject whichObject, int whichEvent, int whichSwitch)
     {
         BaseDialogueEvent e = whichObject.GetComponent<DialogueEvents>().eventOrDialogue[whichEvent];
 
@@ -994,9 +1212,14 @@ public class BaseScriptedEvent : MonoBehaviour
             Debug.Log("GetSwitchBool - invalid switch: " + whichSwitch);
             return false;
         }
-    } 
+    }
 
-    public void ChangeGlobalBool(int index, bool boolean) //changes value of global event bools
+    /// <summary>
+    /// Changes value of global event bools
+    /// </summary>
+    /// <param name="index">Index of the global bool</param>
+    /// <param name="boolean">Change bool to true or false</param>
+    public void ChangeGlobalBool(int index, bool boolean)
     {
        GlobalBoolsDB.instance.globalBools[index] = boolean;
     }
@@ -1005,7 +1228,14 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---MUSIC/SOUNDS---
 
-    //void PlaySE
+    /// <summary>
+    /// Plays given sound effect once
+    /// </summary>
+    /// <param name="SE">Sound effect to play</param>
+    void PlaySE(AudioClip SE)
+    {
+        audioSource.PlayOneShot(SE);
+    }
 
     //void PlayBGM
 
@@ -1025,6 +1255,10 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---TIMING---
 
+    /// <summary>
+    /// Halt processing for given seconds
+    /// </summary>
+    /// <param name="waitTime">Time to move in seconds</param>
     public IEnumerator WaitForSeconds(float waitTime) //pause for period of time
     {
         yield return new WaitForSeconds(waitTime);
@@ -1033,81 +1267,228 @@ public class BaseScriptedEvent : MonoBehaviour
     #endregion
 
     #region ---DIALOGUE---
-
-    public IEnumerator ShowMessage(string message, float textSpeed, bool waitForEnd, bool lockPlayerMovement) //Displays any custom message
+    
+    /// <summary>
+    /// Coroutine.  Displays given message via dialogue
+    /// </summary>
+    /// <param name="message">Message to display</param>
+    /// <param name="voiceTone">Voice tone to be played during message</param>
+    /// <param name="textSpeed">Speed to display text</param>
+    /// <param name="waitForEnd">Halt other processing until message is completed</param>
+    /// <param name="lockPlayerMovement">Disable player movement until message is completed</param>
+    public IEnumerator ShowMessage(string message, AudioClip voiceTone, float textSpeed, bool waitForEnd, bool lockPlayerMovement)
     {
-        if (lockPlayerMovement)
+        checkForConfirmPressed = true;
+        if (!confirmPressed)
         {
-            Debug.Log("Disabling player movement");
+            if (lockPlayerMovement)
+            {
+                Debug.Log("Disabling player movement");
+                DisablePlayerMovement();
+            }
+            if (waitForEnd)
+            {
+                yield return (StartCoroutine(WriteToMessagePanel(message, textSpeed, voiceTone)));
+            }
+            else
+            {
+                StartCoroutine(WriteToMessagePanel(message, textSpeed, voiceTone));
+            }
+            if (lockPlayerMovement)
+            {
+                Debug.Log("Enabling player movement");
+                EnablePlayerMovement();
+            }
+            //CheckConfirmButtonStatus();
+        }
+    }
+
+    /// <summary>
+    /// Coroutine.  Displays given message via dialogue
+    /// </summary>
+    /// <param name="message">Message to display</param>
+    /// <param name="voiceTone">Voice Tone for message</param>
+    /// <param name="waitForEnd">Halt other processing until message is completed</param>
+    /// <param name="lockPlayerMovement">Disable player movement until message is completed</param>
+    public IEnumerator ShowMessage(string message, AudioClip voiceTone, bool waitForEnd, bool lockPlayerMovement)
+    {
+        checkForConfirmPressed = true;
+        if (!confirmPressed)
+        {
+            if (lockPlayerMovement)
+            {
+                Debug.Log("Disabling player movement");
+                DisablePlayerMovement();
+            }
+            if (waitForEnd)
+            {
+                yield return (StartCoroutine(WriteToMessagePanel(message, baseTextSpeed, voiceTone)));
+            }
+            else
+            {
+                StartCoroutine(WriteToMessagePanel(message, baseTextSpeed, voiceTone));
+            }
+            if (lockPlayerMovement)
+            {
+                Debug.Log("Enabling player movement");
+                EnablePlayerMovement();
+            }
+            //CheckConfirmButtonStatus();
+        }
+    }
+
+    /// <summary>
+    /// Coroutine.  Displays given message via dialogue and displays choices for user input that can be assigned by any method.  Minimum 2 options, others can be set with 'null'
+    /// </summary>
+    /// <param name="message">Message to display</param>
+    /// <param name="voiceTone">Voice Tone for message</param>
+    /// <param name="textSpeed">Speed to display text.  Can use "baseTextSpeed"</param>
+    /// <param name="button1Text">Text for choice 1</param>
+    /// <param name="choice1">Name of method to assign for choice 1</param>
+    /// <param name="button2Text">Text for choice 2</param>
+    /// <param name="choice2">Name of method to assign for choice 2</param>
+    /// <param name="button3Text">Text for choice 3.  Use 'null' if there is no 3rd option</param>
+    /// <param name="choice3">Name of method to assign for choice 3.  Use 'null' if there is no 3rd option</param>
+    /// <param name="button4Text">Text for choice 4. Use 'null' if there is no 4th option</param>
+    /// <param name="choice4">Name of method to assign for choice 4.  Use 'null' if there is no 4th option</param>
+    public IEnumerator ShowDialogueChoices(string message, AudioClip voiceTone, float textSpeed, string button1Text, RunDialogueChoice choice1, string button2Text, RunDialogueChoice choice2, string button3Text, RunDialogueChoice choice3, string button4Text, RunDialogueChoice choice4)
+    {
+        checkForConfirmPressed = true;
+        if (!confirmPressed)
+        {
+            if (voiceTone != null)
+            {
+                PlayVoice(voiceTone);
+            }
+
             DisablePlayerMovement();
-        }
-        if (waitForEnd)
-        {
-            yield return (StartCoroutine(WriteToMessagePanel(message, textSpeed)));
-        }
-        else
-        {
-            StartCoroutine(WriteToMessagePanel(message, textSpeed));
-        }
-        if (lockPlayerMovement)
-        {
-            Debug.Log("Enabling player movement");
-            EnablePlayerMovement();
-        }
-    }
+            Text messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
+            string text = message; //gets the text to be put in dialogue UI
 
-    public IEnumerator ShowDialogueChoices(string message, string button1Text, RunDialogueChoice choice1, string button2Text, RunDialogueChoice choice2, string button3Text, RunDialogueChoice choice3, string button4Text, RunDialogueChoice choice4)
-    {
-        DisablePlayerMovement();
-        bool messageFinished;
-        Text messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
-        messageFinished = false; //starting the dialogue text, sets to true once all text is added
-        string text = message; //gets the text to be put in dialogue UI
-        string fullText = ""; //sets current fullText to blank as letters will be added individually
+            GameManager.instance.DisplayPanel(true); //shows dialogue panel
 
-        GameManager.instance.DisplayPanel(true); //shows dialogue panel
+            for (int i = 0; i < text.RichTextLength(); i++) //for each letter in the text
+            {
+                CheckConfirmButtonStatus(); //checks if confirm button is pressed to be able to skip message (not yet implemented)
+                                            //fullText += text[i]; //adds current letter to fullText
+                                            //messageText.text = fullText; //sets dialogue UI text to the current fullText
+                                            //fullText += text.RichTextSubString(i);
+                messageText.text = text.RichTextSubString(i + 1);
+                yield return new WaitForSecondsRealtime(textSpeed); //waits before entering next letter, based on textSpeed
+            }
 
-        for (int i = 0; i < text.Length; i++) //for each letter in the text
-        {
-            fullText += text[i]; //adds current letter to fullText
-            messageText.text = fullText; //sets dialogue UI text to the current fullText
-            yield return new WaitForSecondsRealtime(baseTextSpeed);
-        }
-
-        if (fullText == text) //if full message has been added to the dialogue text
-        {
-            messageFinished = true;
-        }
-
-        if (messageFinished)
-        {
             choiceMade = "";
-        }
-        
-        SetChoiceButtons(button1Text, button2Text, button3Text, button4Text);
 
-        yield return new WaitUntil(() => choiceMade != "");
+            if (voiceTone != null)
+            {
+                StopVoice();
+            }
 
-        DialogueChoicePanel.GetComponent<CanvasGroup>().alpha = 0;
-        GameManager.instance.DisplayPanel(false); //hides dialogue panel
+            SetChoiceButtons(button1Text, button2Text, button3Text, button4Text);
 
-        EnablePlayerMovement();
-        
-        if (choiceMade == "button1")
-        {
-            choice1();
-        } else if (choiceMade == "button2")
-        {
-            choice2();
-        } else if (choiceMade == "button3")
-        {
-            choice3();
-        } else if (choiceMade == "button4")
-        {
-            choice4();
+            yield return new WaitUntil(() => choiceMade != "");
+
+            DialogueChoicePanel.GetComponent<CanvasGroup>().alpha = 0;
+            GameManager.instance.DisplayPanel(false); //hides dialogue panel
+
+            EnablePlayerMovement();
+
+            if (choiceMade == "button1")
+            {
+                choice1();
+            }
+            else if (choiceMade == "button2")
+            {
+                choice2();
+            }
+            else if (choiceMade == "button3")
+            {
+                choice3();
+            }
+            else if (choiceMade == "button4")
+            {
+                choice4();
+            }
         }
     }
 
+    /// <summary>
+    /// Coroutine.  Displays given message via dialogue and displays choices for user input that can be assigned by any method.  Minimum 2 options, others can be set with 'null'
+    /// </summary>
+    /// <param name="message">Message to display</param>
+    /// <param name="voiceTone">Voice Tone for message</param>
+    /// <param name="button1Text">Text for choice 1</param>
+    /// <param name="choice1">Name of method to assign for choice 1</param>
+    /// <param name="button2Text">Text for choice 2</param>
+    /// <param name="choice2">Name of method to assign for choice 2</param>
+    /// <param name="button3Text">Text for choice 3.  Use 'null' if there is no 3rd option</param>
+    /// <param name="choice3">Name of method to assign for choice 3.  Use 'null' if there is no 3rd option</param>
+    /// <param name="button4Text">Text for choice 4. Use 'null' if there is no 4th option</param>
+    /// <param name="choice4">Name of method to assign for choice 4.  Use 'null' if there is no 4th option</param>
+    public IEnumerator ShowDialogueChoices(string message, AudioClip voiceTone, string button1Text, RunDialogueChoice choice1, string button2Text, RunDialogueChoice choice2, string button3Text, RunDialogueChoice choice3, string button4Text, RunDialogueChoice choice4)
+    {
+        checkForConfirmPressed = true;
+        if (!confirmPressed)
+        {
+            if (voiceTone != null)
+            {
+                PlayVoice(voiceTone);
+            }
+
+            DisablePlayerMovement();
+            Text messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
+            string text = message; //gets the text to be put in dialogue UI
+
+            GameManager.instance.DisplayPanel(true); //shows dialogue panel
+
+            for (int i = 0; i < text.RichTextLength(); i++) //for each letter in the text
+            {
+                CheckConfirmButtonStatus(); //checks if confirm button is pressed to be able to skip message (not yet implemented)
+                                            //fullText += text[i]; //adds current letter to fullText
+                                            //messageText.text = fullText; //sets dialogue UI text to the current fullText
+                                            //fullText += text.RichTextSubString(i);
+                messageText.text = text.RichTextSubString(i + 1);
+                yield return new WaitForSecondsRealtime(baseTextSpeed); //waits before entering next letter, based on textSpeed
+            }
+
+            choiceMade = "";
+
+            if (voiceTone != null)
+            {
+                StopVoice();
+            }
+
+            SetChoiceButtons(button1Text, button2Text, button3Text, button4Text);
+
+            yield return new WaitUntil(() => choiceMade != "");
+
+            DialogueChoicePanel.GetComponent<CanvasGroup>().alpha = 0;
+            GameManager.instance.DisplayPanel(false); //hides dialogue panel
+
+            EnablePlayerMovement();
+
+            if (choiceMade == "button1")
+            {
+                choice1();
+            }
+            else if (choiceMade == "button2")
+            {
+                choice2();
+            }
+            else if (choiceMade == "button3")
+            {
+                choice3();
+            }
+            else if (choiceMade == "button4")
+            {
+                choice4();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Coroutine.  Input a number with the number input GUI that is set to Gamemanager.instance.numberInput
+    /// </summary>
     public IEnumerator NumberInput()
     {
         DisablePlayerMovement();
@@ -1125,6 +1506,9 @@ public class BaseScriptedEvent : MonoBehaviour
         HideInputPanels();
     }
 
+    /// <summary>
+    /// Coroutine.  Input text with the text input GUI that is set to GameManager.instance.textInput
+    /// </summary>
     public IEnumerator TextInput()
     {
         DisablePlayerMovement();
@@ -1145,14 +1529,22 @@ public class BaseScriptedEvent : MonoBehaviour
     }
 
     #endregion
-    
+
     #region ---QUESTS---
 
+    /// <summary>
+    /// Adds given quest to active quests list
+    /// </summary>
+    /// <param name="ID">ID of quest in QuestDB</param>
     public void StartQuest(int ID)
     {
         QuestDB.instance.AddToActiveQuests(QuestDB.instance.quests[ID]);
     }
 
+    /// <summary>
+    /// Returns quest.fulfilled for given quest
+    /// </summary>
+    /// <param name="quest">Quest to check</param>
     public bool QuestObjectivesFulfilled(BaseQuest quest)
     {
         QuestDB.instance.UpdateQuestObjectives();
@@ -1166,16 +1558,31 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Marks given quest as complete
+    /// </summary>
+    /// <param name="ID">Quest to check</param>
     public void CompleteQuest(BaseQuest quest)
     {
         QuestDB.instance.CompleteQuest(quest);
     }
 
+    /// <summary>
+    /// Marks bool of given quest as given value if quest type is 'bool'
+    /// </summary>
+    /// <param name="quest">Quest to check</param>
+    /// <param name="index">Index of bool in quest</param>
+    /// <param name="value">To mark the bool as true or false</param>
     public void MarkQuestBool(BaseQuest quest, int index, bool value)
     {
         quest.boolReqs[index].objectiveFulfilled = value;
     }
 
+    /// <summary>
+    /// Returns given quest and index bool value
+    /// </summary>
+    /// <param name="quest">Quest to check</param>
+    /// <param name="index">Index of bool in quest</param>
     public bool QuestBool(BaseQuest quest, int index)
     {
         return quest.boolReqs[index].objectiveFulfilled;
@@ -1224,6 +1631,10 @@ public class BaseScriptedEvent : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Returns given quest by ID from QuestDB
+    /// </summary>
+    /// <param name="ID">ID of quest in QuestDB</param>
     public BaseQuest GetQuest(int ID)
     {
         foreach (BaseQuest quest in QuestDB.instance.quests)
@@ -1237,6 +1648,10 @@ public class BaseScriptedEvent : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Returns given quest by ID from active quests
+    /// </summary>
+    /// <param name="ID">ID of quest in active quests</param>
     public BaseQuest GetActiveQuest(int ID)
     {
         foreach (BaseQuest quest in GameManager.instance.activeQuests)
@@ -1250,6 +1665,10 @@ public class BaseScriptedEvent : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Returns if given quest is in active quest list
+    /// </summary>
+    /// <param name="quest">Quest to check</param>
     public bool IfQuestIsActive(BaseQuest quest)
     {
         foreach (BaseQuest activeQuest in GameManager.instance.activeQuests)
@@ -1271,21 +1690,37 @@ public class BaseScriptedEvent : MonoBehaviour
 
     //void ChangeBattleBGM
 
-    //void ChangeSaveAccess
+    /// <summary>
+    /// Enables or disables ability to open menu
+    /// </summary>
+    /// <param name="canOpen">If true, menu can be opened</param>
+    public void ChangeMenuAccess(bool canOpen)
+    {
+        if (canOpen)
+        {
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = false;
+        } else
+        {
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = true;
+        }
+    }
 
-    //void ChangeMenuAccess
-
-    public void ChangeMenuButtonAccess(MenuButtons button, string access)
+    /// <summary>
+    /// Enables or disables ability to access menu buttons (Items, Magic, etc)
+    /// </summary>
+    /// <param name="button">Button to change access</param>
+    /// <param name="canAccess">If true, button can be accessed</param>
+    public void ChangeMenuButtonAccess(MenuButtons button, bool canAccess)
     {
         Button buttonToChange = GameObject.Find("GameManager/Menus/MainMenuCanvas/MenuButtonsPanel/" + button.ToString() + "Button").GetComponent<Button>();
         
-        if (access == "Enable")
+        if (canAccess)
         {
             buttonToChange.interactable = true;
             buttonToChange.GetComponentInChildren<Text>().color = new Color(1, 1, 1, 1);
         }
 
-        if (access == "Disable")
+        if (!canAccess)
         {
             buttonToChange.interactable = false;
             buttonToChange.GetComponentInChildren<Text>().color = new Color(1, 1, 1, .5f);
@@ -1308,6 +1743,9 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---ACTORS---
 
+    /// <summary>
+    /// Fully restores HP and MP of all active heroes
+    /// </summary>
     public void FullHeal()
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
@@ -1317,24 +1755,155 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
-    //void ChangeHP
+    /// <summary>
+    /// Adds or subtracts current HP of given hero
+    /// </summary>
+    /// <param name="hero">Hero to modify HP</param>
+    /// <param name="hp">CurrentHP to add/subtract (subtract with negative value)</param>
+    public void ChangeHP(BaseHero hero, int hp)
+    {
+        hero.curHP += hp;
 
-    //void ChangeMP
+        if (hero.curHP > hero.finalMaxHP)
+        {
+            hero.curHP = hero.finalMaxHP;
+        }
+    }
 
-    //void ChangeEXP
+    /// <summary>
+    /// Sets current HP or given hero to given value
+    /// </summary>
+    /// <param name="hero">Hero to modify HP</param>
+    /// <param name="hp">HP value to set current HP</param>
+    public void SetHP(BaseHero hero, int hp)
+    {
+        hero.curHP = hp;
 
-    //void ChangeLevel
+        if (hero.curHP > hero.finalMaxHP)
+        {
+            hero.curHP = hero.finalMaxHP;
+        }
+    }
 
-    //void ChangeParameter
+    /// <summary>
+    /// Adds or subtracts current MP of given hero
+    /// </summary>
+    /// <param name="hero">Hero to modify MP</param>
+    /// <param name="mp">MP value to set current MP</param>
+    public void ChangeMP(BaseHero hero, int mp)
+    {
+        hero.curMP += mp;
+
+        if (hero.curMP > hero.finalMaxMP)
+        {
+            hero.curMP = hero.finalMaxMP;
+        }
+    }
+
+    /// <summary>
+    /// Sets current MP of given hero to given value
+    /// </summary>
+    /// <param name="hero">Hero to modify MP</param>
+    /// <param name="mp">MP value to set current MP</param>
+    public void SetMP(BaseHero hero, int mp)
+    {
+        hero.curMP = mp;
+
+        if (hero.curMP > hero.finalMaxMP)
+        {
+            hero.curMP = hero.finalMaxMP;
+        }
+    }
+
+    /// <summary>
+    /// Adds or subtracts current EXP of given hero (de-leveling not yet supported)
+    /// </summary>
+    public void ChangeEXP(BaseHero hero, int exp)
+    {
+        hero.currentExp += exp;
+
+        GameManager.instance.ProcessExp();
+    }
+
+    /// <summary>
+    /// Adds or subtracts given base stat by given value to given hero
+    /// </summary>
+    /// <param name="hero">Hero to modify parameter</param>
+    /// <param name="parameter">Use: "Strength", "Stamina", "Agility", "Dexterity", "Intelligence" or "Spirit"</param>
+    /// <param name="paramChange">Value to be added/subtracted</param>
+    public void ChangeParameter(BaseHero hero, string parameter, int paramChange)
+    {
+        if (parameter == "Strength")
+        {
+            hero.baseSTR += paramChange;
+        }
+        if (parameter == "Stamina")
+        {
+            hero.baseSTA += paramChange;
+        }
+        if (parameter == "Agility")
+        {
+            hero.baseAGI += paramChange;
+        }
+        if (parameter == "Dexterity")
+        {
+            hero.baseDEX += paramChange;
+        }
+        if (parameter == "Intelligence")
+        {
+            hero.baseINT += paramChange;
+        }
+        if (parameter == "Spirit")
+        {
+            hero.baseSPI += paramChange;
+        }
+
+        hero.UpdateStats();
+    }
 
     //void AddSkill
 
     //void RemoveSkill
 
-    //void ChangeEquipment
+    /// <summary>
+    /// Equip given equipment for given hero
+    /// </summary>
+    /// <param name="hero">Hero to change equipment</param>
+    /// <param name="equipName">Name of the equipment to be equipped</param>
+    public void ChangeEquipment(BaseHero hero, string equipName)
+    {
+        bool equipFound = false;
 
-    //void ChangeName
+        foreach (Item equipment in Inventory.instance.items)
+        {
+            if (equipment.name == equipName)
+            {
+                hero.Equip((Equipment)equipment);
+                equipFound = true;
+                break;
+            }
+        }
 
+        if (!equipFound)
+        {
+            Debug.Log("Equipment not in inventory");
+        }
+    }
+
+    /// <summary>
+    /// Change name of given hero with given string
+    /// </summary>
+    /// <param name="hero">Hero to modify name</param>
+    /// <param name="name">New name of the given hero</param>
+    public void ChangeName(BaseHero hero, string name)
+    {
+        hero.name = name;
+    }
+
+    /// <summary>
+    /// Change name of given hero with name input GUI
+    /// </summary>
+    /// <param name="hero">Hero to modify name</param>
     public IEnumerator NameInput(BaseHero hero)
     {
         DisablePlayerMovement();
@@ -1362,42 +1931,110 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---PARTY---
 
+    /// <summary>
+    /// Adds or subtracts given gold
+    /// </summary>
+    /// <param name="gold">Number of gold to be added/subtracted</param>
     public void ChangeGold(int gold)
     {
         GameManager.instance.gold += gold;
     }
 
-    public void AddItem(int ID) //adds item to inventory
+    /// <summary>
+    /// Adds given item to inventory
+    /// </summary>
+    /// <param name="ID">ID of item from ItemDB to add</param>
+    /// <param name="numberToAdd">Number of the given item to add to inventory</param>
+    public void AddItem(int ID, int numberToAdd)
+    {
+        for (int i=0; i < numberToAdd; i++)
+        {
+            Inventory.instance.Add(ItemDB.instance.items[ID].item);
+            Debug.Log("Added to inventory: " + ItemDB.instance.items[ID].item.name);
+        }
+    }
+
+    /// <summary>
+    /// Adds 1 of given item to inventory
+    /// </summary>
+    /// <param name="ID">ID of item from ItemDB to add</param>
+    public void AddItem(int ID)
     {
         Inventory.instance.Add(ItemDB.instance.items[ID].item);
         Debug.Log("Added to inventory: " + ItemDB.instance.items[ID].item.name);
     }
 
-    public void RemoveItem(int ID) //removes item from inventory
+    /// <summary>
+    /// Removes given item from inventory
+    /// </summary>
+    /// <param name="ID">ID of item from ItemDB to remove</param>
+    /// <param name="numberToRemove">Number of the given item to remove from inventory</param>
+    public void RemoveItem(int ID, int numberToRemove)
+    {
+        for (int i=0; i < numberToRemove; i++)
+        {
+            Inventory.instance.Remove(ItemDB.instance.items[ID].item);
+            Debug.Log("Removed from inventory: " + ItemDB.instance.items[ID].item.name);
+        }
+    }
+
+    /// <summary>
+    /// Removes 1 of given item from inventory
+    /// </summary>
+    /// <param name="ID">ID of item from ItemDB to remove</param>
+    public void RemoveItem(int ID)
     {
         Inventory.instance.Remove(ItemDB.instance.items[ID].item);
         Debug.Log("Removed from inventory: " + ItemDB.instance.items[ID].item.name);
     }
 
-    public void AddEquipment(int ID) //adds equipment to inventory
+    /// <summary>
+    /// Adds given equipment to inventory
+    /// </summary>
+    /// <param name="ID">ID of equipment from EquipmentDB to add</param>
+    /// <param name="numberToAdd">Number of the given equipment to add to inventory</param>
+    public void AddEquipment(int ID, int numberToAdd)
+    {
+        for (int i = 0; i < numberToAdd; i++)
+        {
+            Inventory.instance.Add(EquipmentDB.instance.equipment[ID].equipment);
+            Debug.Log("Added to inventory: " + EquipmentDB.instance.equipment[ID].equipment.name);
+        }
+    }
+
+    /// <summary>
+    /// Adds 1 of given equipment to inventory
+    /// </summary>
+    /// <param name="ID">ID of equipment from EquipmentDB to add</param>
+    public void AddEquipment(int ID)
     {
         Inventory.instance.Add(EquipmentDB.instance.equipment[ID].equipment);
         Debug.Log("Added to inventory: " + EquipmentDB.instance.equipment[ID].equipment.name);
     }
 
+    /// <summary>
+    /// Removes given equipment from inventory
+    /// </summary>
+    /// <param name="ID">ID of equipment from EquipmentDB to add</param>
+    /// <param name="numberToRemove">Number of the given equipment to add to inventory</param>
+    public void RemoveEquipment(int ID, int numberToRemove) //removes equipment from inventory
+    {
+        for (int i = 0; i < numberToRemove; i++)
+        {
+            Inventory.instance.Remove(EquipmentDB.instance.equipment[ID].equipment);
+            Debug.Log("Removed from inventory: " + EquipmentDB.instance.equipment[ID].equipment.name);
+        }
+    }
+
+    /// <summary>
+    /// Removes 1 of given equipment from inventory
+    /// </summary>
+    /// <param name="ID">ID of equipment from EquipmentDB to add</param>
     public void RemoveEquipment(int ID) //removes equipment from inventory
     {
         Inventory.instance.Remove(EquipmentDB.instance.equipment[ID].equipment);
         Debug.Log("Removed from inventory: " + EquipmentDB.instance.equipment[ID].equipment.name);
     }
-
-    //void AddWeapon
-
-    //void RemoveWeapon
-
-    //void AddArmor
-
-    //void RemoveArmor
 
     //void ChangePartyMember
 
@@ -1433,42 +2070,80 @@ public class BaseScriptedEvent : MonoBehaviour
 
     #region ---TOOLS FOR EVENTS---
 
-    float GetBaseMoveSpeed(float spaces) //calculates move speed based on number of spaces to be moved, to keep base move speed consistent
+    /// <summary>
+    /// Calculates move speed based on number of spaces to be moved based on baseMoveSpeed
+    /// </summary>
+    /// <param name="spaces">Spaces to calculate move speed</param>
+    float GetBaseMoveSpeed(float spaces)
     {
         float tempMoveSpeed = baseMoveSpeed * spaces;
         return tempMoveSpeed;
     }
 
-    public IEnumerator WriteToMessagePanel(string message, float textSpeed) //Tool for ShowMessage to facilitate dialogue operation
+    /// <summary>
+    /// Ensures confirm button is only considered 'pressed' once
+    /// </summary>
+    void CheckConfirmButtonStatus()
     {
-        bool messageFinished;
+        //Debug.Log(confirmPressed);
+        if (Input.GetButtonDown("Confirm"))
+        {
+            //Debug.Log("buttonPressed");
+            confirmPressed = true;
+        }
+        if (confirmPressed)
+        {
+            if (Input.GetButtonUp("Confirm"))
+            {
+                //Debug.Log("button released");
+                confirmPressed = false;
+                checkForConfirmPressed = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Tool for ShowMessage to facilitate dialogue operation
+    /// </summary>
+    /// <param name="message">Spaces to calculate move speed</param>
+    /// <param name="textSpeed">How quickly the text can be filled; can use "baseTextSpeed"</param>
+    /// <param name="voiceTone">Voice to be played during message</param>
+    public IEnumerator WriteToMessagePanel(string message, float textSpeed, AudioClip voiceTone)
+    {
+        if (voiceTone != null)
+        {
+            PlayVoice(voiceTone);
+        }
+        
         Text messageText = GameManager.instance.DialogueCanvas.GetComponentInChildren<Text>(); //assigns messageText to dialogue canvas text component
-        messageFinished = false; //starting the dialogue text, sets to true once all text is added
         string text = message; //gets the text to be put in dialogue UI
-        string fullText = ""; //sets current fullText to blank as letters will be added individually
 
         GameManager.instance.DisplayPanel(true); //shows dialogue panel
 
-        for (int i = 0; i < text.Length; i++) //for each letter in the text
+        for (int i = 0; i < text.RichTextLength(); i++) //for each letter in the text
         {
-            fullText += text[i]; //adds current letter to fullText
-            messageText.text = fullText; //sets dialogue UI text to the current fullText
-            yield return new WaitForSecondsRealtime(textSpeed);
+            CheckConfirmButtonStatus(); //checks if confirm button is pressed to be able to skip message (not yet implemented)
+                                        //fullText += text[i]; //adds current letter to fullText
+                                        //messageText.text = fullText; //sets dialogue UI text to the current fullText
+                                        //fullText += text.RichTextSubString(i);
+            messageText.text = text.RichTextSubString(i + 1);
+            yield return new WaitForSecondsRealtime(textSpeed); //waits before entering next letter, based on textSpeed
         }
 
-        if (fullText == text) //if full message has been added to the dialogue text
-        {
-            messageFinished = true;
-        }
+            if (voiceTone != null)
+            {
+                StopVoice();
+            }
 
-        if (messageFinished)
-        {
             yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
-        }
+            PlaySE(confirmSE);
 
         GameManager.instance.DisplayPanel(false); //hides dialogue panel
     }
 
+    /// <summary>
+    /// Disables dialogue choice panels
+    /// </summary>
     void DisableChoicePanels()
     {
         GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue2ChoicePanel").GetComponent<CanvasGroup>().interactable = false;
@@ -1484,6 +2159,9 @@ public class BaseScriptedEvent : MonoBehaviour
         GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel/Dialogue4ChoicePanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
     }
 
+    /// <summary>
+    /// Enables dialogue choice panel
+    /// </summary>
     void EnableChoicePanel(int choices)
     {
         if (choices == 2)
@@ -1513,6 +2191,13 @@ public class BaseScriptedEvent : MonoBehaviour
         DialogueChoicePanel.GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 
+    /// <summary>
+    /// Sets text on choice buttons; Minimum of 2 options, 3 or 4 can be null
+    /// </summary>
+    /// <param name="button1txt">Text for first button</param>
+    /// <param name="button2txt">Text for second button</param>
+    /// <param name="button3txt">Text for third button</param>
+    /// <param name="button4txt">Text for fourth button</param>
     void SetChoiceButtons(string button1txt, string button2txt, string button3txt, string button4txt)
     {
         DisableChoicePanels();
@@ -1549,43 +2234,63 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets choiceMade to "button1"
+    /// </summary>
     public void Choice1ButtonClicked()
     {
         if (choiceMade == "")
         {
             Debug.Log("Choice 1 button clicked");
+            PlaySE(confirmSE);
             choiceMade = "button1";
         }
     }
 
+    /// <summary>
+    /// Sets choiceMade to "button2"
+    /// </summary>
     public void Choice2ButtonClicked()
     {
         if (choiceMade == "")
         {
             Debug.Log("Choice 2 button clicked");
+            PlaySE(confirmSE);
             choiceMade = "button2";
         }
     }
 
+    /// <summary>
+    /// Sets choiceMade to "button3"
+    /// </summary>
     public void Choice3ButtonClicked()
     {
         if (choiceMade == "")
         {
             Debug.Log("Choice 3 button clicked");
+            PlaySE(confirmSE);
             choiceMade = "button3";
         }
     }
 
+    /// <summary>
+    /// Sets choiceMade to "button4"
+    /// </summary>
     public void Choice4ButtonClicked()
     {
         if (choiceMade == "")
         {
             Debug.Log("Choice 4 button clicked");
+            PlaySE(confirmSE);
             choiceMade = "button4";
         }
     }
 
-    void DisplayInputPanel(string option) //option should be 'Text', 'Name', or 'Number'
+    /// <summary>
+    /// Displays the various input panels by using 'option' parameter to get the panel GameObject
+    /// </summary>
+    /// <param name="option">Use "Text", "Name", or "Number"</param>
+    void DisplayInputPanel(string option)
     {
         HideInputPanels();
 
@@ -1594,6 +2299,9 @@ public class BaseScriptedEvent : MonoBehaviour
         GameObject.Find("GameManager/TextInputCanvas/" + option + "InputPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 
+    /// <summary>
+    /// Hides all input panels
+    /// </summary>
     void HideInputPanels()
     {
         GameObject.Find("GameManager/TextInputCanvas/TextInputPanel").GetComponent<CanvasGroup>().alpha = 0;
@@ -1607,6 +2315,9 @@ public class BaseScriptedEvent : MonoBehaviour
         GameObject.Find("GameManager/TextInputCanvas/NumberInputPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
     }
 
+    /// <summary>
+    /// Turns GameManager.instance.capsOn to false, and sets all letter buttons on TextInputPanel to lowercase
+    /// </summary>
     void TextResetCaps()
     {
         GameManager.instance.capsOn = false;
@@ -1676,6 +2387,9 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Turns GameManager.instance.capsOn to false, and sets all letter buttons on NameInputPanel to lowercase
+    /// </summary>
     void NameResetCaps()
     {
         GameManager.instance.capsOn = false;
@@ -1745,6 +2459,10 @@ public class BaseScriptedEvent : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Returns enemy by ID
+    /// </summary>
+    /// <param name="ID">ID of enemy from EnemyDB to be returned</param>
     protected BaseEnemy GetEnemy(int ID)
     {
         foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
@@ -1755,6 +2473,17 @@ public class BaseScriptedEvent : MonoBehaviour
             }
         }
         return null;
+    }
+
+    void PlayVoice(AudioClip voice)
+    {
+        voiceAudioSource.clip = voice;
+        voiceAudioSource.Play();
+    }
+
+    void StopVoice()
+    {
+        voiceAudioSource.Stop();
     }
 
     #endregion
