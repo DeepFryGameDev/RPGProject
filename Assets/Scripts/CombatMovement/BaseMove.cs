@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,7 +25,7 @@ public class BaseMove : MonoBehaviour
     
     protected int turn;
 
-    BattleStateMachine theBSM;
+    protected BattleStateMachine BSM;
 
     public void InitMove()
     {
@@ -33,7 +33,7 @@ public class BaseMove : MonoBehaviour
 
         halfHeight = GetComponent<BoxCollider2D>().bounds.extents.z;
 
-        theBSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
+        BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         turn = 0;
     }
 
@@ -241,21 +241,22 @@ public class BaseMove : MonoBehaviour
         
         HSM.ProcessStatusEffects(); //when adding ability for spells that affect allies, - MOVE THIS TO BASE MAGIC SCRIPT
 
-        theBSM.PerformList.RemoveAt(0); //remove this performer from the list in BSM
+        BSM.PerformList.RemoveAt(0); //remove this performer from the list in BSM
 
         HSM.RecoverMPAfterTurn(); //slowly recover MP based on spirit value
 
-        theBSM.pendingTurn = false;
+        BSM.pendingTurn = false;
 
         HSM.heroTurn++;
 
         HSM.targets.Clear();
 
-        theBSM.chosenTarget = null;
+        BSM.chosenTarget = null;
 
         HSM.ActionTarget = null;
 
-        theBSM.battleStates = BattleStateMachine.PerformAction.WAIT;
+        //BSM.battleState = battleStates.WAIT;
+        BSM.battleState = battleStates.CHECKALIVE;
         //Debug.Log(transform.gameObject.name + " ending turn " + turn);
     }
 

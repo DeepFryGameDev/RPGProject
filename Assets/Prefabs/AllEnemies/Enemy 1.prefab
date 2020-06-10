@@ -301,9 +301,10 @@ MonoBehaviour:
   enemy:
     name: Enemy 1
     ID: 0
+    level: 0
     baseHP: 30
-    curHP: 30
     baseMP: 50
+    curHP: 30
     curMP: 50
     baseATK: 0
     baseMATK: 0
@@ -464,6 +465,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 7207765606985248576}
     m_Modifications:
+    - target: {fileID: 6710749635652121867, guid: 71a6505a85fabec41a42780870254ab4,
+        type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6710749635652121867, guid: 71a6505a85fabec41a42780870254ab4,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7037018858526219390, guid: 71a6505a85fabec41a42780870254ab4,
         type: 3}
       propertyPath: m_Name

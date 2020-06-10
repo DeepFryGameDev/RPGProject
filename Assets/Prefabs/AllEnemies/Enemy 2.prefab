@@ -190,6 +190,7 @@ MonoBehaviour:
   moveSpeed: 2
   actualTargetTile: {fileID: 0}
   readyToAnimateAction: 0
+  ESM: {fileID: 0}
   HeroToAttack: {fileID: 0}
   attacksWithinMPThreshold: []
   effectDamage: 0
@@ -209,12 +210,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3f6e5a8fd3394344a04ecf58fa7b588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyBehavior: {fileID: 0}
   enemy:
     name: Enemy 2
     ID: 0
+    level: 0
     baseHP: 20
-    curHP: 20
     baseMP: 0
+    curHP: 20
     curMP: 0
     baseATK: 0
     baseMATK: 0
@@ -246,7 +249,6 @@ MonoBehaviour:
       dropChance: 75
     - item: {fileID: 11400000, guid: 57e6d789f4a7ba74881a9f7bf0fc2aec, type: 2}
       dropChance: 100
-  enemyBehavior: {fileID: 0}
   waitForDamageToFinish: 0
   currentState: 0
   cur_cooldown: 0

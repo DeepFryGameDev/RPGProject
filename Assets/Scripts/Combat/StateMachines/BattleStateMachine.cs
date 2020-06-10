@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,80 +6,56 @@ using UnityEngine.UI;
 
 public class BattleStateMachine : MonoBehaviour //for processing phases of battle between enemies and heroes
 {
-    public enum PerformAction //phases of battle
-    {
-        WAIT,
-        TAKEACTION,
-        PERFORMACTION,
-        CHECKALIVE,
-        WIN,
-        LOSE
-    }
-    public PerformAction battleStates;
-    
-    public enum HeroGUI //phases of a hero selecting input
-    {
-        ACTIVATE,
-        WAITING,
-        DONE
-    }
-    public HeroGUI HeroInput;
-
-    public List<HandleTurn> PerformList = new List<HandleTurn>(); //to store the turns that have been chosen between enemies and heros
-    public List<GameObject> HeroesInBattle = new List<GameObject>(); //to store the gameobjects for all living heroes in battle
-    public List<GameObject> AllHeroesInBattle = new List<GameObject>();
-    public List<GameObject> EnemiesInBattle = new List<GameObject>(); //to store the gameobjects for all enemies in battle
-
-    public List<GameObject> HeroesToManage = new List<GameObject>(); //to store the gameobjects for all heros available to make a selection
     [HideInInspector] public HandleTurn HeroChoice; //the variable to store current hero's selection
-
-    public GameObject EnemyButton; //button to click to use attack on enemy
-    public GameObject HeroButton;
-    public Transform EnemySelectSpacer; //for enemy select panel vertical layout group
-
-    public GameObject moveActionPanel;
-    public GameObject actionPanel; //panel that displays attack, magic, etc.
-    public GameObject EnemySelectPanel; //panel that displays list of enemy targets
-    public GameObject MagicPanel; //panel that lists magic attacks
-    public GameObject ItemPanel;
-    public GameObject BattleDetailsPanel;
     
-    public Transform moveActionSpacer;
-    public Transform actionSpacer; //to be assigned to the action panel's spacer
-    public Transform magicSpacer; //to be assigned to the magic panel's spacer
-    public Transform itemSpacer;
-    public GameObject actionButton; //to be assigned to the attack button in action panel
-    public GameObject magicButton; //to be assigned to the magic button in action panel
-    public GameObject itemButton;
+    [HideInInspector] public GameObject moveActionPanel;
+    [HideInInspector] public GameObject actionPanel; //panel that displays attack, magic, etc.
+    [HideInInspector] public GameObject enemySelectPanel; //panel that displays list of enemy targets
+    [HideInInspector] public GameObject magicPanel; //panel that lists magic attacks
+    [HideInInspector] public GameObject itemPanel;
+    [HideInInspector] public GameObject battleDetailsPanel;
+    
+    Transform moveActionSpacer;
+    Transform actionSpacer;
+    Transform magicSpacer;
+    Transform itemSpacer;
 
-    //for showing damage
-    public GameObject damageText;
-    float damageTextDistance = .75f;
-    public float damageDisplayTime = 1.5f;
+    GameObject actionButton;
+    GameObject magicButton;
+    GameObject itemButton;
 
     //for victory screen
-    public GameObject victoryCanvas;
     bool victoryConfirmButtonPressed;
     bool runVictory;
     int goldDropped;
     List<Item> itemsDropped = new List<Item>();
-    public GameObject Hero1Panel;
-    public GameObject Hero2Panel;
-    public GameObject Hero3Panel;
-    public GameObject Hero4Panel;
-    public GameObject Hero5Panel;
-    public Image Hero1EXPProgressBar;
-    public Image Hero2EXPProgressBar;
-    public Image Hero3EXPProgressBar;
-    public Image Hero4EXPProgressBar;
-    public Image Hero5EXPProgressBar;
-    public GameObject NewItemPanel;
-    public Transform ItemListSpacer;
+    GameObject victoryCanvas;
+    GameObject hero1Panel;
+    GameObject hero2Panel;
+    GameObject hero3Panel;
+    GameObject hero4Panel;
+    GameObject hero5Panel;
+    Image hero1EXPProgressBar;
+    Image hero2EXPProgressBar;
+    Image hero3EXPProgressBar;
+    Image hero4EXPProgressBar;
+    Image hero5EXPProgressBar;
+    GameObject newItemPanel;
+    Transform itemListSpacer;
     float expGainSpeed = .0125f;
     public AudioClip expTick;
     AudioSource audioSource;
+    public float victoryPoseTime;
 
-    public List<GameObject> targets = new List<GameObject>();
+    //for displaying damage
+    public float damageTextDistance;
+    public float damageDisplayTime;
+    GameObject damageText;
+
+    public battleStates battleState;
+
+    public HeroGUI HeroInput;
+
     public bool choosingTarget;
     public GameObject chosenTarget;
     List<Tile> tilesInRange = new List<Tile>();
@@ -119,74 +95,49 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     bool buttonPressed;
 
-    private void Awake()
-    {
-        for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++)
-        {
-            //GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], heroSpawnPoints[i].position, Quaternion.identity) as GameObject;
-            GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], GetHeroSpawnPoint(GameManager.instance.heroesToBattle[i]).transform.position, Quaternion.identity) as GameObject;
-            //NewHero.AddComponent<PlayerMove>();
-        }
-        for(int i=0; i < GameManager.instance.enemyAmount; i++)
-        {
-            string spawnPoint = (GameManager.instance.enemySpawnPoints[i]);  //need to set spawn point by troop and use it below
-            GameObject spawnPointObject = GameObject.Find("EnemySpawnPoints/EnemySP" + spawnPoint);
-            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i].prefab, spawnPointObject.transform.position, Quaternion.identity) as GameObject; //uses enemy prefabs in Encounter region list and creates them as gameobjects
-            if (i == 0)
-            {
-                NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.name; //sets the created enemy's name based on prefab enemy's name
-            } else
-            {
-                NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.name + " " + (i + 1); //if there are more than 1 of the enemy, add a number to it.  This will need to be updated as separate enemies will not be taken into account
-            }
-            NewEnemy.GetComponent<EnemyStateMachine>().enemy = GetEnemy(GameManager.instance.enemiesToBattle[i].ID); //sets the created enemy's name in the state machine
-            EnemiesInBattle.Add(NewEnemy); //adds the created enemy to enemies in battle list
-            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = true;
-        }
-    }
+    public List<HandleTurn> PerformList = new List<HandleTurn>(); //to store the turns that have been chosen between enemies and heroes
+    public List<GameObject> HeroesInBattle = new List<GameObject>(); //to store the gameobjects for all living heroes in battle
+    public List<GameObject> AllHeroesInBattle = new List<GameObject>();
+    public List<GameObject> EnemiesInBattle = new List<GameObject>(); //to store the gameobjects for all enemies in battle
 
-    BaseEnemy GetEnemy(int ID)
-    {
-        foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)
-        {
-            if (entry.enemy.ID == ID)
-            {
-                return entry.enemy;
-            }
-        }
-        return null;
-    }
+    public List<GameObject> HeroesToManage = new List<GameObject>(); //to store the gameobjects for all heros available to make a selection
 
-    GameObject GetHeroSpawnPoint(GameObject heroObj)
-    {
-        BaseHero checkID = heroObj.GetComponent<HeroStateMachine>().hero;
-        BaseHero heroToCheck = null;
-
-        foreach (BaseHero hero in GameManager.instance.activeHeroes)
-        {
-            if (checkID.ID == hero.ID)
-            {
-                heroToCheck = hero;
-                break;
-            }
-        }
-
-        GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("HeroSpawnPoint");
-        
-        foreach (GameObject spawnPoint in spawnPoints)
-        {
-            string spawnPointName = "SP" + heroToCheck.spawnPoint;
-            if (spawnPointName == spawnPoint.name)
-            {
-                return spawnPoint;
-            }
-        }
-        return null;
-    }
+    public List<GameObject> targets = new List<GameObject>();
 
     void Start()
     {
-        battleStates = PerformAction.WAIT; //battle starts in Battle State "WAIT"
+        moveActionPanel = GameObject.Find("BattleCanvas/MoveActionPanel");
+        actionPanel = GameObject.Find("BattleCanvas/ActionPanel");
+        enemySelectPanel = GameObject.Find("BattleCanvas/SelectTargetPanel");
+        magicPanel = GameObject.Find("BattleCanvas/MagicPanel");
+        itemPanel = GameObject.Find("BattleCanvas/ItemPanel");
+        battleDetailsPanel = GameObject.Find("BattleCanvas/BattleDetailsPanel");
+
+        moveActionSpacer = GameObject.Find("BattleCanvas/MoveActionPanel/MoveActionSpacer").transform;
+        actionSpacer = GameObject.Find("BattleCanvas/ActionPanel/ActionSpacer").transform;
+        magicSpacer = GameObject.Find("BattleCanvas/MagicPanel/MagicScroller/MagicSpacer").transform;
+        itemSpacer = GameObject.Find("BattleCanvas/ItemPanel/ItemScroller/ItemSpacer").transform;
+
+        actionButton = PrefabManager.Instance.battleActionButton;
+        magicButton = PrefabManager.Instance.battleMagicButton;
+        itemButton = PrefabManager.Instance.battleItemButton;
+
+        victoryCanvas = GameObject.Find("BattleCanvas/VictoryCanvas");
+        hero1Panel = victoryCanvas.transform.Find("VictoryPanel/HeroEXPPanel/Hero1Panel").gameObject;
+        hero2Panel = victoryCanvas.transform.Find("VictoryPanel/HeroEXPPanel/Hero2Panel").gameObject;
+        hero3Panel = victoryCanvas.transform.Find("VictoryPanel/HeroEXPPanel/Hero3Panel").gameObject;
+        hero4Panel = victoryCanvas.transform.Find("VictoryPanel/HeroEXPPanel/Hero4Panel").gameObject;
+        hero5Panel = victoryCanvas.transform.Find("VictoryPanel/HeroEXPPanel/Hero5Panel").gameObject;
+        hero1EXPProgressBar = hero1Panel.transform.Find("LevelProgressBarBG/LevelProgressBar").gameObject.GetComponent<Image>();
+        hero2EXPProgressBar = hero2Panel.transform.Find("LevelProgressBarBG/LevelProgressBar").gameObject.GetComponent<Image>();
+        hero3EXPProgressBar = hero3Panel.transform.Find("LevelProgressBarBG/LevelProgressBar").gameObject.GetComponent<Image>();
+        hero4EXPProgressBar = hero4Panel.transform.Find("LevelProgressBarBG/LevelProgressBar").gameObject.GetComponent<Image>();
+        hero5EXPProgressBar = hero5Panel.transform.Find("LevelProgressBarBG/LevelProgressBar").gameObject.GetComponent<Image>();
+        itemListSpacer = victoryCanvas.transform.Find("VictoryPanel/ItemsEarnedPanel/ItemSpacer");
+
+        //-------------------------
+
+        battleState = battleStates.WAIT; //battle starts in Battle State "WAIT"
         HeroesInBattle.AddRange(GameObject.FindGameObjectsWithTag("Hero")); //adds all heros with Hero tag to Heroes in Battle list
         for (int i = 0; i < HeroesInBattle.Count; i++) //copies all available heroes in battle to 'AllHeroesInBattle' so both lists can be used differently
         {
@@ -200,35 +151,59 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             eb.InitBehavior();
         }
 
-        //insert here to tie heros in battle to new hero manager stuff to maintain exp, hp, mp, etc. can loop through heroes in battle to assign.
+        //insert here to tie heroes in battle to new hero manager stuff to maintain exp, hp, mp, etc. can loop through heroes in battle to assign.
         HeroInput = HeroGUI.ACTIVATE; //battle starts with hero interface in state "ACTIVATE"
 
-        moveActionPanel.SetActive(false);
-        actionPanel.SetActive(false);
-        EnemySelectPanel.SetActive(false);
-        MagicPanel.SetActive(false);
-        ItemPanel.SetActive(false);
-        //BattleDetailsPanel.SetActive(false);
+        HidePanel(moveActionPanel);
+        HidePanel(actionPanel);
+        HidePanel(enemySelectPanel);
+        HidePanel(magicPanel);
+        HidePanel(itemPanel);
 
-        //EnemyButtons(); //creates enemy buttons from EnemiesInBattle list
+        audioSource = GameObject.Find("BattleManager").GetComponent<AudioSource>();
 
-        audioSource = GetComponent<AudioSource>();
+        HidePanel(victoryCanvas);
+    }
+
+    private void Awake()
+    {
+        for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++)
+        {
+            //GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], heroSpawnPoints[i].position, Quaternion.identity) as GameObject;
+            GameObject NewHero = Instantiate(GameManager.instance.heroesToBattle[i], GetHeroSpawnPoint(GameManager.instance.heroesToBattle[i]).transform.position, Quaternion.identity) as GameObject;
+            NewHero.name = "BattleHero - ID " + GameManager.instance.heroesToBattle[i].GetComponent<HeroStateMachine>().hero.ID;
+            //NewHero.GetComponent<Canvas>().sortingLayerName = "Sprites";
+            //NewHero.AddComponent<PlayerMove>();
+        }
+        for(int i=0; i < GameManager.instance.enemyAmount; i++)
+        {
+            string spawnPoint = (GameManager.instance.enemySpawnPoints[i]);  //need to set spawn point by troop and use it below
+            GameObject spawnPointObject = GameObject.Find("EnemySpawnPoints/EnemySP" + spawnPoint);
+            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i].prefab, spawnPointObject.transform.position, Quaternion.identity) as GameObject; //uses enemy prefabs in Encounter region list and creates them as gameobjects
+            NewEnemy.name = "BattleEnemy - ID " + GameManager.instance.enemiesToBattle[i].ID;
+            //NewEnemy.GetComponent<Canvas>().sortingLayerName = "Sprites";
+
+            NewEnemy.GetComponent<EnemyStateMachine>().enemy = GetEnemy(GameManager.instance.enemiesToBattle[i].ID); //sets the created enemy's name in the state machine
+            EnemiesInBattle.Add(NewEnemy); //adds the created enemy to enemies in battle list
+        }
+
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = true;
     }
     
     void Update()
     {
-        switch(battleStates) //phases of battle
+        switch(battleState) //phases of battle
         {
-            case (PerformAction.WAIT): //checks if actions are to be taken
+            case (battleStates.WAIT): //checks if actions are to be taken
                 //Debug.Log("waiting for action");
                 if (PerformList.Count > 0) //if there are actions to be taken (from enemy or hero)
                 {
                     //Debug.Log("found in perform list");
-                    battleStates = PerformAction.TAKEACTION;
+                    battleState = battleStates.TAKEACTION;
                 }
             break;
 
-            case (PerformAction.TAKEACTION): //checks for hero/enemy and processes action
+            case (battleStates.TAKEACTION): //checks for hero/enemy and processes action
                 GameObject performer = GameObject.Find(PerformList[0].Attacker); //creates game object = enemy or hero that is attacking as "performer" which is used as current attacker (hero or enemy)
                 if (PerformList[0].attackerType == HandleTurn.Types.HERO) //if attacker is a hero
                 {
@@ -236,21 +211,23 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                     //HSM.ActionTarget = PerformList[0].AttackersTarget; //changes hero state machine enemy to attack to the hero's target
                     HSM.currentState = HeroStateMachine.TurnState.ACTION; //tells hero state machine to start ACTION phase
                 }
-                battleStates = PerformAction.PERFORMACTION; //changes battle state to PERFORMACTION
+                battleState = battleStates.PERFORMACTION; //changes battle state to PERFORMACTION
             break;
 
-            case (PerformAction.PERFORMACTION): //idle state while action is chosn
+            case (battleStates.PERFORMACTION): //idle state while action is chosn
 
             break;
 
-            case (PerformAction.CHECKALIVE): //checks when hero or enemy dies if win or loss conditions have been met
+            case (battleStates.CHECKALIVE): //checks when hero or enemy dies if win or loss conditions have been met
+                Debug.Log("checking alive");
+
                 if (HeroesInBattle.Count < 1)
                 {
-                    battleStates = PerformAction.LOSE;
+                    battleState = battleStates.LOSE;
                     //lose game
                 } else if (EnemiesInBattle.Count < 1)
                 {
-                    battleStates = PerformAction.WIN;
+                    battleState = battleStates.WIN;
                     //win the battle
                 } else
                 {
@@ -259,11 +236,11 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 }
             break;
 
-            case (PerformAction.LOSE): //lose battle
+            case (battleStates.LOSE): //lose battle
                 Debug.Log("Game lost"); //things to go here later - retry battle, go back to world map, load from save
             break;
 
-            case (PerformAction.WIN): //win battle
+            case (battleStates.WIN): //win battle
                 StartCoroutine(RunVictory());
                                 
             break;
@@ -274,13 +251,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             case (HeroGUI.ACTIVATE): //hero's turn is available
                 if (HeroesToManage.Count > 0) //if there is a hero's turn available (ATB gauge filled up and pending input)
                 {
-                    HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(true); //Show hero's selector cursor
+                    ShowSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //Show hero's selector cursor
                     HeroChoice = new HandleTurn(); //new handle turn instance as HeroChoice
 
-                    moveActionPanel.SetActive(true);
+                    ShowPanel(moveActionPanel);
                     CreateMoveActionButtons();
                     CreateActionButtons(); //populate action buttons
-                    //BattleDetailsPanel.SetActive(true);
 
                     SetCancelButton(0); //Cancel button does nothing
                     
@@ -304,8 +280,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 ClearThreatBars();
 
                 HeroInputDone();
-
-                //HeroesToManage[0].GetComponent<HeroStateMachine>().ProcessStatusEffects();
             break;
 
         }
@@ -322,17 +296,16 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         PerformList.Add(HeroChoice); //adds the details of the current hero making selection's choice to the perform list
         ClearAttackPanel(); //cleans the attackpanel
-        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false); //hides the current hero making selection's selector cursor
+        HideSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //hides the current hero making selection's selector cursor
         HeroesToManage.RemoveAt(0); //removes the hero making selection from the heroesToManage list
         HeroInput = HeroGUI.ACTIVATE; //resets the HeroGUI switch back to the beginning to await the next hero's choice
     }
 
     void ClearAttackPanel()
     {
-        EnemySelectPanel.SetActive(false);
-        actionPanel.SetActive(false);
-        //BattleDetailsPanel.SetActive(false);
-        MagicPanel.SetActive(false);
+        HidePanel(enemySelectPanel);
+        HidePanel(actionPanel);
+        HidePanel(magicPanel);
 
         foreach (GameObject atkBtn in atkBtns)
         {
@@ -343,7 +316,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     void ClearMoveActionPanel()
     {
-        moveActionPanel.SetActive(false);
+        HidePanel(moveActionPanel);
 
         foreach (GameObject atkBtn in atkBtns)
         {
@@ -354,7 +327,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     void ClearActionPanel()
     {
-        actionPanel.SetActive(false);
+        HidePanel(actionPanel);
 
         foreach (GameObject atkBtn in atkBtns)
         {
@@ -610,8 +583,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         HeroChoice.chosenAttack = chosenMagic; //sets the hero choice's chosen attack to the chosenMagic in the parameter
         HeroChoice.actionType = HandleTurn.ActionType.MAGIC;
 
-        MagicPanel.SetActive(false); //hides the magic panel
-        EnemySelectPanel.SetActive(true); //opens the enemy select panel
+        HidePanel(magicPanel); //hides the magic panel
+        ShowPanel(enemySelectPanel); //opens the enemy select panel
         StartCoroutine(ChooseTarget()); //select which gameObject to be targetted
         SetCancelButton(3);
     }
@@ -658,8 +631,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     IEnumerator ChooseTarget() //gets target by which gameObject is clicked (enemy or hero)
     {
-        //EnemyButtons();
-
         ShowRange();
 
         choosingTarget = true; //to ensure clicking on gameObjects are only processed when choosing target
@@ -686,7 +657,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         //HeroChoice.AttackersTarget = chosenEnemy;
         //HeroChoice.targetType = HandleTurn.Types.ENEMY;
-        GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = "";
+        battleDetailsPanel.transform.Find("BattleDetailsText").GetComponent<Text>().text = "";
         HeroInput = HeroGUI.DONE;
 
         choosingTarget = false;
@@ -698,7 +669,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         {
             HeroChoice.AttackersTarget = chosenEnemy;
             HeroChoice.targetType = HandleTurn.Types.ENEMY;
-            GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = "";
+            battleDetailsPanel.transform.Find("BattleDetailsText").GetComponent<Text>().text = "";
             HeroInput = HeroGUI.DONE;
         }
     }
@@ -755,12 +726,12 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     public void ResetItemList() //clears items in item list so it can be rebuilt
     {
-        ItemPanel.gameObject.SetActive(true);
+        ShowPanel(itemPanel);
         foreach (Transform child in GameObject.Find("BattleCanvas/ItemPanel/ItemScroller/ItemSpacer").transform)
         {
             Destroy(child.gameObject);
         }
-        ItemPanel.gameObject.SetActive(false);
+        HidePanel(itemPanel);
     }
 
     public void SetChosenItem(Item chosenItem) //called after choosing an item
@@ -772,8 +743,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         HeroChoice.chosenItem = chosenItem; //sets the hero choice's chosen attack to the chosenMagic in the parameter
         HeroChoice.actionType = HandleTurn.ActionType.ITEM;
 
-        ItemPanel.SetActive(false); //hides the magic panel
-        EnemySelectPanel.SetActive(true); //opens the enemy select panel
+        HidePanel(itemPanel); //hides the magic panel
+        ShowPanel(enemySelectPanel); //opens the enemy select panel
         StartCoroutine(ChooseTarget());
         SetCancelButton(5);
     }
@@ -781,8 +752,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     public void ActionInput()
     {
         SetCancelButton(0);
-        actionPanel.SetActive(true); //enables actionPanel (attack, magic, etc)
-        moveActionPanel.SetActive(false);
+        ShowPanel(actionPanel); //enables actionPanel (attack, magic, etc)
+        HidePanel(moveActionPanel);
         //GetButtonsByRange();
         HeroesToManage[0].GetComponent<PlayerMove>().RemoveSelectableTiles();
         HeroesToManage[0].GetComponent<PlayerMove>().canMove = false;
@@ -814,7 +785,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         }
 
         HSM.currentState = HeroStateMachine.TurnState.PROCESSING; //starts the turn over back to filling up the ATB gauge
-        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false); //hides the current hero making selection's selector cursor
+        HideSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //hides the current hero making selection's selector cursor
         HeroesToManage.RemoveAt(0); //removes the hero making selection from the heroesToManage list
         HeroInput = HeroGUI.ACTIVATE; //resets the HeroGUI switch back to the beginning to await the next hero's choice
     }
@@ -825,23 +796,23 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         HeroChoice.AttackersGameObject = HeroesToManage[0]; //sets heroChoice attacker's game object to the current hero making selection's game object
         HeroChoice.attackerType = HandleTurn.Types.HERO; //as HeroChoice is of class HandleTurn, sets type to Hero
         HeroChoice.chosenAttack = HeroesToManage[0].GetComponent<HeroStateMachine>().hero.attack; //sets heroChoice chosen attack to the current hero's hero state machine to the attack at top of their attack list (likely change later)
-        actionPanel.SetActive(false); //hides attack panel as action has been chosen
-        EnemySelectPanel.SetActive(true); //displays enemy select panel to process chosen attack to
+        HidePanel(actionPanel); //hides attack panel as action has been chosen
+        ShowPanel(enemySelectPanel); //displays enemy select panel to process chosen attack to
         StartCoroutine(ChooseTarget());
         SetCancelButton(1);
     }
 
     public void MagicInput() //after clicking 'Magic' on the action panel
     {
-        actionPanel.SetActive(false); //hides the action panel
-        MagicPanel.SetActive(true); //displays the magic panel showing current heros magic attacks
+        HidePanel(actionPanel); //hides the action panel
+        ShowPanel(magicPanel); //displays the magic panel showing current heros magic attacks
         SetCancelButton(2);
     }
 
     public void ItemInput() //after clicking 'Item' on the action panel
     {
-        actionPanel.SetActive(false); //hides the action panel
-        ItemPanel.SetActive(true); //displays the magic panel showing current items in inventory
+        HidePanel(actionPanel); //hides the action panel
+        ShowPanel(itemPanel); //displays the magic panel showing current items in inventory
         SetCancelButton(4);
     }
 
@@ -924,8 +895,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         {
             if (moveMenuCancel) //in movement phase
             {
-                actionPanel.SetActive(false);
-                moveActionPanel.SetActive(true);
+                HidePanel(actionPanel);
+                ShowPanel(moveActionPanel);
                 SetCancelButton(6);
 
                 HeroesToManage[0].GetComponent<PlayerMove>().FindSelectableTiles();
@@ -933,36 +904,36 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
             if (enemySelectAfterAttackCancel)
             {
-                actionPanel.SetActive(true); //shows action panel
-                moveActionPanel.SetActive(false);
-                EnemySelectPanel.SetActive(false); //hides enemy select panel
+                ShowPanel(actionPanel); //shows action panel
+                HidePanel(moveActionPanel);
+                HidePanel(enemySelectPanel); //hides enemy select panel
                 cancelledEnemySelect = true;
                 SetCancelButton(0);
                 ClearActionLists();
             }
             if (magicAttackCancel)
             {
-                actionPanel.SetActive(true); //shows the action panel
-                MagicPanel.SetActive(false); //hides the magic panel showing current heros magic attacks
+                ShowPanel(actionPanel); //shows the action panel
+                HidePanel(magicPanel); //hides the magic panel showing current heros magic attacks
                 SetCancelButton(0);
             }
             if (enemySelectAfterMagicCancel)
             {
-                MagicPanel.SetActive(true); //shows the magic panel
+                ShowPanel(magicPanel); //shows the magic panel
                 cancelledEnemySelect = true;
-                EnemySelectPanel.SetActive(false); //hides the enemy select panel
+                HidePanel(enemySelectPanel); //hides the enemy select panel
                 SetCancelButton(2);
             }
             if (itemBattleMenuCancel)
             {
-                actionPanel.SetActive(true); //shows the action panel
-                ItemPanel.SetActive(false);
+                ShowPanel(actionPanel); //shows the action panel
+                HidePanel(itemPanel);
                 SetCancelButton(0);
             }
             if (enemySelectAfterItemMenuCancel)
             {
-                ItemPanel.SetActive(true); //shows the item panel
-                EnemySelectPanel.SetActive(false); //hides the enemy select panel
+                ShowPanel(itemPanel); //shows the item panel
+                HidePanel(enemySelectPanel); //hides the enemy select panel
                 HeroChoice.chosenItem = null;
                 cancelledEnemySelect = true;
                 SetCancelButton(4);
@@ -992,43 +963,43 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         if (count == 1)
         {
-            Hero1Panel.SetActive(true);
-            Hero2Panel.SetActive(false);
-            Hero3Panel.SetActive(false);
-            Hero4Panel.SetActive(false);
-            Hero5Panel.SetActive(false);
+            ShowPanel(hero1Panel);
+            HidePanel(hero2Panel);
+            HidePanel(hero3Panel);
+            HidePanel(hero4Panel);
+            HidePanel(hero5Panel);
         }
         else if (count == 2)
         {
-            Hero1Panel.SetActive(true);
-            Hero2Panel.SetActive(true);
-            Hero3Panel.SetActive(false);
-            Hero4Panel.SetActive(false);
-            Hero5Panel.SetActive(false);
+            ShowPanel(hero1Panel);
+            ShowPanel(hero2Panel);
+            HidePanel(hero3Panel);
+            HidePanel(hero4Panel);
+            HidePanel(hero5Panel);
         }
         else if (count == 3)
         {
-            Hero1Panel.SetActive(true);
-            Hero2Panel.SetActive(true);
-            Hero3Panel.SetActive(true);
-            Hero4Panel.SetActive(false);
-            Hero5Panel.SetActive(false);
+            ShowPanel(hero1Panel);
+            ShowPanel(hero2Panel);
+            ShowPanel(hero3Panel);
+            HidePanel(hero4Panel);
+            HidePanel(hero5Panel);
         }
         else if (count == 4)
         {
-            Hero1Panel.SetActive(true);
-            Hero2Panel.SetActive(true);
-            Hero3Panel.SetActive(true);
-            Hero4Panel.SetActive(true);
-            Hero5Panel.SetActive(false);
+            ShowPanel(hero1Panel);
+            ShowPanel(hero2Panel);
+            ShowPanel(hero3Panel);
+            ShowPanel(hero4Panel);
+            HidePanel(hero5Panel);
         }
         else if (count == 5)
         {
-            Hero1Panel.SetActive(true);
-            Hero2Panel.SetActive(true);
-            Hero3Panel.SetActive(true);
-            Hero4Panel.SetActive(true);
-            Hero5Panel.SetActive(true);
+            ShowPanel(hero1Panel);
+            ShowPanel(hero2Panel);
+            ShowPanel(hero3Panel);
+            ShowPanel(hero4Panel);
+            ShowPanel(hero5Panel);
         }
 
         DrawHeroPanelBars();
@@ -1038,43 +1009,43 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         if (GameManager.instance.activeHeroes.Count == 1)
         {
-            Hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1EXPProgressBar.transform.localScale.y);
+            hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), hero1EXPProgressBar.transform.localScale.y);
         }
         else if (GameManager.instance.activeHeroes.Count == 2)
         {
-            Hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1EXPProgressBar.transform.localScale.y);
+            hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), hero1EXPProgressBar.transform.localScale.y);
 
-            Hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2EXPProgressBar.transform.localScale.y);
+            hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), hero2EXPProgressBar.transform.localScale.y);
         }
         else if (GameManager.instance.activeHeroes.Count == 3)
         {
-            Hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1EXPProgressBar.transform.localScale.y);
+            hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), hero1EXPProgressBar.transform.localScale.y);
 
-            Hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2EXPProgressBar.transform.localScale.y);
+            hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), hero2EXPProgressBar.transform.localScale.y);
 
-            Hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3EXPProgressBar.transform.localScale.y);
+            hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[2]), 0, 1), hero3EXPProgressBar.transform.localScale.y);
         }
         else if (GameManager.instance.activeHeroes.Count == 4)
         {
-            Hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1EXPProgressBar.transform.localScale.y);
+            hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), hero1EXPProgressBar.transform.localScale.y);
 
-            Hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2EXPProgressBar.transform.localScale.y);
+            hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), hero2EXPProgressBar.transform.localScale.y);
 
-            Hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3EXPProgressBar.transform.localScale.y);
+            hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[2]), 0, 1), hero3EXPProgressBar.transform.localScale.y);
 
-            Hero4EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4EXPProgressBar.transform.localScale.y);
+            hero4EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[3]), 0, 1), hero4EXPProgressBar.transform.localScale.y);
         }
         else if (GameManager.instance.activeHeroes.Count == 5)
         {
-            Hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), Hero1EXPProgressBar.transform.localScale.y);
+            hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[0]), 0, 1), hero1EXPProgressBar.transform.localScale.y);
 
-            Hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), Hero2EXPProgressBar.transform.localScale.y);
+            hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[1]), 0, 1), hero2EXPProgressBar.transform.localScale.y);
 
-            Hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[2]), 0, 1), Hero3EXPProgressBar.transform.localScale.y);
+            hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[2]), 0, 1), hero3EXPProgressBar.transform.localScale.y);
 
-            Hero4EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[3]), 0, 1), Hero4EXPProgressBar.transform.localScale.y);
+            hero4EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[3]), 0, 1), hero4EXPProgressBar.transform.localScale.y);
 
-            Hero5EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[4]), 0, 1), Hero5EXPProgressBar.transform.localScale.y);
+            hero5EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(GameManager.instance.activeHeroes[4]), 0, 1), hero5EXPProgressBar.transform.localScale.y);
         }
 
     }
@@ -1220,9 +1191,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     void DoPostBattleStuff()
     {
         Debug.Log("You win!");
-
-        GameObject.Find("BattleCanvas").GetComponent<CanvasGroup>().alpha = 0f;
-
+        
         GetItemsDropped();
 
         GetGoldDropped();
@@ -1240,14 +1209,14 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         Debug.Log("~~Simulating victory poses~~");
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(victoryPoseTime);
 
         Debug.Log("~~Victory pose end~~");
     }
 
     void DisplayVictoryCanvas()
     {
-        victoryCanvas.SetActive(true);
+        ShowPanel(victoryCanvas);
     }
 
     void DrawEarnedStuff()
@@ -1271,11 +1240,11 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                     }
                 }
 
-                NewItemPanel = Instantiate(PrefabManager.Instance.itemVictoryPrefab);
-                NewItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
-                NewItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
-                NewItemPanel.transform.GetChild(2).GetComponent<Text>().text = itemCount.ToString();
-                NewItemPanel.transform.SetParent(ItemListSpacer, false);
+                newItemPanel = Instantiate(PrefabManager.Instance.itemVictoryPrefab);
+                newItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
+                newItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
+                newItemPanel.transform.GetChild(2).GetComponent<Text>().text = itemCount.ToString();
+                newItemPanel.transform.SetParent(itemListSpacer, false);
                 itemsAccountedFor.Add(item);
             }
         }
@@ -1479,23 +1448,23 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 int tempLevel = int.Parse(heroLevel.text);
                 if (i == 0)
                 {
-                    Hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), Hero1EXPProgressBar.transform.localScale.y);
+                    hero1EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), hero1EXPProgressBar.transform.localScale.y);
                 }
                 else if (i == 1)
                 {
-                    Hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), Hero2EXPProgressBar.transform.localScale.y);
+                    hero2EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), hero2EXPProgressBar.transform.localScale.y);
                 }
                 else if (i == 2)
                 {
-                    Hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), Hero3EXPProgressBar.transform.localScale.y);
+                    hero3EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), hero3EXPProgressBar.transform.localScale.y);
                 }
                 else if (i == 3)
                 {
-                    Hero4EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), Hero4EXPProgressBar.transform.localScale.y);
+                    hero4EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), hero4EXPProgressBar.transform.localScale.y);
                 }
                 else if (i == 4)
                 {
-                    Hero5EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), Hero5EXPProgressBar.transform.localScale.y);
+                    hero5EXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP((int.Parse(heroExpText.text) - expNeededToLevel), tempLevel), 0, 1), hero5EXPProgressBar.transform.localScale.y);
                 }
             }
 
@@ -1526,6 +1495,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         }
 
         Debug.Log(expPool + " - expPool");
+
+        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck = null;
         GameManager.instance.ProcessExp();
 
         expPool = 0; //reset exp pool
@@ -1588,5 +1559,68 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             heroToUpdate.curHP = fromHero.curHP;
             heroToUpdate.curMP = fromHero.curMP;
         }
+    }
+
+    BaseEnemy GetEnemy(int ID)
+    {
+        foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)
+        {
+            if (entry.enemy.ID == ID)
+            {
+                return entry.enemy;
+            }
+        }
+        return null;
+    }
+
+    GameObject GetHeroSpawnPoint(GameObject heroObj)
+    {
+        BaseHero checkID = heroObj.GetComponent<HeroStateMachine>().hero;
+        BaseHero heroToCheck = null;
+
+        foreach (BaseHero hero in GameManager.instance.activeHeroes)
+        {
+            if (checkID.ID == hero.ID)
+            {
+                heroToCheck = hero;
+                break;
+            }
+        }
+
+        GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("HeroSpawnPoint");
+
+        foreach (GameObject spawnPoint in spawnPoints)
+        {
+            string spawnPointName = "SP" + heroToCheck.spawnPoint;
+            if (spawnPointName == spawnPoint.name)
+            {
+                return spawnPoint;
+            }
+        }
+        return null;
+    }
+
+    public void HidePanel(GameObject panel)
+    {
+        panel.GetComponent<CanvasGroup>().alpha = 0;
+        panel.GetComponent<CanvasGroup>().interactable = false;
+        panel.GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    public void ShowPanel(GameObject panel)
+    {
+        panel.GetComponent<CanvasGroup>().alpha = 1;
+        panel.GetComponent<CanvasGroup>().interactable = true;
+        panel.GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    public void HideSelector(GameObject selector)
+    {
+        selector.GetComponent<SpriteRenderer>().enabled = false;
+    }
+
+    public void ShowSelector(GameObject selector)
+    {
+        selector.GetComponent<SpriteRenderer>().enabled = true;
     }
 }

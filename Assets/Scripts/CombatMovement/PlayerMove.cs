@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -85,6 +85,13 @@ public class PlayerMove : BaseMove
 
     public void FindSelectableTiles()
     {
+        GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
+
+        foreach (GameObject tileObj in tiles)
+        {
+            tileObj.GetComponent<Tile>().ClearPathable();
+        }
+
         ComputeAdjacencyLists(null);
         GetCurrentTile();
 
@@ -103,7 +110,7 @@ public class PlayerMove : BaseMove
             t.pathable = true;
 
             RaycastHit2D[] selectableHits = Physics2D.RaycastAll(t.transform.position, Vector3.forward, 1);
-
+            
             foreach (RaycastHit2D checkIfSelectable in selectableHits) //Allows active hero to move past all heroes, but not land on them.
             {
                 if (checkIfSelectable.collider.gameObject.tag == "Hero")

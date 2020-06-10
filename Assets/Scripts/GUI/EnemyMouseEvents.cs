@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -44,6 +44,8 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public void OnPointerExit(PointerEventData eventData) //hides selector
     {
+        Debug.Log("should hide selector");
+
         if (BSM.choosingTarget)
         {
             this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false);

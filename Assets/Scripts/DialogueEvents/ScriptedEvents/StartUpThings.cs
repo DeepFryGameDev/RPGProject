@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +14,15 @@ public class StartUpThings : BaseScriptedEvent
         AssignEnemyIDs();
 
         AddHeroes();
+
+        AddEquipment(0);
+        AddEquipment(1);
+        AddEquipment(2);
+        AddEquipment(3);
+        AddEquipment(4);
+        AddEquipment(5);
+        AddEquipment(6);
+        AddEquipment(7);
 
         //DisableButtons(); //<-----Enable when menu is complete
     }

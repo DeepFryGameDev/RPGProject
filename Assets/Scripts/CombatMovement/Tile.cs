@@ -1,7 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
@@ -166,8 +167,86 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+
+        RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+
+        //shows enemy name on hover
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider != null)
+            {
+                if (hit.collider.gameObject.tag == "Tile")
+                {
+                    RaycastHit2D[] tilesHit = Physics2D.RaycastAll(hit.collider.gameObject.transform.position, Vector3.forward, 1);
+                    foreach (RaycastHit2D target in tilesHit)
+                    {
+                        if (target.collider.gameObject.tag == "Enemy" && !BSM.targets.Contains(target.collider.gameObject))
+                        {
+                            GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = target.collider.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
+                        }
+                    }
+                }
+            }
+        }
+
+        //shows hero border and name on hover
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider != null)
+            {
+                if (hit.collider.gameObject.tag == "Tile")
+                {
+                    RaycastHit2D[] tilesHit = Physics2D.RaycastAll(hit.collider.gameObject.transform.position, Vector3.forward, 1);
+                    foreach (RaycastHit2D target in tilesHit)
+                    {
+                        if (target.collider.gameObject.tag == "Hero" && !BSM.targets.Contains(target.collider.gameObject))
+                        {
+                            GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = target.collider.gameObject.GetComponent<HeroStateMachine>().hero.name;
+
+                            foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
+                            {
+                                string ID = target.collider.gameObject.name.Replace("BattleHero - ID ", "");
+                                if (child.name.Replace("BattleHeroPanel - ID ","") == ID)
+                                {
+                                    HeroStateMachine HSM = target.collider.gameObject.GetComponent<HeroStateMachine>();
+                                    HSM.HeroPanel.transform.Find("BorderCanvas").GetComponent<CanvasGroup>().alpha = 1.0f;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+
         if (BSM.choosingTarget)
         {
+            foreach (RaycastHit2D hit in hits)
+            {
+                if (hit.collider != null)
+                {
+                    if (hit.collider.gameObject.tag == "Tile")
+                    {
+                        if (hit.collider.gameObject.GetComponent<Tile>().inRange)
+                        {
+                            foreach (Tile tile in tilesInRange)
+                            {
+                                RaycastHit2D[] tilesHit = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+                                foreach (RaycastHit2D target in tilesHit)
+                                {
+                                    if ((target.collider.gameObject.tag == "Enemy" || target.collider.gameObject.tag == "Hero"))
+                                    {
+                                        BSM.ShowSelector(target.collider.gameObject.transform.Find("Selector").gameObject);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //facilitates display of if the tile can be selected (if it is in the attack pattern and is in range)
             if (BSM.HeroChoice.chosenItem != null)
             {
                 pattern.GetAffectPattern(this, 0);
@@ -187,8 +266,29 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        //resets enemy name on hover to blank when exiting tile
+        GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = "";
+
+        foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
+        {
+            child.transform.Find("BorderCanvas").GetComponent<CanvasGroup>().alpha = 0.0f;
+        }
+
         if (BSM.choosingTarget)
         {
+            GameObject[] heroes = GameObject.FindGameObjectsWithTag("Hero");
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+
+            foreach (GameObject heroObj in heroes)
+            {
+                BSM.HideSelector(heroObj.transform.Find("Selector").gameObject);
+            }
+
+            foreach (GameObject enemyObj in enemies)
+            {
+                BSM.HideSelector(enemyObj.transform.Find("Selector").gameObject);
+            }
+
             foreach (Tile tile in tilesInRange)
             {
                 tile.inAffect = false;
@@ -251,5 +351,30 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
             tile.inAffect = false;
             tile.inRange = false;
         }
+    }
+
+    /// <summary>
+    /// Returns the hero by given ID based on HeroDB
+    /// </summary>
+    /// <param name="ID">ID of hero needing to be returned</param>
+    BaseHero GetHeroByID(int ID)
+    {
+        foreach (BaseHero hero in GameManager.instance.activeHeroes)
+        {
+            if (hero.ID == ID)
+            {
+                return hero;
+            }
+        }
+
+        foreach (BaseHero hero in GameManager.instance.inactiveHeroes)
+        {
+            if (hero.ID == ID)
+            {
+                return hero;
+            }
+        }
+
+        return null;
     }
 }

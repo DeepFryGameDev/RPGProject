@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class PrefabManager : MonoBehaviour //fixes a prefab destroyed bug (when clearing lists)
 {
@@ -20,6 +20,10 @@ public class PrefabManager : MonoBehaviour //fixes a prefab destroyed bug (when 
     public GameObject activeQuestListButton;
 
     public GameObject bestiaryEntryButton;
+
+    public GameObject battleActionButton;
+    public GameObject battleMagicButton;
+    public GameObject battleItemButton;
 
     //Singleton
     private static PrefabManager m_Instance = null;

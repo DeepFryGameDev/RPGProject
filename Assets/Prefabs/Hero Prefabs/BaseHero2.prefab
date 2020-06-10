@@ -127,68 +127,140 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hero:
-    _Name: Hero 2
+    name: 
+    ID: 0
+    spawnPoint: 
+    heroPrefab: {fileID: 0}
+    faceImage: {fileID: 0}
+    currentLevel: 3
+    currentExp: 28
     baseHP: 150
-    curHP: 135
     baseMP: 75
-    curMP: 75
     baseATK: 8
     baseMATK: 9
     baseDEF: 12
     baseMDEF: 14
-    baseStrength: 6
-    baseStamina: 8
-    baseDexterity: 500
-    baseAgility: 5
-    baseIntelligence: 9
-    baseSpirit: 9
-    baseHitRating: 100
-    baseCritRating: 0
-    baseMoveRating: 0
-    baseRegenRating: 0
-    baseDodgeRating: 0
-    baseBlockRating: 0
-    baseParryRating: 0
-    baseThreatRating: 0
-    attacks:
-    - {fileID: 6075571008585570978, guid: 4df8457608a92314fac8530119cfce6f, type: 3}
+    baseSTR: 0
+    baseSTA: 0
+    baseDEX: 0
+    baseAGI: 0
+    baseINT: 0
+    baseSPI: 0
+    baseHit: 0
+    baseCrit: 0
+    baseMove: 0
+    baseRegen: 0
+    baseDodge: 0
+    baseBlock: 0
+    baseParry: 0
+    baseThreat: 0
+    strengthMod: 0
+    staminaMod: 0
+    intelligenceMod: 0
+    dexterityMod: 0
+    agilityMod: 0
+    spiritMod: 0
+    level1Talents:
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    level2Talents:
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    level3Talents:
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    level4Talents:
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    level5Talents:
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    level6Talents:
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    - name: 
+      description: 
+      icon: {fileID: 0}
+      effect: 
+      isActive: 0
+    attack: {fileID: 0}
     MagicAttacks:
     - {fileID: 5085128331928981671, guid: a11066208f52ac14e9e34a5fafe1910b, type: 3}
     - {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea, type: 3}
     - {fileID: 5194423850133241829, guid: c801a3f77a2afbc46afc9799b93ce166, type: 3}
-    heroPrefab: {fileID: 0}
-    faceImage: {fileID: 0}
-    heroID: 1
-    strengthModifier: 0.18
-    staminaModifier: 0.29
-    intelligenceModifier: 0.19
-    dexterityModifier: 0.09
-    agilityModifier: 0.15
-    spiritModifier: 0
-    currentStrength: 6
-    currentStamina: 8
-    currentAgility: 5
-    currentDexterity: 500
-    currentIntelligence: 9
-    currentSpirit: 9
-    currentATK: 8
-    currentMATK: 9
-    currentDEF: 12
-    currentMDEF: 0
-    maxHP: 156
-    maxMP: 80
-    currentHitRating: 100
-    currentCritRating: 0
-    currentMoveRating: 0
-    currentRegenRating: 0
-    currentDodgeRating: 0
-    currentBlockRating: 0
-    currentParryRating: 0
-    currentThreatRating: 0
-    currentLevel: 3
-    levelBeforeExp: 0
-    currentExp: 28
-    expBeforeAddingExp: 0
     equipment:
     - {fileID: 0}
     - {fileID: 0}
@@ -198,6 +270,90 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
+    curHP: 135
+    preEquipmentHP: 0
+    curMP: 75
+    preEquipmentMP: 0
+    preEquipmentStrength: 0
+    preEquipmentStamina: 0
+    preEquipmentAgility: 0
+    preEquipmentDexterity: 0
+    preEquipmentIntelligence: 0
+    preEquipmentSpirit: 0
+    preEquipmentATK: 0
+    preEquipmentMATK: 0
+    preEquipmentDEF: 0
+    preEquipmentMDEF: 0
+    preEquipmentHitRating: 0
+    preEquipmentCritRating: 0
+    preEquipmentMoveRating: 0
+    preEquipmentRegenRating: 0
+    preEquipmentDodgeRating: 0
+    preEquipmentBlockRating: 0
+    preEquipmentParryRating: 0
+    preEquipmentThreatRating: 0
+    fromEquipmentHP: 0
+    fromEquipmentMP: 0
+    fromEquipmentStrength: 0
+    fromEquipmentStamina: 0
+    fromEquipmentAgility: 0
+    fromEquipmentDexterity: 0
+    fromEquipmentIntelligence: 0
+    fromEquipmentSpirit: 0
+    fromEquipmentATK: 0
+    fromEquipmentMATK: 0
+    fromEquipmentDEF: 0
+    fromEquipmentMDEF: 0
+    fromEquipmentHitRating: 0
+    fromEquipmentCritRating: 0
+    fromEquipmentMoveRating: 0
+    fromEquipmentRegenRating: 0
+    fromEquipmentDodgeRating: 0
+    fromEquipmentBlockRating: 0
+    fromEquipmentParryRating: 0
+    fromEquipmentThreatRating: 0
+    postEquipmentHP: 0
+    postEquipmentMP: 0
+    postEquipmentStrength: 0
+    postEquipmentStamina: 0
+    postEquipmentAgility: 0
+    postEquipmentDexterity: 0
+    postEquipmentIntelligence: 0
+    postEquipmentSpirit: 0
+    postEquipmentATK: 0
+    postEquipmentMATK: 0
+    postEquipmentDEF: 0
+    postEquipmentMDEF: 0
+    postEquipmentHitRating: 0
+    postEquipmentCritRating: 0
+    postEquipmentMoveRating: 0
+    postEquipmentRegenRating: 0
+    postEquipmentDodgeRating: 0
+    postEquipmentBlockRating: 0
+    postEquipmentParryRating: 0
+    postEquipmentThreatRating: 0
+    finalMaxHP: 0
+    finalMaxMP: 0
+    finalStrength: 0
+    finalStamina: 0
+    finalAgility: 0
+    finalDexterity: 0
+    finalIntelligence: 0
+    finalSpirit: 0
+    finalATK: 0
+    finalMATK: 0
+    finalDEF: 0
+    finalMDEF: 0
+    finalHitRating: 0
+    finalCritRating: 0
+    finalMoveRating: 0
+    finalRegenRating: 0
+    finalDodgeRating: 0
+    finalBlockRating: 0
+    finalParryRating: 0
+    finalThreatRating: 0
+    levelBeforeExp: 0
+    expBeforeAddingExp: 0
   currentState: 0
   waitForDamageToFinish: 0
   cur_cooldown: 0
@@ -227,6 +383,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

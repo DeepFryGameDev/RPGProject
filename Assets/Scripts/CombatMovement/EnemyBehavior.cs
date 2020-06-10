@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +11,6 @@ public class EnemyBehavior : EnemyMove
 
     [HideInInspector] public EnemyStateMachine ESM;
     protected BaseEnemy self;
-    protected BattleStateMachine BSM; //global battle state machine
 
     public GameObject HeroToAttack; //the hero to be attacked by enemy
 
@@ -62,8 +61,6 @@ public class EnemyBehavior : EnemyMove
         ESM = GetComponent<EnemyStateMachine>();
         self = ESM.enemy;
         enemySkills = self.attacks;
-
-        BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //sets battle state machine to active battle state machine in BattleManager (in scene)
 
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         for (int i = 0; i < enemies.Length; i++)
@@ -478,7 +475,7 @@ public class EnemyBehavior : EnemyMove
 
         BSM.pendingTurn = false;
 
-        BSM.battleStates = BattleStateMachine.PerformAction.WAIT; //reset battle state manager back to wait state
+        BSM.battleState = battleStates.WAIT; //reset battle state manager back to wait state
 
         ESM.actionStarted = false; //end the coroutine
 
@@ -500,7 +497,7 @@ public class EnemyBehavior : EnemyMove
 
         BSM.pendingTurn = false;
 
-        BSM.battleStates = BattleStateMachine.PerformAction.WAIT; //reset battle state manager back to wait state
+        BSM.battleState = battleStates.WAIT; //reset battle state manager back to wait state
 
         ESM.actionStarted = false; //end the coroutine
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,7 +29,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
 
     //this GameObject
     [HideInInspector] public Vector2 startPosition; //to store enemy's starting position for movement
-    public GameObject Selector; //the selector cursor above the enemy
+    [HideInInspector] public GameObject Selector; //the selector cursor above the enemy
     //TimeforAction() stuff
     [HideInInspector] public bool actionStarted = false; //used for knowing whether to execute or exit the ieNumerator
 
@@ -46,7 +46,9 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //sets battle state machine to active battle state machine in BattleManager (in scene)
         startPosition = transform.position; //sets startPosition to the enemy's position at the start of battle
         cur_cooldown = Random.Range(0, 2.5f); //Sets random point for enemy ATB gauge to start
-        Selector.SetActive(false); //hides enemy selector cursor
+
+        Selector = transform.Find("Selector").gameObject;
+        BSM.HideSelector(Selector); //hides enemy selector cursor
 
         enemyBehavior = GetComponent<EnemyBehavior>();
 
@@ -69,7 +71,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                     {
                         if (BSM.pendingTurn == false)
                         {
-                            UpgradeProgressBar(); //enemy hero ATB gauge
+                            UpgradeProgressBar(); //fills enemy ATB gauge
                         }
                     }
                 }
@@ -95,7 +97,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
             break;
 
             case (TurnState.DEAD): //run after every time enemy takes damage that brings them to or below 0 hp
-                if(!alive) //if alive value is set to false, exits the turn state. this is set to false in below code
+                if (!alive) //if alive value is set to false, exits the turn state. this is set to false in below code
                 {
                     return;
                 } else
@@ -103,7 +105,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                     BSM.expPool += enemy.earnedEXP; //increases enemy's exp to exp pool to take after battle
                     this.gameObject.tag = "DeadEnemy"; //change tag of enemy to DeadEnemy
                     BSM.EnemiesInBattle.Remove(this.gameObject); //Makes this enemy not attackable by heroes
-                    Selector.SetActive(false); //disable the selector cursor for the enemy
+                    BSM.HideSelector(Selector); //disable the selector cursor for the enemy
                     
                     if (BSM.EnemiesInBattle.Count > 0) //remove all enemyAttacks inputs from active perform list if there are still enemies on the field
                     {
@@ -124,8 +126,11 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                     }
                     
                     this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change the color to gray. later play death animation
+                    
                     alive = false; //set alive to false to exit out of the turn state
-                    BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE; //changes battle state to check alive
+
+                    Debug.Log("setting BSM Battlestate to checkalive");
+                    BSM.battleState = battleStates.CHECKALIVE; //changes battle state to check alive
                 }
             break;
         }

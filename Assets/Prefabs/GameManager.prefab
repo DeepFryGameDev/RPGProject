@@ -455,7 +455,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 584006560}
   m_HandleRect: {fileID: 584006559}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -9789,7 +9789,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2010755818}
   m_HandleRect: {fileID: 2010755817}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -15273,7 +15273,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5522775518378982488}
   m_HandleRect: {fileID: 3844827809909897732}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -22239,7 +22239,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 727492154337328273}
   m_HandleRect: {fileID: 2065734484991967705}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -25223,8 +25223,8 @@ MonoBehaviour:
       name: Enemy 2
       ID: 1
       level: 1
-      baseHP: 30
-      baseMP: 30
+      baseHP: 5
+      baseMP: 5
       curHP: 0
       curMP: 0
       baseATK: 5
@@ -30001,7 +30001,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2172499479678470752}
   m_HandleRect: {fileID: 3208445580069370129}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -39413,7 +39413,7 @@ RectTransform:
   m_Father: {fileID: 5104265768137426434}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.407, y: 0.14232515}
+  m_AnchorMin: {x: 0.396, y: 0.14232515}
   m_AnchorMax: {x: 0.46660793, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -50049,7 +50049,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2624670376287677529}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -54280,6 +54280,12 @@ MonoBehaviour:
   activeQuestListButton: {fileID: 2612811455617506604, guid: f6985ee9629d3c849a3ae8ec4805343e,
     type: 3}
   bestiaryEntryButton: {fileID: 8548863637195279239, guid: c8a6228b71916664b8f6237491f50201,
+    type: 3}
+  battleActionButton: {fileID: 144425852951294247, guid: 5c9f2a6c4e1feea4da2ce5dd36a765e3,
+    type: 3}
+  battleMagicButton: {fileID: 5341136426007646301, guid: 348d0eaa8b794454dbf6ce5ca7f08618,
+    type: 3}
+  battleItemButton: {fileID: 3671519871992954489, guid: 22c95ee7ab94a5e4daf4589820dbd78b,
     type: 3}
 --- !u!1 &3017137950013392610
 GameObject:
@@ -61192,7 +61198,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.0700073}
+  m_AnchoredPosition: {x: -7.631775, y: 6.0700226}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7043180370596036766
@@ -61420,7 +61426,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.0700073}
+  m_AnchoredPosition: {x: -7.631775, y: 6.0700226}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &8661471618974728855
@@ -78187,7 +78193,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.0700073}
+  m_AnchoredPosition: {x: -7.631775, y: 6.0700226}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &3943971790255259669
@@ -81462,7 +81468,7 @@ RectTransform:
   m_Father: {fileID: 7147695500430535417}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.407, y: 0.14232515}
+  m_AnchorMin: {x: 0.39600003, y: 0.14232515}
   m_AnchorMax: {x: 0.46660793, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -93153,7 +93159,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4874046966152121861}
   m_HandleRect: {fileID: 8911545646607614822}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -98648,7 +98654,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.028219305, y: 0.055202022}
   m_AnchorMax: {x: 0.9673316, y: 0.94600004}
-  m_AnchoredPosition: {x: 0, y: 9.589371}
+  m_AnchoredPosition: {x: 0, y: 9.58934}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6293297646467654863
@@ -103579,7 +103585,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3624979420968300061}
   m_HandleRect: {fileID: 4033257590135405994}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -103845,7 +103851,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4311116653340282998}
   m_HandleRect: {fileID: 3202420835647378449}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -115960,7 +115966,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2696685713487000147}
   m_HandleRect: {fileID: 7206342140716660390}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -120121,7 +120127,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7209916556716224159}
   m_HandleRect: {fileID: 7097651160141466794}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -120235,7 +120241,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7954295667522061817}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -123386,7 +123392,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.0700073}
+  m_AnchoredPosition: {x: -7.631775, y: 6.0700226}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &629602874503215192

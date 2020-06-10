@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -73,7 +73,7 @@ public class HeroStateMachine : MonoBehaviour
         }
         heroTurn = 1;
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //make connection to the global battle state manager
-        Selector.SetActive(false); //hide hero selector cursor
+        BSM.HideSelector(Selector); //hide hero selector cursor
         startPosition = transform.position; //sets start position to hero's position for animation purposes
         playerMove = GetComponent<PlayerMove>();
     }
@@ -132,10 +132,10 @@ public class HeroStateMachine : MonoBehaviour
                     BSM.HeroesInBattle.Remove(this.gameObject); //not hero attackable by enemy
                     BSM.HeroesToManage.Remove(this.gameObject); //not able to manage hero with player
                     
-                    Selector.SetActive(false); //hide the selector cursor for the hero
+                    BSM.HideSelector(Selector); //hide the selector cursor for the hero
                     //reset GUI
-                    BSM.actionPanel.SetActive(false);
-                    BSM.EnemySelectPanel.SetActive(false);
+                    BSM.HidePanel(BSM.actionPanel);
+                    BSM.HidePanel(BSM.enemySelectPanel);
                     //remove hero's handleturn from performlist (if there was one)
                     if (BSM.HeroesInBattle.Count > 0)
                     {
@@ -159,7 +159,7 @@ public class HeroStateMachine : MonoBehaviour
                     
                     this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change color/ play animation
                     Debug.Log(hero.name + " - DEAD");
-                    BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
+                    BSM.battleState = battleStates.CHECKALIVE;
 
                     alive = false;
                 }
@@ -177,6 +177,7 @@ public class HeroStateMachine : MonoBehaviour
         stats.HeroMP.text = "MP: " + hero.curMP + "/" + hero.finalMaxMP; //sets MP in the hero panel to the current hero's MP
         ProgressBar = stats.ProgressBar; //sets ATB gauge in the hero panel to the hero's ATB
         HeroPanel.transform.SetParent(HeroPanelSpacer, false); //sets the hero panel to the hero panel's spacer for vertical layout group
+        HeroPanel.name = "BattleHeroPanel - ID " + hero.ID;
     }
 
     List<GameObject> GetTargetsInAffect(int affectIndex, GameObject targetChoice)
@@ -261,9 +262,9 @@ public class HeroStateMachine : MonoBehaviour
             StartCoroutine(ItemAnimation());
         }
         
-        if (BSM.battleStates != BattleStateMachine.PerformAction.WIN && BSM.battleStates != BattleStateMachine.PerformAction.LOSE) //if the battle is still going (didn't win or lose)
+        if (BSM.battleState != battleStates.WIN && BSM.battleState != battleStates.LOSE) //if the battle is still going (didn't win or lose)
         {
-            BSM.battleStates = BattleStateMachine.PerformAction.WAIT; //sets battle state machine back to WAIT
+            BSM.battleState = battleStates.WAIT; //sets battle state machine back to WAIT
 
             cur_cooldown = 0f; //reset the hero's ATB gauge to 0
             currentState = TurnState.PROCESSING; //starts the turn over back to filling up the ATB gauge
@@ -318,6 +319,7 @@ public class HeroStateMachine : MonoBehaviour
 
         //animate the enemy back to start position
         Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
+
         while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position     
 
         PostAnimationCleanup();
