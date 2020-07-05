@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    //Used for combat interaction between mouse cursor and enemy unit game objects
+
     BattleStateMachine BSM; //for the active battle state manager
     public Text detailsText;
 
@@ -23,7 +25,10 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         }
     }
 
-    public void OnPointerClick(PointerEventData eventData) //to set the target
+    /// <summary>
+    /// Sets chosen target for BSM
+    /// </summary>
+    public void OnPointerClick(PointerEventData eventData)
     {
         if (BSM.choosingTarget)
         {
@@ -33,7 +38,10 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         }
     }
 
-    public void OnPointerEnter(PointerEventData eventData) //shows selector
+    /// <summary>
+    /// Displays selector
+    /// </summary>
+    public void OnPointerEnter(PointerEventData eventData)
     {
         if (BSM.choosingTarget)
         {
@@ -42,7 +50,10 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
     }
 
-    public void OnPointerExit(PointerEventData eventData) //hides selector
+    /// <summary>
+    /// Hides selector
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
     {
         Debug.Log("should hide selector");
 

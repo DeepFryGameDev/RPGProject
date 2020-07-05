@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PartySelectEvents : MonoBehaviour
 {
+    //Used in the party menu to facilitate mouse cursor interaction with UI
+
     Image SelectedHeroMenuHPProgressBar;
     Image SelectedHeroMenuMPProgressBar;
     Image SelectedHeroMenuEXPProgressBar;
@@ -29,6 +31,9 @@ public class PartySelectEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Displays selected hero panel when clicking a hero
+    /// </summary>
     public void ShowSelectedHeroPanel()
     {
         if (menu.PartyHeroSelected == null)
@@ -61,6 +66,9 @@ public class PartySelectEvents : MonoBehaviour
         }        
     }
 
+    /// <summary>
+    /// If selected hero is active, displays selected hero panel in active heroes group
+    /// </summary>
     public void ShowSelectedActiveHeroPanel()
     {
         if (menu.PartyHeroSelected == null)
@@ -96,6 +104,9 @@ public class PartySelectEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Hides selected hero panel by manipulating canvas group
+    /// </summary>
     public void HideSelectedHeroPanel()
     {
         if (menu.PartyHeroSelected == null)
@@ -106,6 +117,9 @@ public class PartySelectEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Facilitates action when selecting inactive hero in inactive panel
+    /// </summary>
     public void SelectHeroFromInactive()
     {
         menu.PlaySE(menu.confirmSE);
@@ -121,11 +135,14 @@ public class PartySelectEvents : MonoBehaviour
         if (menu.PartyHeroSelected != null && menu.PartySelectedHeroType == "Active")
         {
             Debug.Log("process the switch from active to inactive");
-            Debug.Log("Switching " + GameObject.Find("GameManager").GetComponent<GameMenu>().PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", ""))).name);
-            SwitchActiveToInactive(GameObject.Find("GameManager").GetComponent<GameMenu>().PartyHeroSelected, GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", ""))));
+            Debug.Log("Switching " + menu.PartyHeroSelected.name + " with " + GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", ""))).name);
+            SwitchActiveToInactive(menu.PartyHeroSelected, GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", ""))));
         }
     }
 
+    /// <summary>
+    /// Facilitates action when selecting active hero in active hero panel
+    /// </summary>
     public void SelectHeroFromActive()
     {
         menu.PlaySE(menu.confirmSE);
@@ -189,6 +206,10 @@ public class PartySelectEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Used when adding inactive hero to empty active panel slot
+    /// </summary>
+    /// <param name="hero">Hero to add to empty panel</param>
     void AddInactiveToEmpty(BaseHero hero)
     {
         GameManager.instance.inactiveHeroes.Remove(hero);
@@ -203,6 +224,11 @@ public class PartySelectEvents : MonoBehaviour
         menu.PartySelectedHeroType = "";
     }
 
+    /// <summary>
+    /// Used when switching inactive hero to active hero panel slot
+    /// </summary>
+    /// <param name="fromHero">First hero selected (from inactive panel) to be switched</param>
+    /// <param name="toHero">Second hero selected (from active panel) to be switched</param>
     void SwitchInactiveToActive(BaseHero fromHero, BaseHero toHero)
     {
         int activeHeroIndex = GameManager.instance.activeHeroes.IndexOf(toHero);
@@ -223,6 +249,11 @@ public class PartySelectEvents : MonoBehaviour
         menu.PartySelectedHeroType = "";
     }
 
+    /// <summary>
+    /// Used when switching active hero to inactive slot
+    /// </summary>
+    /// <param name="fromHero">First hero selected (from active hero slot) to be switched</param>
+    /// <param name="toHero">Second hero selected (from inactive hero slot) to be switched</param>
     void SwitchActiveToInactive(BaseHero fromHero, BaseHero toHero)
     {
         int activeHeroIndex = GameManager.instance.activeHeroes.IndexOf(fromHero);
@@ -243,6 +274,11 @@ public class PartySelectEvents : MonoBehaviour
         menu.PartySelectedHeroType = "";
     }
 
+    /// <summary>
+    /// Used when switching active heroes
+    /// </summary>
+    /// <param name="fromHero">First hero to be switched</param>
+    /// <param name="toHero">Second hero to be switched</param>
     void SwitchActives(BaseHero fromHero, BaseHero toHero)
     {
         int activeHeroIndex = GameManager.instance.activeHeroes.IndexOf(fromHero);
@@ -273,6 +309,9 @@ public class PartySelectEvents : MonoBehaviour
         menu.PartySelectedHeroType = "";
     }
 
+    /// <summary>
+    /// Sets all hero button text to normal font
+    /// </summary>
     void UnboldButtons()
     {
         foreach (Transform child in GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform)
@@ -294,6 +333,10 @@ public class PartySelectEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Returns hero by given ID
+    /// </summary>
+    /// <param name="ID">ID of hero to be returned</param>
     BaseHero GetHeroByID(int ID)
     {
         foreach (BaseHero hero in GameManager.instance.activeHeroes)
@@ -315,6 +358,11 @@ public class PartySelectEvents : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Displays given hero's face graphic on given image component
+    /// </summary>
+    /// <param name="hero">Hero to gather face image</param>
+    /// <param name="faceImage">Image component to have face drawn to</param>
     void DrawHeroFace(BaseHero hero, Image faceImage)
     {
         if (GameManager.instance.activeHeroes.Contains(hero))
@@ -330,6 +378,10 @@ public class PartySelectEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Calculates the HP for progress bar for given hero - returns their current HP / their max HP
+    /// </summary>
+    /// <param name="hero">Hero to gather HP data from</param>
     float GetProgressBarValuesHP(BaseHero hero)
     {
         float heroHP = hero.curHP;
@@ -341,6 +393,10 @@ public class PartySelectEvents : MonoBehaviour
         return calc_HP;
     }
 
+    /// <summary>
+    /// Calculates the MP for progress bar for given hero - returns their current MP / their max MP
+    /// </summary>
+    /// <param name="hero">Hero to gather MP data from</param>
     float GetProgressBarValuesMP(BaseHero hero)
     {
         float heroMP = hero.curMP;
@@ -352,6 +408,10 @@ public class PartySelectEvents : MonoBehaviour
         return calc_MP;
     }
 
+    /// <summary>
+    /// Calculates the EXP for progress bar for given hero - returns a calculation of the EXP needed to reach the next level - their current EXP
+    /// </summary>
+    /// <param name="hero">Hero to gather EXP data from</param>
     float GetProgressBarValuesEXP(BaseHero hero)
     {
         float baseLineEXP;

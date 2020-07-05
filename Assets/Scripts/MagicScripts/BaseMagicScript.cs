@@ -1,11 +1,14 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class BaseMagicScript //for processing magic - need to add status effects in here eventually
+public class BaseMagicScript 
 {
+
+    //Houses all magic processing and effects
+
     public BaseAttack spell;
     public BaseHero heroPerformingAction;
     public BaseHero heroReceivingAction;
@@ -119,7 +122,7 @@ public class BaseMagicScript //for processing magic - need to add status effects
         Debug.Log("Casting Fire 1 on " + enemyReceivingAction.name + "!");
     }
     #endregion
-
+    
     //---PROCESSING MAGIC FROM ENEMY
 
     public void ProcessMagicEnemyToEnemy()

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,14 +15,6 @@ public class FacingState : MonoBehaviour
 
     [System.NonSerialized] public bool forceDirection; //for keeping the player from changing facing direction
 
-    public enum FaceState
-    {
-        UP,
-        DOWN,
-        LEFT,
-        RIGHT,
-        DEFAULT
-    }
     [System.NonSerialized] public FaceState faceState; //the state of which direction they are facing
 
     // Start is called before the first frame update

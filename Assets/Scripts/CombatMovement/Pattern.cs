@@ -18,6 +18,11 @@ public class Pattern
         
     }
 
+    /// <summary>
+    /// Returns pattern of tiles based on provided index and parent tile.  Affect pattern is for all tiles to be processed on an action
+    /// </summary>
+    /// <param name="parentTile">Center tile to have pattern drawn around</param>
+    /// <param name="index">Which pattern to be drawn</param>
     public List<Tile> GetAffectPattern(Tile parentTile, int index)
     {
         pattern.Clear();
@@ -57,6 +62,11 @@ public class Pattern
         return pattern;
     }
 
+    /// <summary>
+    /// Returns pattern of tiles based on provided index and parent tile.  Range tiles is for all tiles that can be selected for an action
+    /// </summary>
+    /// <param name="parentTile">Center tile to have pattern drawn around</param>
+    /// <param name="index">Which pattern to be drawn</param>
     public List<Tile> GetRangePattern(Tile parentTile, int index)
     {
         pattern.Clear();
@@ -98,6 +108,8 @@ public class Pattern
         return pattern;
     }
 
+
+    //----- Returns given tile based on parent tile and how many tiles to count in that direction -----
     Tile UpTile(Tile parentTile, int range)
     {
         //shoot a ray from the parent tile to tile(s) above parent tile.  if it lands on a space with a tile, and tile is not already in pattern list, AND it is the last tile hit, add it to pattern list.
@@ -235,6 +247,12 @@ public class Pattern
         return parentTile;
     }
 
+    //----------
+
+    /// <summary>
+    /// Returns given tile by using raycast to check for Tile GameObject
+    /// </summary>
+    /// <param name="hits">Should only be 1 tile hit - Provided raycast to check for tiles hit</param>
     Tile ReturnTile(RaycastHit2D[] hits)
     {
         List<Tile> tilesInRaycast = new List<Tile>();

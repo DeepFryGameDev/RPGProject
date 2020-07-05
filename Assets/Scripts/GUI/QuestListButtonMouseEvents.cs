@@ -13,6 +13,9 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
+    /// <summary>
+    /// Changes quest menu text components to hovered quest object
+    /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Active")
@@ -23,7 +26,7 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
 
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestNamePanel/QuestNameText").GetComponent<Text>().text = GetQuestByID(ID).name;
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestLevelText").GetComponent<Text>().text = GetQuestByID(ID).level.ToString();
-                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = GetQuestReq1(GetQuestByID(ID)); //update this to show requirements (make new method)
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = GetQuestReq(GetQuestByID(ID), 1); //This needs to be updated to allow checking multiple requirements
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq2").GetComponent<Text>().text = "";
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq3").GetComponent<Text>().text = "";
 
@@ -72,7 +75,7 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
 
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestNamePanel/QuestNameText").GetComponent<Text>().text = GetQuestByID(ID).name;
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestLevelText").GetComponent<Text>().text = GetQuestByID(ID).level.ToString();
-                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = GetQuestReq1(GetQuestByID(ID)); //update this to show requirements (make new method)
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = GetQuestReq(GetQuestByID(ID), 1); //This needs to be updated to allow checking multiple requirements
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq2").GetComponent<Text>().text = "";
                 GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq3").GetComponent<Text>().text = "";
 
@@ -114,6 +117,9 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         }
     }
 
+    /// <summary>
+    /// Clears quest menu text fields
+    /// </summary>
     public void OnPointerExit(PointerEventData eventData)
     {
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked)
@@ -122,6 +128,9 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         }
     }
 
+    /// <summary>
+    /// Sets chosen quest to track on clicked quest so OnPointerEnter doesn't trigger
+    /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
         menu.PlaySE(menu.confirmSE);
@@ -131,6 +140,10 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         gameObject.transform.Find("QuestLevelText").GetComponent<Text>().fontStyle = FontStyle.Bold;
     }
 
+    /// <summary>
+    /// Returns quest by given ID
+    /// </summary>
+    /// <param name="ID">Id of quest to return</param>
     BaseQuest GetQuestByID(int ID)
     {
         foreach (BaseQuest quest in QuestDB.instance.quests)
@@ -143,16 +156,23 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         return null;
     }
 
-    string GetQuestReq1(BaseQuest quest)
+    /// <summary>
+    /// Returns quest requirement in text format by given quest and requirement index
+    /// </summary>
+    /// <param name="quest">Quest to gather requirement</param>
+    /// <param name="reqIndex">Requirement index to check</param>
+    string GetQuestReq(BaseQuest quest, int reqIndex)
     {
         string req = "";
+
+        reqIndex = reqIndex - 1;
 
         if (quest.type == BaseQuest.types.GATHER)
         {
             int itemCount = 0;
             foreach (Item item in Inventory.instance.items)
             {
-                if (item == quest.gatherReqs[0].item && itemCount < quest.gatherReqs[0].quantity)
+                if (item == quest.gatherReqs[reqIndex].item && itemCount < quest.gatherReqs[reqIndex].quantity)
                 {
                     itemCount++;
                 }
@@ -160,31 +180,31 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
 
             if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Active")
             {
-                req = quest.gatherReqs[0].item.name + ": " + itemCount + "/" + quest.gatherReqs[0].quantity;
+                req = quest.gatherReqs[reqIndex].item.name + ": " + itemCount + "/" + quest.gatherReqs[reqIndex].quantity;
             }
 
             if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Completed")
             {
-                req = quest.gatherReqs[0].item.name + ": " + quest.gatherReqs[0].quantity + "/" + quest.gatherReqs[0].quantity;
+                req = quest.gatherReqs[reqIndex].item.name + ": " + quest.gatherReqs[0].quantity + "/" + quest.gatherReqs[reqIndex].quantity;
             }
         }
 
         if (quest.type == BaseQuest.types.KILLTARGETS)
         {
-            int targetsKilled = quest.killReqs[0].targetsKilled;
-            if (targetsKilled > quest.killReqs[0].quantity)
+            int targetsKilled = quest.killReqs[reqIndex].targetsKilled;
+            if (targetsKilled > quest.killReqs[reqIndex].quantity)
             {
-                targetsKilled = quest.killReqs[0].quantity;
+                targetsKilled = quest.killReqs[reqIndex].quantity;
             }
 
             if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Active")
             {
-                req = GetEnemy(quest.killReqs[0].enemyID).name + ": " + targetsKilled + "/" + quest.killReqs[0].quantity;
+                req = GetEnemy(quest.killReqs[reqIndex].enemyID).name + ": " + targetsKilled + "/" + quest.killReqs[reqIndex].quantity;
             }
 
             if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Completed")
             {
-                req = GetEnemy(quest.killReqs[0].enemyID).name + ": " + quest.killReqs[0].quantity + "/" + quest.killReqs[0].quantity;
+                req = GetEnemy(quest.killReqs[reqIndex].enemyID).name + ": " + quest.killReqs[reqIndex].quantity + "/" + quest.killReqs[reqIndex].quantity;
             }
         }
 
@@ -192,25 +212,29 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         {
             if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Active")
             {
-                if (quest.boolReqs[0].objectiveFulfilled)
+                if (quest.boolReqs[reqIndex].objectiveFulfilled)
                 {
-                    req = quest.boolReqs[0].boolDescription + " - Done";
+                    req = quest.boolReqs[reqIndex].boolDescription + " - Done";
                 }
                 else
                 {
-                    req = quest.boolReqs[0].boolDescription;
+                    req = quest.boolReqs[reqIndex].boolDescription;
                 }
             }
 
             if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Completed")
             {
-                req = quest.boolReqs[0].boolDescription + " - Done";
+                req = quest.boolReqs[reqIndex].boolDescription + " - Done";
             }            
         }
 
         return req;
     }
 
+    /// <summary>
+    /// Returns enemy based on given ID
+    /// </summary>
+    /// <param name="ID">ID of enemy to be returned</param>
     BaseEnemy GetEnemy(int ID)
     {
         foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)

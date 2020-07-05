@@ -14,6 +14,9 @@ public class TalentsMouseEvents : MonoBehaviour
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
+    /// <summary>
+    /// Changes talent menu text components to hovered talent object
+    /// </summary>
     public void OnMouseOver()
     {
         hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
@@ -127,12 +130,18 @@ public class TalentsMouseEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clears talent menu text components
+    /// </summary>
     public void OnMouseExit()
     {
         GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
         GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
     }
 
+    /// <summary>
+    /// Sets talent object clicked as selected talent so OnMouseOver and OnMouseExit do not trigger
+    /// </summary>
     public void TalentButtonClicked()
     {
         hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
@@ -264,16 +273,29 @@ public class TalentsMouseEvents : MonoBehaviour
         hero.UpdateStatsFromTalents();
     }
 
+    /// <summary>
+    /// Sets given talent icon as inactive
+    /// </summary>
+    /// <param name="icon">Image component to be manipulated</param>
     void DrawInactiveTalent(Image icon)
     {
         icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, .25f);
     }
 
+    /// <summary>
+    /// Sets given talent icon as active
+    /// </summary>
+    /// <param name="icon">Image component to be manipulated</param>
     void DrawActiveTalent(Image icon)
     {
         icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, 1f);
     }
 
+    /// <summary>
+    /// Sets given talent GameObject as active and disables the others in it's level range
+    /// </summary>
+    /// <param name="parent">Parent gameobject of talent to gather the talent level range</param>
+    /// <param name="talentChosen">GameObject of talent to set as active</param>
     void SetActiveTalent(GameObject parent, GameObject talentChosen)
     {
         DrawInactiveTalent(GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/" + parent.name + "/Talent1Button/TalentIcon").GetComponent<Image>());

@@ -1,10 +1,12 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HeroSelectButton : MonoBehaviour
 {
+    //Facilitates mouse cursor interactions with hero select panel in battle - currently not using
+
     public GameObject HeroPrefab;
     public Text detailsText;
 
@@ -13,27 +15,42 @@ public class HeroSelectButton : MonoBehaviour
         detailsText = GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
     }
 
+    /// <summary>
+    /// Saves input of hero selection to hero prefab
+    /// </summary>
     public void SelectHero()
     {
-        GameObject.Find("BattleManager").GetComponent<BattleStateMachine>().HeroSelection(HeroPrefab); //Save input of enemy selection to enemy prefab
+        GameObject.Find("BattleManager").GetComponent<BattleStateMachine>().HeroSelection(HeroPrefab);
     }
 
-    public void HideSelector() //hides selector cursor over enemy
+    /// <summary>
+    /// Hides selector cursor over hero
+    /// </summary>
+    public void HideSelector()
     {
         HeroPrefab.transform.Find("Selector").gameObject.SetActive(false);
     }
 
-    public void ShowSelector() //shows selector cursor over enemy
+    /// <summary>
+    /// Shows selector cursor over hero
+    /// </summary>
+    public void ShowSelector()
     {
         HeroPrefab.transform.Find("Selector").gameObject.SetActive(true);
     }
 
-    public void HideDetails() //hides selector cursor over enemy
+    /// <summary>
+    /// Hides hero name on details text
+    /// </summary>
+    public void HideDetails()
     {
         detailsText.text = "";
     }
 
-    public void ShowDetails() //shows selector cursor over enemy
+    /// <summary>
+    /// Shows hero name on details text
+    /// </summary>
+    public void ShowDetails()
     {
         string heroName = this.gameObject.GetComponentInChildren<Text>().text;
         foreach (GameObject hero in GameObject.Find("BattleManager").GetComponent<BattleStateMachine>().HeroesInBattle)

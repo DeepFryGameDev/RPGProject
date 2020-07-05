@@ -33,6 +33,9 @@ public class PlayerMove : BaseMove
         }
     }
 
+    /// <summary>
+    /// Algorithm for movement processes when moving along tiles
+    /// </summary>
     public void Move()
     {
         if (path.Count > 0)
@@ -47,7 +50,7 @@ public class PlayerMove : BaseMove
             if (Vector2.Distance(transform.position, target) >= 0.05f)
             {
                 CalculateHeading(target);
-                SetHorizontalVelocity();
+                SetMoveVelocity();
                 transform.forward = heading;
                 transform.rotation = Quaternion.Euler(Vector3.zero);
                 transform.position += velocity * Time.deltaTime;
@@ -83,6 +86,9 @@ public class PlayerMove : BaseMove
         }
     }
 
+    /// <summary>
+    /// Detects which tiles can be selected to choose a tile to move to
+    /// </summary>
     public void FindSelectableTiles()
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
@@ -139,6 +145,9 @@ public class PlayerMove : BaseMove
         }
     }
 
+    /// <summary>
+    /// If mouse button is clicked, moves to selected tile
+    /// </summary>
     void CheckMouse()
     {
         if (Input.GetMouseButtonUp(0))

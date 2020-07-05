@@ -85,14 +85,6 @@ public class GameManager : MonoBehaviour
     //BESTIARY
     [ReadOnly] public List<BaseBestiaryEntry> bestiaryEntries = new List<BaseBestiaryEntry>();
     
-    //ENUM
-    public enum GameStates
-    {
-        HOSTILE_STATE,
-        PEACEFUL_STATE,
-        BATTLE_STATE,
-        IDLE
-    }
     public GameStates gameState;
     
     [HideInInspector] public List<BaseBattleEnemy> enemiesToBattle = new List<BaseBattleEnemy>(); //for adding enemies in encounter to the battle
@@ -131,6 +123,47 @@ public class GameManager : MonoBehaviour
         StartCoroutine(UpdateTime());
     }
 
+    private void Update()
+    {
+        switch (gameState)
+        {
+            case (GameStates.HOSTILE_STATE): //in the world, dungeon, etc. encounter possible
+                if (isWalking) //if player is walking, encounter may be possible
+                {
+                    RandomEncounter(); //check for random encounter
+                }
+                if (gotAttacked) //if player is attacked
+                {
+                    gameState = GameStates.BATTLE_STATE; //transition to battle state
+                }
+                break;
+
+            case (GameStates.PEACEFUL_STATE): //in town or area with no encounters
+
+                break;
+
+            case (GameStates.BATTLE_STATE):
+                if (gotAttacked) //if detected encounter from region
+                {
+                    StartBattle(true); //Loads battle scene from region
+                }
+                else
+                {
+                    StartBattle(false); //Loads battle scene from script
+                }
+
+                gameState = GameStates.IDLE;
+                break;
+
+            case (GameStates.IDLE):
+
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Loads saved positions for all NPCs from exiting/entering the map
+    /// </summary>
     void LoadPositionSaves()
     {
         if (instance.positionSaves.Count > 0) //if any positions are saved
@@ -150,6 +183,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Calls battle scene with provided troops
+    /// </summary>
+    /// <param name="fromRegion">If true, loads scene from current region.  If false, loads scene set from script</param>
     void StartBattle(bool fromRegion)
     {
         heroAmount = activeHeroes.Count; //number of active heroes in the game manager
@@ -187,55 +224,26 @@ public class GameManager : MonoBehaviour
         canGetEncounter = false;
     }
 
-    private void Update()
-    {
-        switch(gameState)
-        {
-            case (GameStates.HOSTILE_STATE): //in the world, dungeon, etc. encounter possible
-                if(isWalking) //if player is walking, encounter may be possible
-                {
-                    RandomEncounter(); //check for random encounter
-                }
-                if(gotAttacked) //if player is attacked
-                {
-                    gameState = GameStates.BATTLE_STATE; //transition to battle state
-                }
-            break;
-
-            case (GameStates.PEACEFUL_STATE): //in town or area with no encounters
-
-            break;
-
-            case (GameStates.BATTLE_STATE):
-                if (gotAttacked) //if detected encounter from region
-                {
-                    StartBattle(true); //Loads battle scene from region
-                } else
-                {
-                    StartBattle(false); //Loads battle scene from script
-                }
-                
-                gameState = GameStates.IDLE;
-            break;
-
-            case (GameStates.IDLE):
-
-            break;
-
-        }
-        
-    }
-
+    /// <summary>
+    /// Loads scene set from sceneToLoad
+    /// </summary>
     public void LoadScene()
     {
-        SceneManager.LoadScene(sceneToLoad); //loads scene from collisions
+        //SceneManager.LoadScene(sceneToLoad); //loads scene from collisions
+        GameObject.Find("SceneLoader").GetComponent<SceneLoader>().LoadScene(sceneToLoad); //loads scene from collisions
     }
 
+    /// <summary>
+    /// Loads last scene loaded before battle was called
+    /// </summary>
     public void LoadSceneAfterBattle()
     {
         SceneManager.LoadScene(lastScene); //loads last scene saved from before battle
     }
 
+    /// <summary>
+    /// Checks if player is walking in encounterable zone, then chooses random value from max battle chance to potentially call battle
+    /// </summary>
     void RandomEncounter()
     {
         if(isWalking && canGetEncounter && canBattle) //if player is walking in an encounterable zone
@@ -251,7 +259,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void GenerateHeroesToBattle() //when heros are instantiated in battle, the stats from game manager heros are copied over to the combatants
+    /// <summary>
+    /// Loads heroes into newly generated heroes for battle
+    /// </summary>
+    void GenerateHeroesToBattle() //when heros are instantiated in battle, the stats from game manager heroes are copied over to the combatants
     {
         for (int i = 0; i < heroAmount; i++)
         {
@@ -299,6 +310,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Adds exp for all active heroes and levels them up if needed
+    /// </summary>
     public void ProcessExp()
     {
         foreach (BaseHero hero in activeHeroes)
@@ -319,6 +333,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Enables panels by displaying via CanvasGroup
+    /// </summary>
     public void DisplayPanel(bool display)
     {
         if (display)
@@ -337,7 +354,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void GetTroopsFromRegion() //sets troops from encounter zone
+    /// <summary>
+    /// Sets troops from encounter zone
+    /// </summary>
+    void GetTroopsFromRegion()
     {
         //int whichTroop = Random.Range(0, curRegion.possibleTroops.Count);
         //enemyAmount = troops[whichTroop].enemies.Count;
@@ -392,7 +412,12 @@ public class GameManager : MonoBehaviour
         enemyAmount = TroopDB.instance.troops[whichTroop].enemies.Count;
         }
 
-    public void GetBattleFromScript(int troopIndex, string scene) //sets troops from script
+    /// <summary>
+    /// Sets troops from script and load battle
+    /// </summary>
+    /// <param name="troopIndex">Given troop index to search</param>
+    /// <param name="scene">Battle scene to load</param>
+    public void GetBattleFromScript(int troopIndex, string scene)
     {
         for (int i = 0; i < TroopDB.instance.troops[troopIndex].enemies.Count; i++)
         {
@@ -406,9 +431,13 @@ public class GameManager : MonoBehaviour
         }
         battleSceneFromScript = scene;
         enemyAmount = TroopDB.instance.troops[troopIndex].enemies.Count;
-        gameState = GameManager.GameStates.BATTLE_STATE;
+        gameState = GameStates.BATTLE_STATE;
     }
 
+    /// <summary>
+    /// Returns enemy DB entry by ID
+    /// </summary>
+    /// <param name="ID">ID of enemy in entry DB to return</param>
     BaseEnemyDBEntry GetEnemyDBEntry(int ID)
     {
         foreach (BaseEnemyDBEntry entry in EnemyDB.instance.enemies)
@@ -421,6 +450,9 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Consistently keeps game time updated
+    /// </summary>
     IEnumerator UpdateTime()
     {
         while (hours != 99 && minutes != 60 && seconds != 60)

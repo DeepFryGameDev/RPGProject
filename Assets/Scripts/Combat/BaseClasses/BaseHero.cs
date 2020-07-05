@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -49,6 +49,9 @@ public class BaseHero : BaseClass
     public float agilityMod;
     public float spiritMod;
 
+    public BaseAttack attack;
+    public List<BaseAttack> MagicAttacks = new List<BaseAttack>(); //unit's magic attacks
+
     public BaseTalent[] level1Talents = new BaseTalent[3];
     public BaseTalent[] level2Talents = new BaseTalent[3];
     public BaseTalent[] level3Talents = new BaseTalent[3];
@@ -56,8 +59,7 @@ public class BaseHero : BaseClass
     public BaseTalent[] level5Talents = new BaseTalent[3];
     public BaseTalent[] level6Talents = new BaseTalent[3];
 
-    public BaseAttack attack;
-    public List<BaseAttack> MagicAttacks = new List<BaseAttack>(); //unit's magic attacks
+    public List<BaseAttackLearn> attacksToLearn = new List<BaseAttackLearn>();
 
     public Equipment[] equipment = new Equipment[System.Enum.GetNames(typeof(EquipmentSlot)).Length];
 
@@ -163,6 +165,9 @@ public class BaseHero : BaseClass
     [HideInInspector] public int levelBeforeExp;
     [HideInInspector] public int expBeforeAddingExp;
 
+    /// <summary>
+    /// Sets all stat variables to base stats for later manipulation
+    /// </summary>
     public void InitializeStats()
     {
         preEquipmentStrength = baseSTR;
@@ -192,6 +197,10 @@ public class BaseHero : BaseClass
         curMP = finalMaxMP;
     }
 
+    /// <summary>
+    /// Sets given equip to appropriate slot on hero's equipment slot, and removes it from the inventory
+    /// </summary>
+    /// <param name="newEquip">Equip to be set to equipment slot</param>
     public void Equip(Equipment newEquip)
     {
         int slotIndex = (int)newEquip.equipmentSlot;
@@ -209,6 +218,10 @@ public class BaseHero : BaseClass
         Inventory.instance.Remove(newEquip);
     }
 
+    /// <summary>
+    /// Removes equipment from given equipment slot, and adds it back to the inventory
+    /// </summary>
+    /// <param name="slotIndex">Index of the equipment slot to be removed</param>
     public void Unequip (int slotIndex)
     {
         if (equipment[slotIndex] != null)
@@ -220,6 +233,9 @@ public class BaseHero : BaseClass
         }
     }
 
+    /// <summary>
+    /// Removes all equipment from hero and adds them back to the inventory
+    /// </summary>
     public void UnequipAll()
     {
         for (int i = 0; i < equipment.Length; i++)
@@ -228,7 +244,9 @@ public class BaseHero : BaseClass
         }
     }
 
-    //public MultiDimensionalInt[] testArray;
+    /// <summary>
+    /// Increases hero level and calls methods for stats to be increased
+    /// </summary>
     public void LevelUp()
     {
         currentLevel++;
@@ -236,6 +254,9 @@ public class BaseHero : BaseClass
         ProcessStatLevelUps();
     }
 
+    /// <summary>
+    /// Increases base stat values using their modifiers and adds any potential new attacks
+    /// </summary>
     public void ProcessStatLevelUps()
     {
         //Debug.Log("Strength: " + strength + ", strengthMod: " + strengthMod);
@@ -270,7 +291,9 @@ public class BaseHero : BaseClass
         learnNewAttacks();
     }
 
-    //stats are affected by parameters here when leveling up
+    /// <summary>
+    /// Updates secondary stats and updates other variables for stats (from equipment, talents, etc)
+    /// </summary>
     public void UpdateStats()
     {
         baseATK = GetATK(baseSTR, baseATK);
@@ -286,6 +309,9 @@ public class BaseHero : BaseClass
         UpdateStatsFromTalents();
     }
 
+    /// <summary>
+    /// Sets hero stats after taking equipped items into account
+    /// </summary>
     public void GetCurrentStatsFromEquipment()
     {
         int tempStrength = 0, tempStamina = 0, tempAgility = 0, tempDexterity = 0, tempIntelligence = 0, tempSpirit = 0;
@@ -353,6 +379,9 @@ public class BaseHero : BaseClass
         UpdatePostEquipmentStats();
     }
 
+    /// <summary>
+    /// Sets newly updated stats by adding base and equipment stats
+    /// </summary>
     void UpdatePostEquipmentStats()
     {
         postEquipmentStrength = baseSTR + fromEquipmentStrength;
@@ -381,6 +410,9 @@ public class BaseHero : BaseClass
         postEquipmentMP = GetMaxMP(postEquipmentIntelligence, fromEquipmentMP);
     }
 
+    /// <summary>
+    /// Adds in post-equipment stats with any potential talents set as active
+    /// </summary>
     public void UpdateStatsFromTalents()
     {
         finalStrength = postEquipmentStrength;
@@ -461,6 +493,9 @@ public class BaseHero : BaseClass
         UpdateFinalStats();
     }
 
+    /// <summary>
+    /// Sets final stats and updates UI if needed
+    /// </summary>
     void UpdateFinalStats()
     {
         finalMaxHP = GetMaxHP(finalStamina, finalMaxHP);
@@ -497,33 +532,33 @@ public class BaseHero : BaseClass
         }
     }
 
+    /// <summary>
+    /// Updates menu interface with newly updated stats
+    /// </summary>
     void UpdatePanels()
     {
         GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawTalentsMenuHeroPanel();
         GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().DrawEquipMenuStats();
     }
 
+    /// <summary>
+    /// Adds new attacks for hero if they have reached appropriate level
+    /// </summary>
     void learnNewAttacks()
     {
-        if (name == "Test dude 1")
+        foreach (BaseAttackLearn attackToLearn in attacksToLearn)
         {
-            if (currentLevel == 4)
+            if (currentLevel == attackToLearn.level)
             {
-                //Debug.Log("Learned the thing!");
+                Debug.Log(name + " learned attack: " + attackToLearn.attack.name);
             }
-        }
 
-        if (name == "Test dude 2")
-        {
-            if (currentLevel == 2)
-            {
-                //Debug.Log("Learned the other thing!");
-            }
+            MagicAttacks.Add(attackToLearn.attack);
         }
     }
 
-    //----------------------------------NOTE--------------------------------------
-    //if formulas are updated, they should also be updated in GameMenu - ShowEquipmentStats, ChangeEquipment, DrawEquipMenuStats, ResetEquipmentUpdates, and DrawStatusMenuStats
+    //----------------------------------------------------------------------------
+    //Formulas for setting secondary stats
     //----------------------------------------------------------------------------
 
     public int GetATK(int strength, int attack)
@@ -567,7 +602,6 @@ public class BaseHero : BaseClass
 
         return MP;
     }
-
 
     public int GetHitChance(int hitRating, int agility)
     {

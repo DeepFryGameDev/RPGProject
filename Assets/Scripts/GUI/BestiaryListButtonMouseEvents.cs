@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +6,11 @@ using UnityEngine.UI;
 
 public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    //For handling bestiary menu mouse cursor events - is attached to all instantiated bestiary entries
 
+    /// <summary>
+    /// Sets GUI objects in bestiary menu to hovered enemy
+    /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked)
@@ -29,6 +33,9 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    /// <summary>
+    /// Resets all GUI objects to empty fields
+    /// </summary>
     public void OnPointerExit(PointerEventData eventData)
     {
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked)
@@ -37,12 +44,18 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    /// <summary>
+    /// Sets Menu to lock clicked bestiary entry so other entries won't be affected when hovered
+    /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
         GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked = true;
         gameObject.transform.Find("EnemyNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
     }
 
+    /// <summary>
+    /// Clears all GUI fields
+    /// </summary>
     void ClearFields()
     {
         GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyNamePanel/EnemyNameText").GetComponent<Text>().text = "";
@@ -58,6 +71,10 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
         GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDescriptionPanel/EnemyDescriptionText").GetComponent<Text>().text = "";
     }
 
+    /// <summary>
+    /// Returns Enemy DB entry by given ID
+    /// </summary>
+    /// <param name="ID">ID of enemy entry to be returned</param>
     BaseEnemyDBEntry GetEnemyDBEntry(int ID)
     {
         foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)

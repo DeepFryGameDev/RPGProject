@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler //for displaying item details in menus
 {
-
+    //Facilitates mouse cursor interaction with item objects instantiated in item menu
     Text itemDesc;
     BaseHero hero;
     BaseItemScript itemScript = new BaseItemScript();
@@ -19,74 +19,203 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
-    Item GetItem(string name) //get item from name
+    /// <summary>
+    /// Returns item by given ID
+    /// </summary>
+    /// <param name="ID">Given ID to return item</param>
+    Item GetItem(int ID)
     {
-        foreach (Item item in Inventory.instance.items)
+        foreach (BaseItem item in ItemDB.instance.items)
         {
-            if (item.name == name)
-            {
-                return item;
+            if (item.ID == ID)
+            { 
+                return item.item;
             }
         }
         return null;
     }
 
-    string GetItemName() //gets item name from the item name text
+    /// <summary>
+    /// Returns equipment by given ID
+    /// </summary>
+    /// <param name="ID">Given ID to return equipment</param>
+    Item GetEquipment(int ID)
     {
-        return gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text;
+        foreach (BaseEquipment equip in EquipmentDB.instance.equipment)
+        {
+            if (equip.ID == ID)
+            {
+                return equip.equipment;
+            }
+        }
+        return null;
     }
 
-    public void OnPointerEnter(PointerEventData eventData) //sets item description panel with item's description
+    /// <summary>
+    /// Returns item ID from the attached GameObject name
+    /// </summary>
+    int GetItemID()
     {
-        itemDesc.text = GetItem(GetItemName()).description;
+        foreach (BaseItem item in ItemDB.instance.items)
+        {
+            if (gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text == item.name)
+            {
+                return item.ID;
+            }
+        }
+        return 0;
     }
 
-    public void OnPointerExit(PointerEventData eventData) //clears item description panel
+    /// <summary>
+    /// Returns equip ID from the attached GameObject name
+    /// </summary>
+    int GetEquipID()
+    {
+        foreach (BaseEquipment equip in EquipmentDB.instance.equipment)
+        {
+            if (gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text == equip.name)
+            {
+                return equip.ID;
+            }
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Returns item type (item or equipment) from attached GameObject
+    /// </summary>
+    string GetItemType()
+    {
+        foreach (BaseEquipment equip in EquipmentDB.instance.equipment)
+        {
+            if (gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text == equip.name)
+            {
+                return "equip";
+            }
+        }
+        return "item";
+    }
+
+    /// <summary>
+    /// Sets item description panel text to the attached item description
+    /// </summary>
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (GetItemType() == "equip")
+        {
+            itemDesc.text = GetEquipment(GetEquipID()).description;
+        } else
+        {
+            itemDesc.text = GetItem(GetItemID()).description;
+        }
+
+    }
+
+    /// <summary>
+    /// Clears item description text from panel
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
     {
         itemDesc.text = "";
     }
 
-    public void OnPointerClick(PointerEventData eventData) //begins item process when clicked
+    /// <summary>
+    /// Begins item processing when item object in item menu is clicked, or helps swap items if item sort customize mode is on
+    /// </summary>
+    public void OnPointerClick(PointerEventData eventData)
     {
-        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().itemCustomizeModeOn)
+        if (GetItemType() == "item")
         {
-            if (GetItem(GetItemName()).usableInMenu)
+            if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().itemCustomizeModeOn)
             {
-                if (GetItem(GetItemName()).useState == Item.UseStates.HERO)
+                if (GetItem(GetItemID()).usableInMenu)
                 {
-                    UnboldItems();
+                    if (GetItem(GetItemID()).useState == Item.UseStates.HERO)
+                    {
+                        UnboldItems();
 
-                    menu.PlaySE(menu.confirmSE);
+                        menu.PlaySE(menu.confirmSE);
 
-                    gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
-                    menu.itemChoosingHero = true;
+                        gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+                        menu.itemChoosingHero = true;
 
-                    itemUsed = GetItem(GetItemName());
-                    StartCoroutine(ProcessItem());
+                        itemUsed = GetItem(GetItemID());
+                        StartCoroutine(ProcessItem());
+                    }
                 }
-            } else
-            {
-                menu.PlaySE(menu.cantActionSE);
+                else
+                {
+                    menu.PlaySE(menu.cantActionSE);
+                }
             }
-        } else //itemCustomizeModeOn is true
-        {
-            if (!menu.itemIndexSwapAPicked)
+            else //itemCustomizeModeOn is true
             {
-                menu.PlaySE(menu.confirmSE);
-                menu.itemIndexSwapA = Inventory.instance.items.IndexOf(GetItem(GetItemName()));
-                gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+                if (!menu.itemIndexSwapAPicked)
+                {
+                    menu.PlaySE(menu.confirmSE);
+                    menu.itemIndexSwapA = Inventory.instance.items.IndexOf(GetItem(GetItemID()));
+                    gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
 
-                menu.itemIndexSwapAPicked = true;
-            } else
+                    menu.itemIndexSwapAPicked = true;
+                }
+                else
+                {
+                    menu.PlaySE(menu.confirmSE);
+                    menu.itemIndexSwapB = Inventory.instance.items.IndexOf(GetItem(GetItemID()));
+                    SwapItemsInList();
+                    menu.DrawItemList();
+                }
+            }
+        }
+
+        if (GetItemType() == "equip")
+        {
+            if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().itemCustomizeModeOn)
             {
-                menu.PlaySE(menu.confirmSE);
-                menu.itemIndexSwapB = Inventory.instance.items.IndexOf(GetItem(GetItemName()));
-                SwapItemsInList();
-                menu.DrawItemList();
+                if (GetEquipment(GetEquipID()).usableInMenu)
+                {
+                    if (GetEquipment(GetEquipID()).useState == Item.UseStates.HERO)
+                    {
+                        UnboldItems();
+
+                        menu.PlaySE(menu.confirmSE);
+
+                        gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+                        menu.itemChoosingHero = true;
+
+                        itemUsed = GetEquipment(GetEquipID());
+                        StartCoroutine(ProcessItem());
+                    }
+                }
+                else
+                {
+                    menu.PlaySE(menu.cantActionSE);
+                }
+            }
+            else //itemCustomizeModeOn is true
+            {
+                if (!menu.itemIndexSwapAPicked)
+                {
+                    menu.PlaySE(menu.confirmSE);
+                    menu.itemIndexSwapA = Inventory.instance.items.IndexOf(GetEquipment(GetEquipID()));
+                    gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+
+                    menu.itemIndexSwapAPicked = true;
+                }
+                else
+                {
+                    menu.PlaySE(menu.confirmSE);
+                    menu.itemIndexSwapB = Inventory.instance.items.IndexOf(GetEquipment(GetEquipID()));
+                    SwapItemsInList();
+                    menu.DrawItemList();
+                }
             }
         }
     }
 
+    /// <summary>
+    /// Swaps positions of items in inventory using items set as itemIndexSwapA and itemIndexSwapB
+    /// </summary>
     public void SwapItemsInList()
     {
         Item tmp = Inventory.instance.items[menu.itemIndexSwapA];
@@ -100,6 +229,9 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         UnboldItems();
     }
 
+    /// <summary>
+    /// Unbolds all item object texts in item list
+    /// </summary>
     void UnboldItems()
     {
         foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
@@ -108,7 +240,10 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    static List<RaycastResult> GetEventSystemRaycastResults() //gets all objects being clicked on
+    /// <summary>
+    /// Gets all objects being clicked
+    /// </summary>
+    static List<RaycastResult> GetEventSystemRaycastResults()
     {
         PointerEventData eventData = new PointerEventData(EventSystem.current);
         eventData.position = Input.mousePosition;
@@ -117,6 +252,9 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         return raysastResults;
     }
 
+    /// <summary>
+    /// Processes item use on chosen hero
+    /// </summary>
     public IEnumerator ProcessItem()
     {
         yield return ChooseHero(); //choose hero to use item on
@@ -140,12 +278,19 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
+    /// <summary>
+    /// Removes given item from inventory
+    /// </summary>
+    /// <param name="item">Provided item to be removed from inventory</param>
     void RemoveItemFromInventory(Item item)
     {
         Inventory.instance.Remove(item);
     }
 
-    public IEnumerator ChooseHero() //gets hero to apply item to based on which hero panel is clicked
+    /// <summary>
+    /// Coroutine.  Allows player to choose hero to apply item to hero panel clicked
+    /// </summary>
+    public IEnumerator ChooseHero()
     {
         Debug.Log("choose a hero");
         while (hero == null)
@@ -155,7 +300,10 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    void GetHeroClicked() //sets the hero based on which hero item panel is clicked
+    /// <summary>
+    /// Sets hero based on which hero item panel is clicked
+    /// </summary>
+    void GetHeroClicked()
     {
         //Check if the left Mouse button is clicked
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -189,7 +337,10 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    void UpdateUI() //updates interface
+    /// <summary>
+    /// Updates interface with newly updated item list
+    /// </summary>
+    void UpdateUI()
     {
         menu.DrawHeroItemMenuStats();
         menu.ResetItemList();

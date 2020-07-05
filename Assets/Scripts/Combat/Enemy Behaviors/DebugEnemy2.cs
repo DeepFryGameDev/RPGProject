@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -77,7 +77,7 @@ public class DebugEnemy2 : EnemyBehavior
                 if (chosenAttack == self.attacks[0])
                 {
                     //Debug.Log("run attack");
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero", chosenTarget));
+                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
                 }
 
                 Debug.Log("changing back to idle");

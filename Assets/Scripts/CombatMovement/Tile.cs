@@ -6,6 +6,10 @@ using UnityEngine.UI;
 
 public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    //Script is attached to all tile gameObjects
+    //Explanation of variables are found on the Tactics Movement tutorial: https://www.youtube.com/watch?v=cX_KrK8RQ2o
+
+
     public bool walkable = true;
     public bool current = false;
     public bool target = false;
@@ -40,14 +44,12 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     BattleStateMachine BSM;
     Pattern pattern = new Pattern();
-
-    // Start is called before the first frame update
+    
     void Start()
     {
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
     }
-
-    // Update is called once per frame
+    
     void Update()
     {
         if (inRange && !inAffect)
@@ -84,6 +86,10 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
+    /// <summary>
+    /// Sets attached tile's variables to false and clears the adjency list for it
+    /// Implemented here: https://youtu.be/cK2wzBCh9cg?t=1038
+    /// </summary>
     public void Reset()
     {
         adjecencyList.Clear();
@@ -104,11 +110,19 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         f = g = h = 0;
     }
 
+    /// <summary>
+    /// Sets pathable to false for attached tile
+    /// </summary>
     public void ClearPathable()
     {
         pathable = false;
     }
 
+    /// <summary>
+    /// Calls CheckTile for tiles (up, down, left, and right) surrounding the attached tile
+    /// Explanation found on tutorial: https://youtu.be/cK2wzBCh9cg?t=1076
+    /// </summary>
+    /// <param name="target">Target tile to check neighbor details</param>
     public void FindNeighbors(Tile target)
     {
         Reset();
@@ -119,6 +133,12 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         CheckTile(Vector2.left, target);
     }
 
+    /// <summary>
+    /// Checks if tile should be walkable or if it is adjacent to attached tile
+    /// Explanation found on tutorial: https://youtu.be/cK2wzBCh9cg?t=1115
+    /// </summary>
+    /// <param name="direction">Position of tile to check</param>
+    /// <param name="target">Tile to check if it should be added to adjency list</param>
     public void CheckTile(Vector2 direction, Tile target)
     {
         Collider2D[] colliders = Physics2D.OverlapBoxAll((Vector2)transform.position + direction, new Vector2(.5f, .5f), 0);
@@ -157,6 +177,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
+    /// <summary>
+    /// Test method
+    /// </summary>
     public void CheckStuff()
     {
         foreach (Tile tile in adjecencyList)
@@ -165,6 +188,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
+    /// <summary>
+    /// Processes methods when cusor enters attached tile
+    /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
 
@@ -264,6 +290,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
+    /// <summary>
+    /// Processes methods when cusor exits attached tile
+    /// </summary>
     public void OnPointerExit(PointerEventData eventData)
     {
         //resets enemy name on hover to blank when exiting tile
@@ -298,6 +327,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
+    /// <summary>
+    /// Processes methods when cusor clicks on attached tile
+    /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
         if (BSM.choosingTarget)
@@ -342,6 +374,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
+    /// <summary>
+    /// Sets all tiles inAffect and inRange to false
+    /// </summary>
     void ClearTiles()
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");

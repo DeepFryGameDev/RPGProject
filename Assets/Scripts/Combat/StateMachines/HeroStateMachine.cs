@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class HeroStateMachine : MonoBehaviour
 {
+    //Hero state machine script is attached to each hero to be used in battle state machine
+
     private BattleStateMachine BSM; //global battle state machine
     public BaseHero hero; //this hero
 
@@ -167,7 +169,9 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
-    //create hero panel
+    /// <summary>
+    /// Instantiates hero panel with hero details
+    /// </summary>
     void CreateHeroPanel()
     {
         HeroPanel = Instantiate(HeroPanel) as GameObject; //creates gameobject of heroPanel prefab (display in BattleCanvas which shows ATB gauge and HP, MP, etc)
@@ -180,6 +184,11 @@ public class HeroStateMachine : MonoBehaviour
         HeroPanel.name = "BattleHeroPanel - ID " + hero.ID;
     }
 
+    /// <summary>
+    /// Returns list of gameobjects in the given affect range
+    /// </summary>
+    /// <param name="affectIndex">Given affect index from attack</param>
+    /// <param name="targetChoice">Given target to be in the center of the affect range</param>
     List<GameObject> GetTargetsInAffect(int affectIndex, GameObject targetChoice)
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
@@ -214,6 +223,11 @@ public class HeroStateMachine : MonoBehaviour
         return targets;
     }
 
+    /// <summary>
+    /// Enables inAffect on given tiles for provided attack
+    /// </summary>
+    /// <param name="attack">Given attack to gather affect pattern</param>
+    /// <param name="parentTile">Parent tile to be the center of the affect pattern</param>
     void ShowAffectPattern(BaseAttack attack, Tile parentTile)
     {
         List<Tile> affectPattern = pattern.GetAffectPattern(parentTile, attack.patternIndex);
@@ -224,6 +238,11 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Enables inRange on given tiles for provided attack
+    /// </summary>
+    /// <param name="attack">Given attack to gather range pattern</param>
+    /// <param name="parentTile">Parent tile to be the center of the range pattern</param>
     void ShowRangePattern(BaseAttack attack, Tile parentTile)
     {
         List<Tile> rangePattern = pattern.GetRangePattern(parentTile, attack.rangeIndex);
@@ -234,6 +253,9 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Disables inAffect and inRange for all tile gameObjects
+    /// </summary>
     void ClearTiles()
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
@@ -245,19 +267,22 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Called when hero action choice is made to process necessary methods
+    /// </summary>
     private void TimeForAction()
     {
-        if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ATTACK)
+        if (BSM.PerformList[0].actionType == ActionType.ATTACK)
         {
             StartCoroutine(AttackAnimation());
         }
 
-        if (BSM.PerformList[0].actionType == HandleTurn.ActionType.MAGIC)
+        if (BSM.PerformList[0].actionType == ActionType.MAGIC)
         {
             StartCoroutine(MagicAnimation());
         }
 
-        if (BSM.PerformList[0].actionType == HandleTurn.ActionType.ITEM)
+        if (BSM.PerformList[0].actionType == ActionType.ITEM)
         {
             StartCoroutine(ItemAnimation());
         }
@@ -274,6 +299,9 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Coroutine.  Processes attack animation and damage
+    /// </summary>
     public IEnumerator AttackAnimation()
     {
         if (actionStarted)
@@ -327,6 +355,9 @@ public class HeroStateMachine : MonoBehaviour
         actionStarted = false;
     }
 
+    /// <summary>
+    /// Coroutine.  Processes magic animation and damage
+    /// </summary>
     public IEnumerator MagicAnimation()
     {
         if (actionStarted)
@@ -369,6 +400,9 @@ public class HeroStateMachine : MonoBehaviour
         actionStarted = false;
     }
 
+    /// <summary>
+    /// Coroutine.  Processes item animation and effects
+    /// </summary>
     public IEnumerator ItemAnimation()
     {
         if (actionStarted)
@@ -405,6 +439,9 @@ public class HeroStateMachine : MonoBehaviour
         actionStarted = false;
     }
 
+    /// <summary>
+    /// Processes post animation methods
+    /// </summary>
     void PostAnimationCleanup()
     {
         GetStatusEffectsFromCurrentAttack();
@@ -414,11 +451,19 @@ public class HeroStateMachine : MonoBehaviour
         playerMove.EndTurn(this);
     }
 
+    /// <summary>
+    /// Processes animation for hero gameObject to run to given target position
+    /// </summary>
+    /// <param name="target">Target position to run to for action animation</param>
     private bool MoveToTarget(Vector3 target)
     {
         return target != (transform.position = Vector2.MoveTowards(transform.position, target, animSpeed * Time.deltaTime)); //moves toward target until position is same as target position
     }
 
+    /// <summary>
+    /// Processes lowering HP for hero based on given value
+    /// </summary>
+    /// <param name="getDamageAmount">Damage for hero to receive</param>
     public void TakeDamage(int getDamageAmount) //receives damage from enemy
     {
         hero.curHP -= getDamageAmount; //subtracts hero's current HP from getDamageAmount parameter
@@ -430,6 +475,12 @@ public class HeroStateMachine : MonoBehaviour
         UpdateHeroStats(); //updates UI to show current HP and MP
     }
 
+    /// <summary>
+    /// Increases given threat value for provided enemy from provided hero
+    /// </summary>
+    /// <param name="enemy">Enemy to receive threat</param>
+    /// <param name="hero">Hero to have threat added from</param>
+    /// <param name="threat">Threat value to add</param>
     public void IncreaseThreat(GameObject enemy, BaseHero hero, float threat)
     {
         EnemyBehavior eb = enemy.GetComponent<EnemyBehavior>();
@@ -451,7 +502,12 @@ public class HeroStateMachine : MonoBehaviour
             }
         }
     }
-    
+
+    /// <summary>
+    /// Lowers HP of target by simulating damage from hero
+    /// </summary>
+    /// <param name="target">GameObject of who is being attacked</param>
+    /// <param name="crit">If true, process critical damage methods</param>
     void DoDamage(GameObject target, bool crit) //deals damage to enemy
     {
         int calc_damage = 0;
@@ -555,6 +611,9 @@ public class HeroStateMachine : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Processes chosen item
+    /// </summary>
     void PerformItem()
     {
         //action item
@@ -576,9 +635,11 @@ public class HeroStateMachine : MonoBehaviour
         
         Inventory.instance.Remove(BSM.PerformList[0].chosenItem);
     }
-    
-    //Update stats on damage / heal
-    public void UpdateHeroStats() //can maybe make this public to process when losing MP
+
+    /// <summary>
+    /// Updates GUI with new HP/MP values after attack
+    /// </summary>
+    public void UpdateHeroStats()
     {
         GameObject[] heroes = GameObject.FindGameObjectsWithTag("Hero");
         foreach (GameObject heroObj in heroes)
@@ -598,7 +659,10 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
-    public void RecoverMPAfterTurn() //slowly recover MP based on spirit and math below
+    /// <summary>
+    /// Recovers MP based on spirit and calculations
+    /// </summary>
+    public void RecoverMPAfterTurn()
     {
         if (hero.curMP < hero.baseMP)
         {
@@ -613,7 +677,10 @@ public class HeroStateMachine : MonoBehaviour
         UpdateHeroStats();
     }
 
-    public void GetStatusEffectsFromCurrentAttack() //gets status effects to be processed from chosen attack
+    /// <summary>
+    /// Adds status effect(s) from current attack to current target
+    /// </summary>
+    public void GetStatusEffectsFromCurrentAttack()
     {
         //if target is ally, add to ally's active status effects. if target is enemy, add to enemy's list
 
@@ -666,6 +733,9 @@ public class HeroStateMachine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Processes the status effect(s) from current attack to current target, lowers the turns remaining, and removs the status effect if needed
+    /// </summary>
     public void ProcessStatusEffects()
     {
         for (int i = 0; i < activeStatusEffects.Count; i++)
@@ -693,6 +763,11 @@ public class HeroStateMachine : MonoBehaviour
         UpdateHeroStats();
     }
 
+    /// <summary>
+    /// Returns random integer between provided values
+    /// </summary>
+    /// <param name="min">Minimum value for random value</param>
+    /// <param name="max">Maximum value for random value</param>
     int GetRandomInt(int min, int max)
     {
         Random.InitState(System.DateTime.Now.Millisecond);
@@ -700,6 +775,9 @@ public class HeroStateMachine : MonoBehaviour
         return rand;
     }
 
+    /// <summary>
+    /// Used in update method to increase the hero's ATB progress bar
+    /// </summary>
     void UpgradeProgressBar()
     {
         cur_cooldown = (cur_cooldown + (Time.deltaTime / 1f)) + (hero.finalDexterity * .000055955f); //increases ATB gauge, first float dictates how slowly gauge fills (default 1f), while second float dictates how effective dexterity is

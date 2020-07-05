@@ -18,7 +18,10 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         detailsText = GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
     }
 
-    public void OnPointerClick(PointerEventData eventData) //sets target to hero if clicked
+    /// <summary>
+    /// Sets chosenTarget of BSM to clicked hero
+    /// </summary>
+    public void OnPointerClick(PointerEventData eventData)
     {
         if (BSM.choosingTarget)
         {
@@ -26,7 +29,10 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    public void OnPointerEnter(PointerEventData eventData) //shows border around hero panel in battle if hero is being hovered over
+    /// <summary>
+    /// Shows border around hero panel in battle if hero is being hovered over
+    /// </summary>
+    public void OnPointerEnter(PointerEventData eventData)
     {
         Debug.Log(GetHeroByID(int.Parse(gameObject.name.Replace("BattleHero - ID ", ""))).name);
 
@@ -41,7 +47,10 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<HeroStateMachine>().hero.name;
     }
 
-    public void OnPointerExit(PointerEventData eventData) //hides border around hero panel in battle
+    /// <summary>
+    /// Hides border around hero panel in battle
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
     {
         foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
         {

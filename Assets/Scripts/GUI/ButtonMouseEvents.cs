@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 
 public class ButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    //Used for combat action buttons interaction with mouse cursor
+
     BattleStateMachine BSM;
     HeroStateMachine HSM;
     public Text detailsText;
@@ -19,8 +21,10 @@ public class ButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerEx
             detailsText = GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
         }
     }
-    
 
+    /// <summary>
+    /// Shows details about which action button is being hovered
+    /// </summary>
     public void OnPointerEnter(PointerEventData eventData) 
     {
         string actionName = this.gameObject.GetComponentInChildren<Text>().text;
@@ -78,11 +82,17 @@ public class ButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
     }
 
+    /// <summary>
+    /// Clears details text when mouse cursor exits action button
+    /// </summary>
     public void OnPointerExit(PointerEventData eventData) 
     {
         detailsText.GetComponent<Text>().text = "";
     }
 
+    /// <summary>
+    /// Clears details text when mouse cursor exits action button
+    /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
         detailsText.GetComponent<Text>().text = "";

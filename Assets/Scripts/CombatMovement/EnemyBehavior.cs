@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class EnemyBehavior : EnemyMove
 {
+    //All enemies have a behavior attached which is derived from this class
     protected List<BaseAttack> enemySkills = new List<BaseAttack>();
     protected List<BaseEnemy> enemyParty = new List<BaseEnemy>();
     protected List<BaseHero> heroParty = new List<BaseHero>();
@@ -41,21 +42,13 @@ public class EnemyBehavior : EnemyMove
     protected Color lowThreatcolor = Color.blue;
     protected Color veryLowThreatColor = Color.grey;
 
-
-    protected enum BehaviorStates
-    {
-        IDLE,
-        CHOOSEACTION,
-        BEFOREMOVE,
-        MOVE,
-        AFTERMOVE,
-        ACTION
-    }
-
     protected BehaviorStates behaviorStates;
 
     protected bool foundTarget;
 
+    /// <summary>
+    /// Sets initial values for attached enemy's state machine, as well as threat and threatlist
+    /// </summary>
     public void InitBehavior()
     {
         ESM = GetComponent<EnemyStateMachine>();
@@ -81,6 +74,9 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Generates available actions based on learned attacks within MP availability and in range
+    /// </summary>
     protected void BuildActionLists()
     {
         ClearActionLists();
@@ -148,6 +144,9 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Resets attacks within MP threshold and within range, as well as any possible targets
+    /// </summary>
     void ClearActionLists()
     {
         attacksWithinMPThreshold.Clear(); //clears list for next enemy to use
@@ -155,6 +154,9 @@ public class EnemyBehavior : EnemyMove
         targets.Clear();
     }
 
+    /// <summary>
+    /// Facilitates animation for chosen magic or physical attack
+    /// </summary>
     protected void ProcessAnimation()
     {
         readyToAnimateAction = false;
@@ -173,6 +175,9 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Coroutine.  Processes attack animation and handles damage process
+    /// </summary>
     public IEnumerator AttackAnimation()
     {
         if (ESM.actionStarted)
@@ -199,6 +204,9 @@ public class EnemyBehavior : EnemyMove
         FinishAction();
     }
 
+    /// <summary>
+    /// Coroutine.  Processes magic animation and handles damage process
+    /// </summary>
     public IEnumerator MagicAnimation()
     {
         if (ESM.actionStarted)
@@ -257,11 +265,16 @@ public class EnemyBehavior : EnemyMove
         FinishAction();
     }
 
+    /// <summary>
+    /// Facilitates processing of chosen action
+    /// </summary>
+    /// <param name="action">Sets chosen attack to the given BaseAttack</param>
+    /// <param name="targets">Given list of GameObjects that are the targets for the chosen action</param>
     protected void RunAction(BaseAttack action, List<GameObject> targets)
     {
         HandleTurn myAttack = new HandleTurn(); //new handleturn for the enemy's attack
         myAttack.Attacker = self.name; //enemy's name set for the handleturn's attacker
-        myAttack.attackerType = HandleTurn.Types.ENEMY; //sets handleturn's type to enemy
+        myAttack.attackerType = Types.ENEMY; //sets handleturn's type to enemy
         myAttack.AttackersGameObject = this.gameObject; //sets the handleturn's attacker game object to this enemy
         
         myAttack.chosenAttack = action;
@@ -271,12 +284,19 @@ public class EnemyBehavior : EnemyMove
         ProcessAnimation();
     }
 
+    /// <summary>
+    /// Facilitates movement to target position for attack animation
+    /// </summary>
+    /// <param name="target">Target position to move to for animation</param>
     private bool MoveToTarget(Vector3 target) //using Vector2 causes an error, but Vector3 translates without issues
     {
         return target != (transform.position = Vector2.MoveTowards(transform.position, target, animSpeed * Time.deltaTime)); //moves towards the target parameter until position is same as the target position
     }
 
-    void DoDamage() //deals damage to hero
+    /// <summary>
+    /// Processes dealing damage to chosen action's targets
+    /// </summary>
+    void DoDamage()
     {
         int calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by enemy's current attack + the attack's damage
         
@@ -312,7 +332,12 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
-    protected List<GameObject> GetTargets(int affectIndex, string tag, GameObject targetChoice)
+    /// <summary>
+    /// Returns list of GameObjects to be set as targets for the chosen action
+    /// </summary>
+    /// <param name="affectIndex">Affect index of the chosen attack/action</param>
+    /// <param name="tag">to determine if target for chosen action is a hero or enemy</param>
+    protected List<GameObject> GetTargets(int affectIndex, string tag)
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
 
@@ -351,7 +376,7 @@ public class EnemyBehavior : EnemyMove
             }
         }*/
 
-        Tile targetTile = GetBestTargetTile(tag);
+        Tile targetTile = GetBestTargetTile();
         pattern.GetAffectPattern(targetTile, affectIndex);
         tilesInRange = pattern.pattern;
 
@@ -371,7 +396,11 @@ public class EnemyBehavior : EnemyMove
         return targets;
     }
 
-    public void TakeDamage(int getDamageAmount) //receives damage from hero
+    /// <summary>
+    /// Facilitates receiving damage from hero/enemy
+    /// </summary>
+    /// <param name="getDamageAmount">Damage value to be received</param>
+    public void TakeDamage(int getDamageAmount)
     {
         self.curHP -= getDamageAmount; //lowers current HP from damageAmount parameter
         if (self.curHP <= 0) //checks if enemy is dead
@@ -381,7 +410,10 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
-    void RecoverMPAfterTurn() //slowly recovers MP based on spirit value and below math
+    /// <summary>
+    /// Recovers MP based on spirit value and calculations
+    /// </summary>
+    void RecoverMPAfterTurn()
     {
         if (self.curMP < self.baseMP)
         {
@@ -395,7 +427,10 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
-    void GetStatusEffectsFromCurrentAttack() //gather status effects from selected attack
+    /// <summary>
+    /// Gather status effects from selected attack
+    /// </summary>
+    void GetStatusEffectsFromCurrentAttack()
     {
         //if target is ally, add to ally's active status effects. if target is hero, add to hero's list
         foreach (BaseStatusEffect statusEffect in BSM.PerformList[0].chosenAttack.statusEffects)
@@ -424,7 +459,10 @@ public class EnemyBehavior : EnemyMove
         ProcessStatusEffects();
     }
 
-    void ProcessStatusEffects() //processes the status effects applied by selected attack
+    /// <summary>
+    /// Processes the status effects applied by the selected attack
+    /// </summary>
+    void ProcessStatusEffects()
     {
         for (int i = 0; i < activeStatusEffects.Count; i++)
         {
@@ -448,6 +486,11 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Returns random value between provided min and max values
+    /// </summary>
+    /// <param name="min">Minimum value for random value</param>
+    /// <param name="max">Maximum value for random value</param>
     protected int GetRandomNumber(int min, int max)
     {
         Random.InitState(System.DateTime.Now.Millisecond);
@@ -455,12 +498,18 @@ public class EnemyBehavior : EnemyMove
         return rand;
     }
 
+    /// <summary>
+    /// Increases turn count and sets up enemy to choose an action
+    /// </summary>
     public void BeginEnemyTurn()
     {
         turn++;
         behaviorStates = BehaviorStates.CHOOSEACTION;
     }
 
+    /// <summary>
+    /// Facilitates ending the enemy's turn and resets variables so new turn can be started
+    /// </summary>
     void FinishAction()
     {
         GetStatusEffectsFromCurrentAttack();
@@ -489,6 +538,9 @@ public class EnemyBehavior : EnemyMove
         RemoveSelectableTiles();
     }
 
+    /// <summary>
+    /// Resets variables so new turn can be started, however does not process status effects from attack as turn was skipped (no available actions)
+    /// </summary>
     protected void SkipTurn()
     {
         RemoveSelectableTiles();
@@ -510,6 +562,9 @@ public class EnemyBehavior : EnemyMove
         behaviorStates = BehaviorStates.IDLE;
     }
 
+    /// <summary>
+    /// Draws threat bar UI above the enemy graphic
+    /// </summary>
     public void DrawThreatBar()
     {
         GameObject hero = BSM.HeroesToManage[0];
@@ -548,11 +603,19 @@ public class EnemyBehavior : EnemyMove
 
     }
 
+    /// <summary>
+    /// Hides threat bar
+    /// </summary>
     public void ClearThreatBar()
     {
         threatBar.color = Color.clear;
     }
 
+    /// <summary>
+    /// Sets inAffect for all tiles in affect pattern for given attack
+    /// </summary>
+    /// <param name="attack">Attack to gather affect pattern</param>
+    /// <param name="parentTile">Center tile for the pattern to be displayed</param>
     void ShowAffectPattern(BaseAttack attack, Tile parentTile)
     {
         List<Tile> affectPattern = pattern.GetAffectPattern(parentTile, attack.patternIndex);
@@ -563,6 +626,11 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Sets inRange for all tiles in range pattern for given attack
+    /// </summary>
+    /// <param name="attack">Attack to gather range pattern</param>
+    /// <param name="parentTile">Center tile for the pattern to be displayed</param>
     void ShowRangePattern(BaseAttack attack, Tile parentTile)
     {
         List<Tile> rangePattern = pattern.GetRangePattern(parentTile, attack.rangeIndex);
@@ -573,6 +641,9 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Sets all tiles inAffect and inRange to false
+    /// </summary>
     void ClearTiles()
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
@@ -584,6 +655,10 @@ public class EnemyBehavior : EnemyMove
         }
     }
 
+    /// <summary>
+    /// Processes if enemy graphic should move to target and moves to them if needed
+    /// </summary>
+    /// <param name="moveToRange">If true, enemy moves to target</param>
     protected void MoveEnemy(bool moveToRange)
     {
         if (!moveToRange)
@@ -597,7 +672,10 @@ public class EnemyBehavior : EnemyMove
         GetComponent<EnemyStateMachine>().startPosition = transform.position;
     }
 
-    Tile GetBestTargetTile(string tag)
+    /// <summary>
+    /// Calculates the best target tile for processing the action using all possible target tiles, and returns the tile with the most targets that also includes the priority target
+    /// </summary>
+    Tile GetBestTargetTile()
     {
         Tile tempTile = null;
         List<Tile> rangeTiles = new List<Tile>();
@@ -658,6 +736,9 @@ public class EnemyBehavior : EnemyMove
         return bestTargetTile;
     }
 
+    /// <summary>
+    /// Calculates the best target tile for moving the enemy using all possible target tiles, and returns the tile with the most targets that also includes the priority target 
+    /// </summary>
     Tile GetBestMoveTile()
     {
         Tile tempTile = null;
@@ -748,6 +829,9 @@ public class EnemyBehavior : EnemyMove
         return bestMoveTile;
     }
 
+    /// <summary>
+    /// Facilitates which tile to move to using CalculatePath and finding the best move tile for the path to be calculated
+    /// </summary>
     protected void CalculateEnemyMove()
     {
         /*if (chosenTarget != null)
@@ -765,6 +849,10 @@ public class EnemyBehavior : EnemyMove
         actualTargetTile.target = true;
     }
 
+    /// <summary>
+    /// Returns true if given attack is within enemy's MP threshold
+    /// </summary>
+    /// <param name="magic">Attack to gather MP cost from to check if enemy can cast it</param>
     protected bool HasEnoughMP(BaseAttack magic)
     {
         bool hasEnoughMP = false;
@@ -779,6 +867,9 @@ public class EnemyBehavior : EnemyMove
 
     //----------------------------------------Target seeking algorithms------------------------------------------
 
+    /// <summary>
+    /// Returns closest hero GameObject to enemy
+    /// </summary>
     protected GameObject FindNearestTarget()
     {
         GameObject[] targets = GameObject.FindGameObjectsWithTag("Hero");
@@ -809,11 +900,17 @@ public class EnemyBehavior : EnemyMove
         return target;
     }
 
+    /// <summary>
+    /// Sets target to hero with highest threat
+    /// </summary>
     protected void FindHighestThreatTarget()
     {
         target = GetHeroWithHighestThreat();
     }
 
+    /// <summary>
+    /// Returns hero GameObject with highest threat to attached enemy
+    /// </summary>
     protected GameObject GetHeroWithHighestThreat()
     {
         Debug.Log("checking for highest threat");
@@ -848,6 +945,9 @@ public class EnemyBehavior : EnemyMove
         return target;
     }
 
+    /// <summary>
+    /// Returns % of HP for given GameObject hero/enemy
+    /// </summary>
     protected float GetHPPercent(GameObject obj)
     {
         float percent = 0.0f;
@@ -871,6 +971,10 @@ public class EnemyBehavior : EnemyMove
         return percent;
     }
 
+    /// <summary>
+    /// Returns GameObject with lowest HP % with given enemy/hero tag
+    /// </summary>
+    /// <param name="tag">Use Hero or Enemy</param>
     protected GameObject GetLowestHPPercent(string tag)
     {
         GameObject[] targets = GameObject.FindGameObjectsWithTag(tag);
@@ -899,6 +1003,11 @@ public class EnemyBehavior : EnemyMove
         return target;
     }
 
+    /// <summary>
+    /// Returns if given GameObject hero/enemy has given status effect applied
+    /// </summary>
+    /// <param name="obj">GameObject hero/enemy to check</param>
+    /// <param name="effectName">Status effect to check</param>
     protected bool IfStatusApplied(GameObject obj, string effectName)
     {
         bool ifStatusExists = false;

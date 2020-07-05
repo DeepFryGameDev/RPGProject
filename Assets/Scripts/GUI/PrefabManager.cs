@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class PrefabManager : MonoBehaviour //fixes a prefab destroyed bug (when clearing lists)
+public class PrefabManager : MonoBehaviour 
 {
+    //Houses prefabs that need to be instantiated in UI
+
     // Assign the prefab in the inspector
     public GameObject itemPrefab; //for the items in item list in battle, menu, and shop
     public GameObject keyItemPrefab;

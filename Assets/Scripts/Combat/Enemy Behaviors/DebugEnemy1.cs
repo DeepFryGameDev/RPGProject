@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -81,13 +81,13 @@ public class DebugEnemy1 : EnemyBehavior
                 
                 if (chosenAttack == ESM.enemy.attacks[1]) //Cure 1
                 {
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Enemy", chosenTarget));
+                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Enemy"));
                 } else if (chosenAttack == ESM.enemy.attacks[2]) //Bio 1
                 {
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero", chosenTarget));
+                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
                 } else if (chosenAttack == ESM.enemy.attacks[0]) //Hammer Swing
                 {
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero", chosenTarget));
+                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
                 }
                 //Debug.Log("changing back to idle");
                 behaviorStates = BehaviorStates.IDLE;

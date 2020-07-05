@@ -4183,6 +4183,8 @@ public class GameMenu : MonoBehaviour
 
         for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++) //Display hero stats
         {
+            GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).gameObject.name = "HeroGridPanel - ID: " + GameManager.instance.activeHeroes[i].ID;
+
             DrawHeroFace(GameManager.instance.activeHeroes[i], GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + GameManager.instance.activeHeroes[i].spawnPoint).GetComponent<Image>().sprite = GameManager.instance.activeHeroes[i].faceImage;
             GameObject.Find("GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(i).Find("NameText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].name; //Name text

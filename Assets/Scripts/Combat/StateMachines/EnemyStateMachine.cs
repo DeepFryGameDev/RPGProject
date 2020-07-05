@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
 {
+    //Enemy state machine script is attached to each enemy to be used in battle state machine
+
     private BattleStateMachine BSM; //global battle state machine
 
     public EnemyBehavior enemyBehavior;
@@ -25,7 +27,6 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
     //for ProgressBar
     public float cur_cooldown = 0f; //starting point for enemy ATB gauge (not fully needed as it is set to random value in Start())
     private float max_cooldown = 10f; //how long it takes for enemy ATB gauge to fill
-
 
     //this GameObject
     [HideInInspector] public Vector2 startPosition; //to store enemy's starting position for movement
@@ -136,6 +137,9 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
         }
     }
 
+    /// <summary>
+    /// Used in update method to increase the enemy's ATB progress bar
+    /// </summary>
     void UpgradeProgressBar()
     {
         cur_cooldown = (cur_cooldown + (Time.deltaTime / 1)) + (enemy.baseDexterity * .000055955f); //increases enemy ATB gauge over time

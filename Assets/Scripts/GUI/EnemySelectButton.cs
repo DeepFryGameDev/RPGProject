@@ -1,10 +1,12 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class EnemySelectButton : MonoBehaviour
 {
+    //For mouse cursor interactions on the enemy select UI panel
+
     public GameObject EnemyPrefab;
     public Text detailsText;
 

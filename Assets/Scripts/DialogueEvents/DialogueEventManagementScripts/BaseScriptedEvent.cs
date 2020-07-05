@@ -592,23 +592,23 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="spacesToMove">How many spaces/tiles to move</param>
     public IEnumerator StepForward(GameObject obj, float timeToMove, int spacesToMove)
     {
-        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FaceState.UP)
         {
             yield return MoveUp(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.DOWN)
         {
             yield return MoveDown(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.LEFT)
         {
             yield return MoveLeft(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.RIGHT)
         {
             yield return MoveRight(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.DEFAULT)
         {
             string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
@@ -638,23 +638,23 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="spacesToMove">How many spaces/tiles to move</param>
     public IEnumerator StepBackward(GameObject obj, float timeToMove, int spacesToMove)
     {
-        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FaceState.UP)
         {
             yield return MoveDown(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.DOWN)
         {
             yield return MoveUp(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.LEFT)
         {
             yield return MoveRight(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.RIGHT)
         {
             yield return MoveLeft(obj, timeToMove, spacesToMove);
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.DEFAULT)
         {
             string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
@@ -682,7 +682,7 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void FaceDown(GameObject obj)
     {
-        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+        obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
     }
 
     /// <summary>
@@ -691,7 +691,7 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void FaceLeft(GameObject obj)
     {
-        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+        obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
     }
 
     /// <summary>
@@ -700,7 +700,7 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void FaceRight(GameObject obj)
     {
-        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+        obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
     }
 
     /// <summary>
@@ -709,7 +709,7 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void FaceUp(GameObject obj)
     {
-        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+        obj.GetComponent<FacingState>().faceState = FaceState.UP;
     }
 
     /// <summary>
@@ -718,7 +718,7 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void FaceDefault(GameObject obj)
     {
-        obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DEFAULT;
+        obj.GetComponent<FacingState>().faceState = FaceState.DEFAULT;
     }
 
     /// <summary>
@@ -830,36 +830,36 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void Face90Right (GameObject obj)
     {
-        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FaceState.UP)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+            obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.DOWN)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+            obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.LEFT)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+            obj.GetComponent<FacingState>().faceState = FaceState.UP;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.RIGHT)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+            obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.DEFAULT)
         {
             string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                obj.GetComponent<FacingState>().faceState = FaceState.UP;
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
             }
         }
     }
@@ -871,36 +871,36 @@ public class BaseScriptedEvent : MonoBehaviour
     public void Face90Left (GameObject obj)
     {
         
-        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FaceState.UP)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+            obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.DOWN)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+            obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.LEFT)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+            obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.RIGHT)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
-        } else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+            obj.GetComponent<FacingState>().faceState = FaceState.UP;
+        } else if (obj.GetComponent<FacingState>().faceState == FaceState.DEFAULT)
         {
             string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                obj.GetComponent<FacingState>().faceState = FaceState.UP;
             }
         }
     }
@@ -911,40 +911,40 @@ public class BaseScriptedEvent : MonoBehaviour
     /// <param name="obj">GameObject to change facing direction</param>
     public void Face180 (GameObject obj)
     {
-        if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.UP)
+        if (obj.GetComponent<FacingState>().faceState == FaceState.UP)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+            obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DOWN)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.DOWN)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+            obj.GetComponent<FacingState>().faceState = FaceState.UP;
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.LEFT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.LEFT)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+            obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.RIGHT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.RIGHT)
         {
-            obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+            obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
         }
-        else if (obj.GetComponent<FacingState>().faceState == FacingState.FaceState.DEFAULT)
+        else if (obj.GetComponent<FacingState>().faceState == FaceState.DEFAULT)
         {
             string defaultDirection = obj.GetComponent<FacingState>().defaultDirection;
             if (defaultDirection == "Up" || defaultDirection == "up")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                obj.GetComponent<FacingState>().faceState = FaceState.DOWN;
             }
             else if (defaultDirection == "Down" || defaultDirection == "down")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                obj.GetComponent<FacingState>().faceState = FaceState.UP;
             }
             else if (defaultDirection == "Left" || defaultDirection == "left")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                obj.GetComponent<FacingState>().faceState = FaceState.RIGHT;
             }
             else if (defaultDirection == "Right" || defaultDirection == "right")
             {
-                obj.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                obj.GetComponent<FacingState>().faceState = FaceState.LEFT;
             }
         }
     }
@@ -980,7 +980,7 @@ public class BaseScriptedEvent : MonoBehaviour
             int randDir = Random.Range(0, 4);
             if (randDir == 0)
             {
-                if (fs.faceState != FacingState.FaceState.UP || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Up" || fs.defaultDirection == "up")))
+                if (fs.faceState != FaceState.UP || (fs.faceState != FaceState.DEFAULT && (fs.defaultDirection == "Up" || fs.defaultDirection == "up")))
                 {
                     sameDir = false;
                     FaceUp(obj);
@@ -988,7 +988,7 @@ public class BaseScriptedEvent : MonoBehaviour
             }
             else if (randDir == 1)
             {
-                if (fs.faceState != FacingState.FaceState.DOWN || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Down" || fs.defaultDirection == "down")))
+                if (fs.faceState != FaceState.DOWN || (fs.faceState != FaceState.DEFAULT && (fs.defaultDirection == "Down" || fs.defaultDirection == "down")))
                 {
                     sameDir = false;
                     FaceDown(obj);
@@ -996,7 +996,7 @@ public class BaseScriptedEvent : MonoBehaviour
             }
             else if (randDir == 2)
             {
-                if (fs.faceState != FacingState.FaceState.LEFT || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Left" || fs.defaultDirection == "left")))
+                if (fs.faceState != FaceState.LEFT || (fs.faceState != FaceState.DEFAULT && (fs.defaultDirection == "Left" || fs.defaultDirection == "left")))
                 {
                     sameDir = false;
                     FaceLeft(obj);
@@ -1004,7 +1004,7 @@ public class BaseScriptedEvent : MonoBehaviour
             }
             else if (randDir == 3)
             {
-                if (fs.faceState != FacingState.FaceState.RIGHT || (fs.faceState != FacingState.FaceState.DEFAULT && (fs.defaultDirection == "Right" || fs.defaultDirection == "right")))
+                if (fs.faceState != FaceState.RIGHT || (fs.faceState != FaceState.DEFAULT && (fs.defaultDirection == "Right" || fs.defaultDirection == "right")))
                 {
                     sameDir = false;
                     FaceRight(obj);

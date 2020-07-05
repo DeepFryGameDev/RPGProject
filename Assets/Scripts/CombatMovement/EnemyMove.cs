@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,6 +30,9 @@ public class EnemyMove : BaseMove
         
     }
 
+    /// <summary>
+    /// Algorithm for enemy GameObject moving to target
+    /// </summary>
     public void MoveToTarget()
     {
         //Debug.Log("Path count " + path.Count);
@@ -49,7 +52,7 @@ public class EnemyMove : BaseMove
             {
                 //Debug.Log("need to move");
                 CalculateHeading(target);
-                SetHorizontalVelocity();
+                SetMoveVelocity();
 
                 transform.forward = heading;
                 transform.rotation = Quaternion.Euler(Vector3.zero); //fixes weird rotation behavior
@@ -74,6 +77,9 @@ public class EnemyMove : BaseMove
         }
     }
 
+    /// <summary>
+    /// Algorithm for enemy GameObject moving to a range without a target GameObject involved
+    /// </summary>
     public void MoveToRange()
     {
         //Debug.Log("Path count " + path.Count);
@@ -93,7 +99,7 @@ public class EnemyMove : BaseMove
             {
                 //Debug.Log("need to move");
                 CalculateHeading(target);
-                SetHorizontalVelocity();
+                SetMoveVelocity();
 
                 transform.forward = heading;
                 transform.rotation = Quaternion.Euler(Vector3.zero); //fixes weird rotation behavior
@@ -124,7 +130,12 @@ public class EnemyMove : BaseMove
         }
     }
 
-    protected bool AttackInRangeOfTarget(GameObject target, BaseAttack attack) //will possibly need to be adjusted later to allow off-centering of targets. ie target is not in selectable tiles, but still in range via affect pattern
+    /// <summary>
+    /// Returns if given attack is in range of given target.  Will possibly need to be adjusted later to allow off-centering of targets. ie target is not in selectable tiles, but still in range via affect pattern
+    /// </summary>
+    /// <param name="target">Target GameObject to check if in range</param>
+    /// <param name="attack">Attack to gather range and pattern index to determine if target is in range of attack</param>
+    protected bool AttackInRangeOfTarget(GameObject target, BaseAttack attack)
     {
         bool inRange = false;
 
@@ -164,6 +175,9 @@ public class EnemyMove : BaseMove
         return inRange;
     }
 
+    /// <summary>
+    /// Returns current tile for attached enemy GameObject
+    /// </summary>
     new protected Tile GetCurrentTile()
     {
         RaycastHit2D[] tileHits = Physics2D.RaycastAll(transform.position, Vector3.back, 1);
@@ -182,6 +196,10 @@ public class EnemyMove : BaseMove
         return null;
     }
 
+    /// <summary>
+    /// Detects which tiles can be selected for enemy to move
+    /// Primary function of BFS algorithm - explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=760
+    /// </summary>
     public void FindSelectableTiles()
     {
         GetWalkableTiles();
@@ -219,6 +237,9 @@ public class EnemyMove : BaseMove
         }
     }
 
+    /// <summary>
+    /// Sets all selectable tiles that aren't held by a hero or enemy to walkable
+    /// </summary>
     void GetWalkableTiles()
     {
         GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
@@ -239,6 +260,9 @@ public class EnemyMove : BaseMove
         }
     }
 
+    /// <summary>
+    /// Gets target tile for enemy's target, then finds the path to that tile
+    /// </summary>
     protected void CalculatePath(Tile targetTile)
     {
         //Set target tile to best tile to move to. if no tile available:

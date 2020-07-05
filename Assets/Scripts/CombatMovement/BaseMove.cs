@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class BaseMove : MonoBehaviour
 {
+    //This class facilitates the unit algorithms for combat; algorithm used: Breadth First Search (BFS) - tutorial where this was implemented can be found here:
+    //https://www.youtube.com/watch?v=cX_KrK8RQ2o
+    //Note: As the combat system from this game does not use 3D movement, jumpHeight and halfExtents were not used
+
     public bool canMove = false;
 
     protected List<Tile> selectableTiles = new List<Tile>();
@@ -18,25 +22,29 @@ public class BaseMove : MonoBehaviour
 
     protected Vector3 velocity = new Vector3();
     protected Vector3 heading = new Vector3();
-
-    float halfHeight = 0; //might not need
-
+    
     public Tile actualTargetTile;
     
     protected int turn;
 
     protected BattleStateMachine BSM;
 
+    /// <summary>
+    /// Facilitates setting the tiles array to tile GameObjects, sets BSM to the battle state machine, and sets turn count to 0
+    /// Explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=38
+    /// </summary>
     public void InitMove()
     {
         tiles = GameObject.FindGameObjectsWithTag("Tile");
-
-        halfHeight = GetComponent<BoxCollider2D>().bounds.extents.z;
 
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         turn = 0;
     }
 
+    /// <summary>
+    /// Sets current tile to the hero/enemy's current tile GameObject
+    /// Explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=455
+    /// </summary>
     public void GetCurrentTile()
     {
         currentTile = GetTargetTile(gameObject);
@@ -44,6 +52,11 @@ public class BaseMove : MonoBehaviour
         //Debug.Log("GetCurrentTile: " + currentTile.gameObject);
     }
 
+    /// <summary>
+    /// Returns tile that given target is standing on using raycast
+    /// Explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=473
+    /// </summary>
+    /// <param name="target">Given target to return tile</param>
     public Tile GetTargetTile (GameObject target)
     {
         RaycastHit2D hit = Physics2D.Raycast(target.transform.position, Vector3.back, 1);
@@ -58,6 +71,11 @@ public class BaseMove : MonoBehaviour
         return tile;
     }
 
+    /// <summary>
+    /// Part of BFS algorithm - gets all adjacent tiles to given target tile
+    /// Explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=660
+    /// </summary>
+    /// <param name="target">Target tile to calculate adjacent tiles</param>
     public void ComputeAdjacencyLists(Tile target)
     {
         foreach (GameObject tile in tiles)
@@ -67,6 +85,11 @@ public class BaseMove : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Algorithm for moving to tile in path
+    /// Explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=1580
+    /// </summary>
+    /// <param name="tile">Next tile to be moved to in path</param>
     public void MoveToTile(Tile tile)
     {
         path.Clear();
@@ -81,6 +104,9 @@ public class BaseMove : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clears pathable tiles and resets all selectable tile parameters
+    /// </summary>
     public void RemoveSelectableTiles()
     {
         if (currentTile != null)
@@ -100,17 +126,28 @@ public class BaseMove : MonoBehaviour
         selectableTiles.Clear();
     }
 
+    /// <summary>
+    /// Calculates direction to head in path
+    /// </summary>
+    /// <param name="target">Position to calculate direction from current tile</param>
     protected void CalculateHeading(Vector2 target)
     {
         heading = (target - (Vector2)transform.position);
         heading.Normalize();
     }
 
-    protected void SetHorizontalVelocity()
+    /// <summary>
+    /// Sets move speed for hero/enemy to path through tiles
+    /// </summary>
+    protected void SetMoveVelocity()
     {
         velocity = heading * moveSpeed;
     }
 
+    /// <summary>
+    /// Algorithm for finding quickest route to target tile and returning the next tile in the path
+    /// </summary>
+    /// <param name="list">Given list of tiles to find quickest route</param>
     protected Tile FindLowestF(List<Tile> list)
     {
         Tile lowest = list[0];
@@ -129,6 +166,10 @@ public class BaseMove : MonoBehaviour
         return lowest;
     }
 
+    /// <summary>
+    /// Algorithm for returning end tile in movement path
+    /// </summary>
+    /// <param name="t">Tile to locate parent</param>
     protected Tile FindEndTile(Tile t)
     {
         Stack<Tile> tempPath = new Stack<Tile>();
@@ -154,6 +195,10 @@ public class BaseMove : MonoBehaviour
         return endTile;
     }
 
+    /// <summary>
+    /// Algorithm for building path to given target tile
+    /// </summary>
+    /// <param name="target">Tile to find path to from current tile</param>
     protected void FindPath(Tile target)
     {
         ComputeAdjacencyLists(target);
@@ -227,6 +272,9 @@ public class BaseMove : MonoBehaviour
         Debug.Log("Path not found");
     }
 
+    /// <summary>
+    /// Increases turn count and allows unit to move
+    /// </summary>
     public void BeginTurn()
     {
         canMove = true;
@@ -234,6 +282,10 @@ public class BaseMove : MonoBehaviour
         //Debug.Log(transform.gameObject.name + " starting turn " + turn);
     }
 
+    /// <summary>
+    /// Handles all methods for terminating turn to move forward with battle state machine for given hero
+    /// </summary>
+    /// <param name="HSM">HeroStateMachine for hero to end the turn</param>
     public void EndTurn(HeroStateMachine HSM)
     {
         RemoveSelectableTiles();
@@ -260,6 +312,9 @@ public class BaseMove : MonoBehaviour
         //Debug.Log(transform.gameObject.name + " ending turn " + turn);
     }
 
+    /// <summary>
+    /// Handles terminating turn for enemy unit
+    /// </summary>
     public void EndTurn()
     {
         Debug.Log("ending turn");

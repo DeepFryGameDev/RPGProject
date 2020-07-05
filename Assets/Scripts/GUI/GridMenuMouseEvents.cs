@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class GridMenuMouseEvents : MonoBehaviour
 {
+    //Used in Grid menu to interact with mouse cursor
+
     string emptyGridSpriteName = "Textfield full";
     GameMenu menu;
 
@@ -14,6 +16,9 @@ public class GridMenuMouseEvents : MonoBehaviour
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
     }
 
+    /// <summary>
+    /// Changes spawn point for clicked hero in Grid menu - if no hero is set, the hero is set to the hero on tile clicked
+    /// </summary>
     public void ChangeSpawnPoint()
     {
         if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
@@ -29,18 +34,25 @@ public class GridMenuMouseEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets hero for grid menu to change grid spawn point
+    /// </summary>
     public void SetHero()
     {
         menu.PlaySE(menu.confirmSE);
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
-            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = GetHero(gameObject.transform.Find("NameText").GetComponent<Text>().text);
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = GetHero(int.Parse(gameObject.name.Replace("HeroGridPanel - ID: ","")));
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile = true;
 
             DisableButtons(gameObject.GetComponent<Button>());
         }
     }
 
+    /// <summary>
+    /// Sets hero for grid menu to change grid spawn point using provided hero
+    /// </summary>
+    /// <param name="hero">Hero to set for spawn point changing</param>
     public void SetHero(BaseHero hero)
     {
         menu.PlaySE(menu.confirmSE);
@@ -53,11 +65,15 @@ public class GridMenuMouseEvents : MonoBehaviour
         }
     }
 
-    BaseHero GetHero(string heroName)
+    /// <summary>
+    /// Returns hero based on given name set in UI
+    /// </summary>
+    /// <param name="name">ID of hero clicked in interface</param>
+    BaseHero GetHero(int ID)
     {
         foreach (BaseHero h in GameManager.instance.activeHeroes)
         {
-            if (h.name == heroName)
+            if (h.ID == ID)
             {
                 GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridTileChanging = h.spawnPoint;
                 return h;
@@ -67,6 +83,10 @@ public class GridMenuMouseEvents : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Returns hero based on provided sprite in interface
+    /// </summary>
+    /// <param name="faceImage">Sprite object to return hero</param>
     BaseHero GetHero(Sprite faceImage)
     {
         foreach (BaseHero h in GameManager.instance.activeHeroes)
@@ -80,6 +100,10 @@ public class GridMenuMouseEvents : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Sets spawn point for grid menu chosen hero to given tile
+    /// </summary>
+    /// <param name="tile">Which grid tile to set chosen hero to</param>
     void SetSpawnPoint(string tile)
     {
         menu.PlaySE(menu.confirmSE);
@@ -125,17 +149,25 @@ public class GridMenuMouseEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets grid menu interface tile to empty
+    /// </summary>
+    /// <param name="tile">Provided tile to clear</param>
     void ClearSpawnPoint(string tile)
     {
         GameObject objectToClear = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + tile);
         objectToClear.GetComponent<Image>().sprite = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridBG;
     }
 
+    /// <summary>
+    /// Sets given button as 'interactable = false;
+    /// </summary>
+    /// <param name="buttonToSkip">Button to disable</param>
     void DisableButtons(Button buttonToSkip)
     {
-        for (int i=1; i <= GameManager.instance.activeHeroes.Count; i++)
+        for (int i=0; i < GameManager.instance.activeHeroes.Count; i++)
         {
-            Button buttonToDisable = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel/Hero" + i + "GridPanel").GetComponent<Button>();
+            Button buttonToDisable = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel/HeroGridPanel - ID: " + GameManager.instance.activeHeroes[i].ID).GetComponent<Button>();
             if (buttonToDisable != buttonToSkip)
             {
                 buttonToDisable.interactable = false;
@@ -143,11 +175,14 @@ public class GridMenuMouseEvents : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets all buttons as interactable
+    /// </summary>
     void EnableButtons()
     {
-        for (int i = 1; i <= GameManager.instance.activeHeroes.Count; i++)
+        for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++)
         {
-            Button buttonToEnable = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel/Hero" + i + "GridPanel").GetComponent<Button>();
+            Button buttonToEnable = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel/HeroGridPanel - ID: " + GameManager.instance.activeHeroes[i].ID).GetComponent<Button>();
             buttonToEnable.interactable = true;
         }
     }

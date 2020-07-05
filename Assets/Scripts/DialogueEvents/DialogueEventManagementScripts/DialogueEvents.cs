@@ -502,22 +502,22 @@ public class DialogueEvents : MonoBehaviour
                 {
                     if (hit.point.x < 0) //player is left of object
                     {
-                        this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+                        this.gameObject.GetComponent<FacingState>().faceState = FaceState.LEFT;
                     }
                     else //player is right of object
                     {
-                        this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+                        this.gameObject.GetComponent<FacingState>().faceState = FaceState.RIGHT;
                     }
                 }
                 else if (dimToUse == "y")
                 {
                     if (hit.point.y < 0) //player is below object
                     {
-                        this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+                        this.gameObject.GetComponent<FacingState>().faceState = FaceState.DOWN;
                     }
                     else //player is above object
                     {
-                        this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+                        this.gameObject.GetComponent<FacingState>().faceState = FaceState.UP;
                     }
                 }
                 else
@@ -532,19 +532,19 @@ public class DialogueEvents : MonoBehaviour
     {
         if (facingBefore == "UP")
         {
-            this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.UP;
+            this.gameObject.GetComponent<FacingState>().faceState = FaceState.UP;
         } else if (facingBefore == "DOWN")
         {
-            this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.DOWN;
+            this.gameObject.GetComponent<FacingState>().faceState = FaceState.DOWN;
         } else if (facingBefore == "LEFT")
         {
-            this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.LEFT;
+            this.gameObject.GetComponent<FacingState>().faceState = FaceState.LEFT;
         } else if (facingBefore == "RIGHT")
         {
-            this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.RIGHT;
+            this.gameObject.GetComponent<FacingState>().faceState = FaceState.RIGHT;
         } else if (facingBefore == "DEFAULT")
         {
-            this.gameObject.GetComponent<FacingState>().faceState = FacingState.FaceState.DEFAULT;
+            this.gameObject.GetComponent<FacingState>().faceState = FaceState.DEFAULT;
         } else
         {
             Debug.Log("TurnBackToBefore - no facing found!");
