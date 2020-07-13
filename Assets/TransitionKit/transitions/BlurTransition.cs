@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using Prime31.TransitionKit;
 using UnityEngine.SceneManagement;
@@ -14,9 +14,9 @@ namespace Prime31.TransitionKit
 		public float blurMax = 0.01f;
 
 
-		#region TransitionKitDelegate implementation
+        #region TransitionKitDelegate implementation
 
-		public Shader shaderForTransition()
+        public Shader shaderForTransition()
 		{
 			return Shader.Find( "prime[31]/Transitions/Blur" );
 		}
@@ -53,10 +53,10 @@ namespace Prime31.TransitionKit
 				yield return null;
 			}
 
-			// we dont transition back to the new scene unless it is loaded
-			if( nextScene >= 0 )
-				yield return transitionKit.StartCoroutine( transitionKit.waitForLevelToLoad( nextScene ) );
-		}
+            // we dont transition back to the new scene unless it is loaded
+            if (nextScene >= 0)
+                yield return transitionKit.StartCoroutine( transitionKit.waitForLevelToLoad( nextScene ) );
+        }
 
 		#endregion
 

@@ -11,12 +11,14 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     BaseHero hero;
     BaseItemScript itemScript = new BaseItemScript();
     GameMenu menu;
+    AudioManager AM;
     Item itemUsed;
 
     private void Start()
     {
         itemDesc = GameObject.Find("ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>();
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+        AM = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     /// <summary>
@@ -134,7 +136,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
                     {
                         UnboldItems();
 
-                        menu.PlaySE(menu.confirmSE);
+                        menu.PlaySE(AM.confirmSE);
 
                         gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
                         menu.itemChoosingHero = true;
@@ -145,14 +147,14 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 }
                 else
                 {
-                    menu.PlaySE(menu.cantActionSE);
+                    menu.PlaySE(AM.cantActionSE);
                 }
             }
             else //itemCustomizeModeOn is true
             {
                 if (!menu.itemIndexSwapAPicked)
                 {
-                    menu.PlaySE(menu.confirmSE);
+                    menu.PlaySE(AM.confirmSE);
                     menu.itemIndexSwapA = Inventory.instance.items.IndexOf(GetItem(GetItemID()));
                     gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
 
@@ -160,7 +162,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 }
                 else
                 {
-                    menu.PlaySE(menu.confirmSE);
+                    menu.PlaySE(AM.confirmSE);
                     menu.itemIndexSwapB = Inventory.instance.items.IndexOf(GetItem(GetItemID()));
                     SwapItemsInList();
                     menu.DrawItemList();
@@ -178,7 +180,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
                     {
                         UnboldItems();
 
-                        menu.PlaySE(menu.confirmSE);
+                        menu.PlaySE(AM.confirmSE);
 
                         gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
                         menu.itemChoosingHero = true;
@@ -189,14 +191,14 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 }
                 else
                 {
-                    menu.PlaySE(menu.cantActionSE);
+                    menu.PlaySE(AM.cantActionSE);
                 }
             }
             else //itemCustomizeModeOn is true
             {
                 if (!menu.itemIndexSwapAPicked)
                 {
-                    menu.PlaySE(menu.confirmSE);
+                    menu.PlaySE(AM.confirmSE);
                     menu.itemIndexSwapA = Inventory.instance.items.IndexOf(GetEquipment(GetEquipID()));
                     gameObject.transform.Find("NewItemNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
 
@@ -204,7 +206,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 }
                 else
                 {
-                    menu.PlaySE(menu.confirmSE);
+                    menu.PlaySE(AM.confirmSE);
                     menu.itemIndexSwapB = Inventory.instance.items.IndexOf(GetEquipment(GetEquipID()));
                     SwapItemsInList();
                     menu.DrawItemList();
@@ -260,7 +262,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         yield return ChooseHero(); //choose hero to use item on
         if (menu.itemChoosingHero)
         {
-            menu.PlaySE(menu.healSE);
+            menu.PlaySE(AM.healSE);
             itemScript.scriptToRun = gameObject.transform.Find("NewItemNameText").GetComponent<Text>().text; //sets item to be used
             itemScript.ProcessItemToHero(hero); //processes the item to selected hero
             RemoveItemFromInventory(itemUsed); //removes the item from inventory

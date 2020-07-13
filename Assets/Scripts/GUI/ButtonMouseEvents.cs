@@ -91,10 +91,11 @@ public class ButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerEx
     }
 
     /// <summary>
-    /// Clears details text when mouse cursor exits action button
+    /// Clears details text when player confirms action
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
+        GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
         detailsText.GetComponent<Text>().text = "";
     }
 }

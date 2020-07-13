@@ -14,6 +14,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     BaseHero heroFromMenu;
     BaseMagicScript magicScript;
     GameMenu menu;
+    AudioManager AM;
     BaseAttack magicUsed;
 
     Coroutine processMagic = null;
@@ -25,6 +26,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         MPCostText = GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel/MPCostText").GetComponent<Text>();
         cooldownText = GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicDetailsPanel/CooldownText").GetComponent<Text>();
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>(); //the menu script on GameManager
+        AM = GameObject.Find("GameManager").GetComponent<AudioManager>();
         heroFromMenu = menu.heroToCheck; //hero that was chosen to enter the magic menu with
     }
 
@@ -70,7 +72,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
             }
         } else
         {
-            menu.PlaySE(menu.cantActionSE);
+            menu.PlaySE(AM.cantActionSE);
         }
     }
 
@@ -96,7 +98,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         magicScript.spell = magicUsed; //sets the spell to be cast in magic script
         magicScript.heroPerformingAction = heroFromMenu; //sets the casting hero in magic script
         magicScript.heroReceivingAction = heroToCastOn; //sets the receiving hero in magic script
-        magicScript.ProcessMagicHeroToHero(); //processes the spell
+        magicScript.ProcessMagicHeroToHero(false); //processes the spell
         UpdateUI(); //updates interface
         magicUsed = null; //sets magicUsed to null so it isn't used again next time
         magicScript = null; //sets magicScript to null so it can't be used again next time
@@ -105,7 +107,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public IEnumerator ChooseHero() //chooses hero based on which hero panel is clicked
     {
-        menu.PlaySE(menu.confirmSE);
+        menu.PlaySE(AM.confirmSE);
 
         DrawHeroSelectPanel();
         yield return menu.AnimateMagicHeroSelectPanel();
@@ -125,7 +127,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
         if (heroToCastOn != null)
         {
-            menu.PlaySE(menu.healSE);
+            menu.PlaySE(AM.healSE);
         }
         
         yield return menu.AnimateMagicHeroSelectPanel();

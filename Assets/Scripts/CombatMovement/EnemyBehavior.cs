@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class EnemyBehavior : EnemyMove
 {
     //All enemies have a behavior attached which is derived from this class
-    protected List<BaseAttack> enemySkills = new List<BaseAttack>();
+    protected List<BaseEnemyAttack> enemySkills = new List<BaseEnemyAttack>();
     protected List<BaseEnemy> enemyParty = new List<BaseEnemy>();
     protected List<BaseHero> heroParty = new List<BaseHero>();
 
@@ -82,11 +82,11 @@ public class EnemyBehavior : EnemyMove
         ClearActionLists();
 
         //check which attacks are available based on MP cost of all attacks, and enemy's current MP, and adds them to 'attacksWithinMPThreshold' list.
-        foreach (BaseAttack atk in self.attacks)
+        foreach (BaseEnemyAttack atk in self.attacks)
         {
-            if (atk.MPCost <= self.curMP)
+            if (atk.attack.MPCost <= self.curMP)
             {
-                attacksWithinMPThreshold.Add(atk);
+                attacksWithinMPThreshold.Add(atk.attack);
             }
         }
 
@@ -194,6 +194,37 @@ public class EnemyBehavior : EnemyMove
         Vector2 targetPosition = new Vector2(actionTarget.transform.position.x - .5f, actionTarget.transform.position.y); //gets hero's position (minus a few pixels on the x axis) to move to for attack animation
         while (MoveToTarget(targetPosition)) { yield return null; } //move towards the target
         yield return new WaitForSeconds(0.5f); //wait a bit
+
+        foreach (GameObject target in targets)
+        {
+            AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+            animation.attack = BSM.PerformList[0].chosenAttack;
+            animation.target = target;
+
+            foreach (BaseEnemyAttack BEA in self.attacks)
+            {
+                if (BEA.attack == BSM.PerformList[0].chosenAttack)
+                {
+                    animation.enemyAEChance = BEA.addedEffectChance;
+                    break;
+                }
+            }
+
+            animation.BuildAnimation();
+
+            StartCoroutine(animation.PlayAnimation());
+
+            yield return new WaitForSeconds(animation.attackDur); //wait a bit
+
+            /*Debug.Log("addedEffect: " + animation.addedEffectAchieved);
+
+            BaseAddedEffect BAE = new BaseAddedEffect();
+            BAE.target = target;
+            BAE.addedEffectProcced = animation.addedEffectAchieved;
+            checkAddedEffects.Add(BAE);
+
+            animation.addedEffectAchieved = false;*/ //will update later when calculating if enemy succeeds added effect
+        }
 
         DoDamage(); //do damage with calculations (this will change later)
 
@@ -382,6 +413,7 @@ public class EnemyBehavior : EnemyMove
 
         foreach (Tile t in tilesInRange)
         {
+            Debug.Log(t.gameObject.name);
             RaycastHit2D[] tilesHit = Physics2D.RaycastAll(t.transform.position, Vector3.forward, 1);
             foreach (RaycastHit2D target in tilesHit)
             {
@@ -717,7 +749,7 @@ public class EnemyBehavior : EnemyMove
                         RaycastHit2D[] affectHits = Physics2D.RaycastAll(targetTile.transform.position, Vector3.forward, 1);
                         foreach (RaycastHit2D affectedTarget in affectHits)
                         {
-                            if (affectedTarget.collider.gameObject.tag == tag)
+                            if (affectedTarget.collider.gameObject.tag == chosenTarget.gameObject.tag)
                             {
                                 possibleTargets.Add(affectedTarget.collider.gameObject);
                             }

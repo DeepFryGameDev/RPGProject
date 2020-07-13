@@ -16,6 +16,7 @@ TagManager:
   - Tile
   - DamageText
   - HeroSpawnPoint
+  - AttackAnimation
   layers:
   - Default
   - TransparentFX
@@ -61,4 +62,7 @@ TagManager:
     locked: 0
   - name: UI
     uniqueID: 78824859
+    locked: 0
+  - name: Foreground
+    uniqueID: 362548681
     locked: 0

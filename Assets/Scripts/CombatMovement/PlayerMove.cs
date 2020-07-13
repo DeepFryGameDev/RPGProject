@@ -163,6 +163,7 @@ public class PlayerMove : BaseMove
 
                     if (t.selectable)
                     {
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
                         MoveToTile(t);
                     }
                 }

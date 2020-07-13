@@ -9,11 +9,13 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     Text equipDesc;
     GameMenu menu;
+    AudioManager AM;
 
     private void Start()
     {
         equipDesc = GameObject.Find("EquipMenuCanvas/EquipMenuPanel/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>();
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+        AM = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     Equipment GetEquip(string name) //get item from name
@@ -71,7 +73,7 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (menu.equipMode == "Equip" && !gameObject.name.Contains("Button"))
         {
-            menu.PlaySE(menu.equipSE);
+            menu.PlaySE(AM.equipSE);
             menu.ChangeEquipment(GetEquip(GetEquipName()));
         }
     }

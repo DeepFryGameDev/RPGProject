@@ -79,13 +79,13 @@ public class DebugEnemy1 : EnemyBehavior
 
             case (BehaviorStates.ACTION):
                 
-                if (chosenAttack == ESM.enemy.attacks[1]) //Cure 1
+                if (chosenAttack == ESM.enemy.attacks[1].attack) //Cure 1
                 {
                     RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Enemy"));
-                } else if (chosenAttack == ESM.enemy.attacks[2]) //Bio 1
+                } else if (chosenAttack == ESM.enemy.attacks[2].attack) //Bio 1
                 {
                     RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
-                } else if (chosenAttack == ESM.enemy.attacks[0]) //Hammer Swing
+                } else if (chosenAttack == ESM.enemy.attacks[0].attack) //Hammer Swing
                 {
                     RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
                 }
@@ -99,7 +99,7 @@ public class DebugEnemy1 : EnemyBehavior
     void GetChosenAction()
     {
         // 1) Check HP of all allies - if lowest ally is < 50% hp, cast cure 1 on them.
-        chosenAttack = ESM.enemy.attacks[1];
+        chosenAttack = ESM.enemy.attacks[1].attack;
 
         GameObject lowestHPAlly = GetLowestHPPercent("Enemy");
         chosenTarget = lowestHPAlly;
@@ -114,7 +114,7 @@ public class DebugEnemy1 : EnemyBehavior
         }
 
         // 2) Check if Poison debuff is on any hero.  If not, cast Bio 1 on them
-        chosenAttack = ESM.enemy.attacks[2];
+        chosenAttack = ESM.enemy.attacks[2].attack;
 
         foreach (GameObject hero in BSM.AllHeroesInBattle)
         {
@@ -128,7 +128,7 @@ public class DebugEnemy1 : EnemyBehavior
 
         // 3) Attack target (Hammer Swing) with highest threat
         Debug.Log("Don't need to heal or cast bio, attacking highest threat target");
-        chosenAttack = ESM.enemy.attacks[0];
+        chosenAttack = ESM.enemy.attacks[0].attack;
         chosenTarget = GetHeroWithHighestThreat();
 
 

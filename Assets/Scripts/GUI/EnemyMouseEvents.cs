@@ -32,6 +32,7 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (BSM.choosingTarget)
         {
+            GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
             BSM.chosenTarget = this.gameObject; //sets BSM target to this gameObject
             this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //hides selector after being chosen
             detailsText.GetComponent<Text>().text = "";

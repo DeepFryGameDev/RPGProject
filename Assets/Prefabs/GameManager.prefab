@@ -5446,6 +5446,133 @@ MonoBehaviour:
           m_StringArgument: Type
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &907776408
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 907776409}
+  - component: {fileID: 907776410}
+  m_Layer: 8
+  m_Name: BGS
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &907776409
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 907776408}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -19.54, y: 10.58, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 2728779018700569721}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &907776410
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 907776408}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.5
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &916640891
 GameObject:
   m_ObjectHideFlags: 0
@@ -25500,7 +25627,9 @@ MonoBehaviour:
       enemyType: 0
       rarity: 0
       attacks:
-      - {fileID: 458636252490780732, guid: 77b71f7bd7e88bd418d716fbf8d4e68b, type: 3}
+      - attack: {fileID: 458636252490780732, guid: 77b71f7bd7e88bd418d716fbf8d4e68b,
+          type: 3}
+        addedEffectChance: 50
       earnedEXP: 20
       goldDropped: 50
       itemsDropped: []
@@ -35247,12 +35376,6 @@ MonoBehaviour:
   disableMenuExit: 0
   menuCalled: 0
   choosingHero: 0
-  confirmSE: {fileID: 8300000, guid: 9275d82ebe0b4e14399c94e6e8a548ff, type: 3}
-  backSE: {fileID: 8300000, guid: c80374259c3d8a841ab51e0b4f23c5bf, type: 3}
-  healSE: {fileID: 8300000, guid: 475c08f5529e85a46be4ab45de085db1, type: 3}
-  cantActionSE: {fileID: 8300000, guid: b6b7286807cf4c949ba472b58a05c7da, type: 3}
-  equipSE: {fileID: 8300000, guid: 630c9783477cc6f4eab4a1c437148d39, type: 3}
-  openMenuSE: {fileID: 8300000, guid: 0925563f96df25843b8ea61eaad5cb50, type: 3}
   itemChoosingHero: 0
   itemCustomizeModeOn: 0
   itemIndexSwapA: 0
@@ -54477,6 +54600,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1651573596309198974}
   - component: {fileID: 8674479890769004168}
+  - component: {fileID: 1595231135}
   m_Layer: 5
   m_Name: PrefabManager
   m_TagString: Untagged
@@ -54542,6 +54666,20 @@ MonoBehaviour:
     type: 3}
   battleItemButton: {fileID: 3671519871992954489, guid: 22c95ee7ab94a5e4daf4589820dbd78b,
     type: 3}
+--- !u!114 &1595231135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3014362908896039919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70beec4619eac97448ab296291136db4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fire: {fileID: 1698868350099956, guid: 5d0f03f8f990e41209b0aebd51334691, type: 3}
+  slash: {fileID: 1000011108809118, guid: 6202e8c4dc62240a9ba113b16f9f8ff7, type: 3}
 --- !u!1 &3017137950013392610
 GameObject:
   m_ObjectHideFlags: 0
@@ -61453,7 +61591,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.088112}
+  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7043180370596036766
@@ -61681,7 +61819,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.088112}
+  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &8661471618974728855
@@ -78448,7 +78586,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.088112}
+  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &3943971790255259669
@@ -89667,11 +89805,11 @@ MonoBehaviour:
     dexterityMod: 0.19
     agilityMod: 0.2
     spiritMod: 0.08
-    attack: {fileID: 6075571008585570978, guid: 4df8457608a92314fac8530119cfce6f,
-      type: 3}
+    attack: {fileID: 458636252490780732, guid: 77b71f7bd7e88bd418d716fbf8d4e68b, type: 3}
     MagicAttacks:
     - {fileID: 5194423850133241829, guid: c801a3f77a2afbc46afc9799b93ce166, type: 3}
     - {fileID: 5085128331928981671, guid: a11066208f52ac14e9e34a5fafe1910b, type: 3}
+    - {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea, type: 3}
     level1Talents:
     - name: Test Talent 1
       description: Just a test talent bro
@@ -89900,7 +90038,8 @@ MonoBehaviour:
     agilityMod: 0.11
     spiritMod: 0.19
     attack: {fileID: 458636252490780732, guid: 77b71f7bd7e88bd418d716fbf8d4e68b, type: 3}
-    MagicAttacks: []
+    MagicAttacks:
+    - {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea, type: 3}
     level1Talents:
     - name: Test talent 1
       description: Test talent uno
@@ -98914,7 +99053,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.028219305, y: 0.055202022}
   m_AnchorMax: {x: 0.9673316, y: 0.94600004}
-  m_AnchoredPosition: {x: 0, y: 9.589371}
+  m_AnchoredPosition: {x: 0, y: 9.58934}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6293297646467654863
@@ -117677,6 +117816,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2728779018700569721}
   - component: {fileID: 6512983732163671923}
+  - component: {fileID: 6470599162190496189}
   m_Layer: 5
   m_Name: GameManager
   m_TagString: Untagged
@@ -117705,6 +117845,7 @@ Transform:
   - {fileID: 6711130452790626709}
   - {fileID: 3019128401906186111}
   - {fileID: 873915644}
+  - {fileID: 907776409}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -117763,6 +117904,30 @@ MonoBehaviour:
   enemySpawnPoints: []
   heroAmount: 0
   startBattleFromScript: 0
+--- !u!114 &6470599162190496189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7826724191136848821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9826ffa7ba987474e8b67fccde97aea2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  confirmSE: {fileID: 8300000, guid: 9275d82ebe0b4e14399c94e6e8a548ff, type: 3}
+  backSE: {fileID: 8300000, guid: c80374259c3d8a841ab51e0b4f23c5bf, type: 3}
+  healSE: {fileID: 8300000, guid: 7594feeecc6d5cd479befda6f219ac33, type: 3}
+  cantActionSE: {fileID: 8300000, guid: b6b7286807cf4c949ba472b58a05c7da, type: 3}
+  equipSE: {fileID: 8300000, guid: 630c9783477cc6f4eab4a1c437148d39, type: 3}
+  openMenuSE: {fileID: 8300000, guid: 0925563f96df25843b8ea61eaad5cb50, type: 3}
+  battleTransition: {fileID: 8300000, guid: d50a785f40c6739459777829e775cb2f, type: 3}
+  fire1: {fileID: 8300000, guid: 1ea8e49fab999454fad3e08fb8d8b213, type: 3}
+  fire1AE: {fileID: 8300000, guid: b01ffbd9aec8850479d054aa914ea34a, type: 3}
+  slash: {fileID: 8300000, guid: 60335b3f681b0db4b9f583faed60bf95, type: 3}
+  slashAE: {fileID: 8300000, guid: 3c13a4fd1e2809347a7fd4698f8661f3, type: 3}
+  attackMiss: {fileID: 8300000, guid: 914e12708b5b5364c9a6b5ea0bd036ee, type: 3}
 --- !u!1 &7831897256295788094
 GameObject:
   m_ObjectHideFlags: 0
@@ -123653,7 +123818,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.088112}
+  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &629602874503215192

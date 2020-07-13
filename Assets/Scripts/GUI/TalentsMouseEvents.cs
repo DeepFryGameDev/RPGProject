@@ -8,10 +8,12 @@ public class TalentsMouseEvents : MonoBehaviour
     TalentEffects effect = new TalentEffects();
     BaseHero hero = new BaseHero();
     GameMenu menu;
+    AudioManager AM;
 
     public void Start()
     {
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+        AM = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     /// <summary>
@@ -146,7 +148,7 @@ public class TalentsMouseEvents : MonoBehaviour
     {
         hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
 
-        menu.PlaySE(menu.equipSE);
+        menu.PlaySE(AM.equipSE);
 
         if (gameObject.transform.parent.name == "Talent1") //for debugging -- when ready, add  && hero.currentLevel >= 15
         {

@@ -43,7 +43,9 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
 
     void Start()
     {
-        currentState = TurnState.PROCESSING;
+        //currentState = TurnState.PROCESSING;
+        currentState = TurnState.WAITING;
+
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //sets battle state machine to active battle state machine in BattleManager (in scene)
         startPosition = transform.position; //sets startPosition to the enemy's position at the start of battle
         cur_cooldown = Random.Range(0, 2.5f); //Sets random point for enemy ATB gauge to start

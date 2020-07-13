@@ -74,7 +74,7 @@ public class DebugEnemy2 : EnemyBehavior
 
             case (BehaviorStates.ACTION):
                 
-                if (chosenAttack == self.attacks[0])
+                if (chosenAttack == self.attacks[0].attack)
                 {
                     //Debug.Log("run attack");
                     RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
@@ -89,7 +89,7 @@ public class DebugEnemy2 : EnemyBehavior
 
     void GetChosenAction()
     {
-        chosenAttack = self.attacks[0]; //chooses attack
+        chosenAttack = self.attacks[0].attack; //chooses attack
         Debug.Log("Chosen attack: " + chosenAttack);
         chosenTarget = GetHeroWithHighestThreat(); //chooses target
         Debug.Log("Chosen target: " + chosenTarget);

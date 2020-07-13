@@ -47,7 +47,7 @@ MonoBehaviour:
   description: Basic fireball which burns a lil bit
   icon: {fileID: 21300000, guid: 7785feccd0fc9a641be238795ab11c0c, type: 3}
   damage: 30
-  MPCost: 20
+  MPCost: 2
   cooldown: 0
   patternIndex: 1
   rangeIndex: 0

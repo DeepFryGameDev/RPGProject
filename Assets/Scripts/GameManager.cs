@@ -212,10 +212,12 @@ public class GameManager : MonoBehaviour
         //LOAD LEVEL
         if (fromRegion)
         {
-            SceneManager.LoadScene(curRegion.BattleScene); //loads battle scene
+            //SceneManager.LoadScene(curRegion.BattleScene); //loads battle scene -- Disable when not testing
+            GameObject.Find("SceneLoader").GetComponent<SceneLoader>().LoadBattle(curRegion.BattleScene);
         } else
         {
-            SceneManager.LoadScene(battleSceneFromScript); //loads battle scene from script
+            //SceneManager.LoadScene(battleSceneFromScript); //loads battle scene from script -- Disable when not testing
+            GameObject.Find("SceneLoader").GetComponent<SceneLoader>().LoadBattle(battleSceneFromScript);
         }
         
         //RESET HERO ENCOUNTER BOOLS

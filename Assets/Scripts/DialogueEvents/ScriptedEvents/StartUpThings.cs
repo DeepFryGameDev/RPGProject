@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class StartUpThings : BaseScriptedEvent
 {
@@ -8,6 +9,8 @@ public class StartUpThings : BaseScriptedEvent
     {
         InitiateStats();
         SetRandomGridSpawnPoints();
+
+        LoadScenes();
 
         AssignQuestIDs();
         AssignHeroIDs();
@@ -114,6 +117,11 @@ public class StartUpThings : BaseScriptedEvent
         ChangeMenuButtonAccess(MenuButtons.Grid, false);
         ChangeMenuButtonAccess(MenuButtons.Quests, false);
         ChangeMenuButtonAccess(MenuButtons.Bestiary, false);
+    }
+
+    void LoadScenes()
+    {
+
     }
 
 }

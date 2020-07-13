@@ -25,6 +25,7 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (BSM.choosingTarget)
         {
+            GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
             BSM.chosenTarget = this.gameObject; //sets BSM target to this gameObject
         }
     }

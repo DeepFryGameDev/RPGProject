@@ -10,10 +10,12 @@ public class GridMenuMouseEvents : MonoBehaviour
 
     string emptyGridSpriteName = "Textfield full";
     GameMenu menu;
+    AudioManager AM;
 
     public void Awake()
     {
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+        AM = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     /// <summary>
@@ -39,7 +41,7 @@ public class GridMenuMouseEvents : MonoBehaviour
     /// </summary>
     public void SetHero()
     {
-        menu.PlaySE(menu.confirmSE);
+        menu.PlaySE(AM.confirmSE);
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = GetHero(int.Parse(gameObject.name.Replace("HeroGridPanel - ID: ","")));
@@ -55,7 +57,7 @@ public class GridMenuMouseEvents : MonoBehaviour
     /// <param name="hero">Hero to set for spawn point changing</param>
     public void SetHero(BaseHero hero)
     {
-        menu.PlaySE(menu.confirmSE);
+        menu.PlaySE(AM.confirmSE);
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridChoosingTile)
         {
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().gridMenuHero = hero;
@@ -106,7 +108,7 @@ public class GridMenuMouseEvents : MonoBehaviour
     /// <param name="tile">Which grid tile to set chosen hero to</param>
     void SetSpawnPoint(string tile)
     {
-        menu.PlaySE(menu.confirmSE);
+        menu.PlaySE(AM.confirmSE);
 
         tile = tile.Replace("Grid - ", "");
         BaseHero heroSwapping = null;

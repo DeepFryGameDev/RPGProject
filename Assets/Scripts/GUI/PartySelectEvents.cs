@@ -11,6 +11,7 @@ public class PartySelectEvents : MonoBehaviour
     Image SelectedHeroMenuMPProgressBar;
     Image SelectedHeroMenuEXPProgressBar;
     GameMenu menu;
+    AudioManager AM;
 
     public void Awake()
     {
@@ -18,6 +19,7 @@ public class PartySelectEvents : MonoBehaviour
         SelectedHeroMenuMPProgressBar = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/MPProgressBarBG/MPProgressBar").GetComponent<Image>();
         SelectedHeroMenuEXPProgressBar = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/LevelProgressBarBG/LevelProgressBar").GetComponent<Image>();
         menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+        AM = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     public void Update()
@@ -122,7 +124,7 @@ public class PartySelectEvents : MonoBehaviour
     /// </summary>
     public void SelectHeroFromInactive()
     {
-        menu.PlaySE(menu.confirmSE);
+        menu.PlaySE(AM.confirmSE);
         if (menu.PartyHeroSelected == null)
         {
             menu.PartyHeroSelected = GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID ", "")));
@@ -145,7 +147,7 @@ public class PartySelectEvents : MonoBehaviour
     /// </summary>
     public void SelectHeroFromActive()
     {
-        menu.PlaySE(menu.confirmSE);
+        menu.PlaySE(AM.confirmSE);
         if (menu.PartyHeroSelected == null)
         {
             if (gameObject.name.Contains(" - ID"))

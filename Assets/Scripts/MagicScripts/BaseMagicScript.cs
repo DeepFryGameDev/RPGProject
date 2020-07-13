@@ -19,21 +19,26 @@ public class BaseMagicScript
     public EnemyBehavior eb;
 
     int adjDamage;
+    int baseDamage;
 
     //---PROCESSING MAGIC FROM HERO
-    public void ProcessMagicHeroToHero()
+    public void ProcessMagicHeroToHero(bool checkAddedEffect)
     {
+        Debug.Log("checkAddedEffect: " + checkAddedEffect);
+
+        SetBaseDamage();
+
         if (spell.name == "Cure 1")
         {
-            Cure1HeroToHero();
+            Cure1HeroToHero(checkAddedEffect);
         }
         if (spell.name == "Bio 1")
         {
-            Bio1HeroToHero();
+            Bio1HeroToHero(checkAddedEffect);
         }
         if (spell.name == "Fire 1")
         {
-            Fire1HeroToHero();
+            Fire1HeroToHero(checkAddedEffect);
         }
 
         SetDamage();
@@ -44,6 +49,9 @@ public class BaseMagicScript
 
     public void ProcessMagicHeroToEnemy()
     {
+
+        SetBaseDamage();
+
         if (spell.name == "Cure 1")
         {
             Cure1HeroToEnemy();
@@ -65,29 +73,38 @@ public class BaseMagicScript
 
     //---MAGIC HERO TO HERO
     #region HEROTOHERO
-    void Cure1HeroToHero()
+    void Cure1HeroToHero(bool checkAddedEffect)
     {
-        heroReceivingAction.curHP += spell.damage;
+        heroReceivingAction.curHP += baseDamage;
 
-        adjDamage = spell.damage;
+        adjDamage = baseDamage;
 
         Debug.Log("Casting Cure 1 on " + heroReceivingAction.name + "!");
     }
 
-    void Bio1HeroToHero()
+    void Bio1HeroToHero(bool checkAddedEffect)
     {
-        heroReceivingAction.curHP -= spell.damage;
+        heroReceivingAction.curHP -= baseDamage;
 
-        adjDamage = spell.damage;
+        adjDamage = baseDamage;
 
         Debug.Log("Casting Bio 1 on " + heroReceivingAction.name + "!");
     }
 
-    void Fire1HeroToHero()
+    void Fire1HeroToHero(bool checkAddedEffect)
     {
-        heroReceivingAction.curHP -= spell.damage;
+        if (checkAddedEffect)
+        {
+            int aeDamage = baseDamage * 2;
+            heroReceivingAction.curHP -= aeDamage;
 
-        adjDamage = spell.damage;
+            adjDamage = aeDamage;
+        } else
+        {
+            heroReceivingAction.curHP -= baseDamage;
+
+            adjDamage = baseDamage;
+        }
 
         Debug.Log("Casting Fire 1 on " + heroReceivingAction.name + "!");
     }
@@ -248,6 +265,21 @@ public class BaseMagicScript
         else if (eb != null) //enemy casting spell
         {
             eb.magicDamage = adjDamage;
+        }
+    }
+
+    /// <summary>
+    /// Formula for setting base damage of magic attack
+    /// </summary>
+    void SetBaseDamage()
+    {
+        if (hsm != null)
+        {
+            baseDamage = Mathf.CeilToInt(heroPerformingAction.finalIntelligence * .5f) + spell.damage;
+        }
+        else if (eb != null)
+        {
+            baseDamage = Mathf.CeilToInt(enemyPerformingAction.baseIntelligence * .5f) + spell.damage;
         }
     }
 

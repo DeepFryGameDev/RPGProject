@@ -31,13 +31,7 @@ public class GameMenu : MonoBehaviour
     float currentCameraSize;
     float menuCameraSize;
 
-    //menu sound effects
-    public AudioClip confirmSE;
-    public AudioClip backSE;
-    public AudioClip healSE;
-    public AudioClip cantActionSE;
-    public AudioClip equipSE; //not the correct equip SE but ok for now
-    public AudioClip openMenuSE;
+    //menu audio sources
     AudioSource menuAudioSource;
     AudioSource animAudioSource;
 
@@ -636,14 +630,14 @@ public class GameMenu : MonoBehaviour
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && itemCustomizeModeOn)
         {
-            PlaySE(backSE);
+            PlaySE(AudioManager.instance.backSE);
 
             CancelCustomizeMode();
         }
 
         if (Input.GetButtonDown("Cancel") && !buttonPressed && inArrangeMenu)
         {
-            PlaySE(backSE);
+            PlaySE(AudioManager.instance.backSE);
 
             StartCoroutine(HideArrangeMenu());
         }
@@ -1237,7 +1231,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowUseItemMenu()
     {
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 1;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = true;
@@ -1256,7 +1250,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowKeyItemMenu()
     {
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel").GetComponent<CanvasGroup>().interactable = false;
@@ -1285,7 +1279,7 @@ public class GameMenu : MonoBehaviour
     {
         if (!inArrangeMenu)
         {
-            PlaySE(confirmSE);
+            PlaySE(AudioManager.instance.confirmSE);
             inArrangeMenu = true;
 
             GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha = 1;
@@ -1320,7 +1314,7 @@ public class GameMenu : MonoBehaviour
         {
             itemCustomizeModeOn = true;
             GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
-            PlaySE(confirmSE);
+            PlaySE(AudioManager.instance.confirmSE);
         } else
         {
             SortItems(mode);
@@ -1338,7 +1332,7 @@ public class GameMenu : MonoBehaviour
     {
         CancelCustomizeMode();
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         List<Item> items = Inventory.instance.items;
 
@@ -1687,7 +1681,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     void CancelItemChoosingHero()
     {
-        PlaySE(backSE);
+        PlaySE(AudioManager.instance.backSE);
 
         foreach (Transform child in GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform)
         {
@@ -1711,7 +1705,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         Debug.Log("Magic button clicked - choose a hero");
         menuToDraw = StartCoroutine(ChooseHeroForMagicMenu());
@@ -1832,7 +1826,7 @@ public class GameMenu : MonoBehaviour
         HideCanvas(BlackMagicListPanel);
         HideCanvas(SorceryMagicListPanel);
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
     }
 
     /// <summary>
@@ -1848,7 +1842,7 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(BlackMagicListPanel);
         HideCanvas(SorceryMagicListPanel);
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
     }
 
     /// <summary>
@@ -1864,7 +1858,7 @@ public class GameMenu : MonoBehaviour
         HideCanvas(BlackMagicListPanel);
         DisplayCanvas(SorceryMagicListPanel);
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
     }
 
     /// <summary>
@@ -1907,7 +1901,7 @@ public class GameMenu : MonoBehaviour
     IEnumerator CancelMagicChoosingHero()
     {
         yield return AnimateMagicHeroSelectPanel();
-        PlaySE(backSE);
+        PlaySE(AudioManager.instance.backSE);
         
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero1SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero2SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
@@ -1934,7 +1928,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         Debug.Log("Equip button clicked - choose a hero");
         menuToDraw = StartCoroutine(ChooseHeroForEquipMenu());
@@ -2238,7 +2232,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ListEquipment()
     {
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         string buttonName = EventSystem.current.currentSelectedGameObject.name;
         equipButtonClicked = buttonName;
@@ -3552,7 +3546,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     void CancelFromEquipList()
     {
-        PlaySE(backSE);
+        PlaySE(AudioManager.instance.backSE);
 
         equipButtonClicked = null;
 
@@ -3568,7 +3562,7 @@ public class GameMenu : MonoBehaviour
     /// <param name="mode">"Equip" or "Remove"</param>
     public void ChangeEquipMode(string mode)
     {
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         if (mode == "Equip")
         {
@@ -3601,7 +3595,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         Debug.Log("Status button clicked - choose a hero");
         menuToDraw = StartCoroutine(ChooseHeroForStatusMenu());
@@ -3715,7 +3709,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         Debug.Log("Choose hero for talents menu");
         menuToDraw = StartCoroutine(ChooseHeroForTalentsMenu());
@@ -3864,7 +3858,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         StartCoroutine(DrawPartyMenu());
     }
@@ -4140,7 +4134,7 @@ public class GameMenu : MonoBehaviour
 
         DrawHeroGridMenuStats();
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         StartCoroutine(DrawGridMenu());
     }
@@ -4321,7 +4315,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         StartCoroutine(DrawQuestMenu());
     }
@@ -4418,7 +4412,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowActiveQuestsPanel()
     {
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
         QuestOption = "Active";
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().alpha = 1;
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().interactable = true;
@@ -4434,7 +4428,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowCompletedQuestsPanel()
     {
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         QuestOption = "Completed";
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel").GetComponent<CanvasGroup>().alpha = 0;
@@ -4517,7 +4511,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     void CancelQuestSelect()
     {
-        PlaySE(backSE);
+        PlaySE(AudioManager.instance.backSE);
 
         QuestClicked = false;
 
@@ -4550,7 +4544,7 @@ public class GameMenu : MonoBehaviour
             StopCoroutine(menuToDraw);
         }
 
-        PlaySE(confirmSE);
+        PlaySE(AudioManager.instance.confirmSE);
 
         StartCoroutine(DrawBestiaryMenu());
     }
@@ -4628,7 +4622,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     void CancelBestiarySelect()
     {
-        PlaySE(backSE);
+        PlaySE(AudioManager.instance.backSE);
 
         BestiaryEntryClicked = false;
 
@@ -4677,7 +4671,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateMainMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (MM_infoPanelAnimator != null)
         {
@@ -4715,7 +4709,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateItemMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Items_itemOptionsPanel != null)
         {
@@ -4760,7 +4754,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateMagicMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Magic_heroMagicPanel != null)
         {
@@ -4819,7 +4813,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateEquipMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Equip_equipDescriptionPanel != null)
         {
@@ -4871,7 +4865,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateStatusMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Status_baseStatsPanel != null)
         {
@@ -4923,7 +4917,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateTalentsMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Talents_heroPanel != null)
         {
@@ -4954,7 +4948,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimatePartyMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Party_activeHeroesPanel != null)
         {
@@ -4978,7 +4972,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateGridMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Grid_heroGridPanel != null)
         {
@@ -5002,7 +4996,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateQuestMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Quest_questListOptions != null)
         {
@@ -5054,7 +5048,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateBestiaryMenu()
     {
-        PlayAnimSE(openMenuSE);
+        PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Bestiary_enemyListPanel != null)
         {
@@ -5262,7 +5256,7 @@ public class GameMenu : MonoBehaviour
 
             if (!choosingHero)
             {
-                PlaySE(confirmSE);
+                PlaySE(AudioManager.instance.confirmSE);
             }
         }
     }

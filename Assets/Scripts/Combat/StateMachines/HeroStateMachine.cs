@@ -46,6 +46,9 @@ public class HeroStateMachine : MonoBehaviour
     public int magicDamage;
     public int itemDamage;
 
+    List<BaseAddedEffect> checkAddedEffects = new List<BaseAddedEffect>();
+    public List<BaseDamage> finalDamages = new List<BaseDamage>();
+
     private PlayerMove playerMove;
     private bool calculatedTilesToMove;
 
@@ -54,6 +57,7 @@ public class HeroStateMachine : MonoBehaviour
     protected List<GameObject> targetsInRange = new List<GameObject>();
     Pattern pattern = new Pattern();
     public List<GameObject> targets = new List<GameObject>();
+    List<GameObject> targetsAccountedFor = new List<GameObject>();
     public bool choosingTarget;
     List<Tile> tilesInRange = new List<Tile>();
 
@@ -71,7 +75,8 @@ public class HeroStateMachine : MonoBehaviour
         } else //if hero is alive
         {
             cur_cooldown = Random.Range(0, 2.5f); //Sets random point for ATB gauge to start
-            currentState = TurnState.PROCESSING; //begins hero processing phase
+            //currentState = TurnState.PROCESSING; //begins hero processing phase
+            currentState = TurnState.WAITING;
         }
         heroTurn = 1;
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //make connection to the global battle state manager
@@ -215,10 +220,16 @@ public class HeroStateMachine : MonoBehaviour
                 if (!targets.Contains(target.collider.gameObject) && target.collider.gameObject.tag != "Tile")
                 {
                     Debug.Log("adding " + target.collider.gameObject + " to targets");
-                    targets.Add(target.collider.gameObject); //adds all objects inside target range to targets list to be affected
+                    if (!targetsAccountedFor.Contains(target.collider.gameObject))
+                    {
+                        targets.Add(target.collider.gameObject); //adds all objects inside target range to targets list to be affected
+                        targetsAccountedFor.Add(target.collider.gameObject);
+                    }
                 }
             }
         }
+
+        targetsAccountedFor.Clear();
 
         return targets;
     }
@@ -319,6 +330,27 @@ public class HeroStateMachine : MonoBehaviour
 
         foreach (GameObject target in targets)
         {
+            AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+            animation.attack = BSM.PerformList[0].chosenAttack;
+            animation.target = target;
+            animation.BuildAnimation();
+
+            StartCoroutine(animation.PlayAnimation());
+
+            yield return new WaitForSeconds(animation.attackDur); //wait a bit
+
+            Debug.Log("addedEffect: " + animation.addedEffectAchieved);
+
+            BaseAddedEffect BAE = new BaseAddedEffect();
+            BAE.target = target;
+            BAE.addedEffectProcced = animation.addedEffectAchieved;
+            checkAddedEffects.Add(BAE);
+
+            animation.addedEffectAchieved = false;
+        }
+
+        foreach (GameObject target in targets)
+        {
             int hitRoll = GetRandomInt(0, 100);
             if (hitRoll <= hero.GetHitChance(hero.finalHitRating, hero.finalAgility))
             {
@@ -327,12 +359,12 @@ public class HeroStateMachine : MonoBehaviour
                 if (critRoll <= hero.GetCritChance(hero.finalCritRating, hero.finalDexterity))
                 {
                     Debug.Log("Hero crits!");
-                    DoDamage(target, true); //do damage with calculations (this will change later)
+                    ProcessAttack(target, true); //do damage with calculations (this will change later)
                 }
                 else
                 {
                     Debug.Log("Hero doesn't crit.");
-                    DoDamage(target, false); //do damage with calculations (this will change later)
+                    ProcessAttack(target, false); //do damage with calculations (this will change later)
                 }
                 Debug.Log(hero.GetCritChance(hero.finalCritRating, hero.finalDexterity) + "% chance to crit, roll was: " + critRoll);
 
@@ -367,29 +399,60 @@ public class HeroStateMachine : MonoBehaviour
 
         actionStarted = true;
 
-        //animate the hero to the enemy (this is where attack animations will go)
-        Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
-        while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
+        //animate the hero to the enemy (this is where casting animation will go)
+        //Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
+        //while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
 
-        yield return new WaitForSeconds(0.5f); //wait a bit
+        Debug.Log("Casting: " + BSM.PerformList[0].chosenAttack.name);
+
+        yield return new WaitForSeconds(0.5f);
 
         foreach (GameObject target in targets)
         {
-            DoDamage(target, false);
+            AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+            animation.attack = BSM.PerformList[0].chosenAttack;
+            animation.target = target;
+            animation.BuildAnimation();
+
+            StartCoroutine(animation.PlayAnimation());
+
+            yield return new WaitForSeconds(animation.attackDur); //wait a bit
+
+            Debug.Log("addedEffect: " + animation.addedEffectAchieved);
+
+            BaseAddedEffect BAE = new BaseAddedEffect();
+            BAE.target = target;
+            BAE.addedEffectProcced = animation.addedEffectAchieved;
+            checkAddedEffects.Add(BAE);
+
+            animation.addedEffectAchieved = false;
+        }
+
+        foreach (GameObject target in targets)
+        {
+            ProcessAttack(target, false);
         }
 
         //animate the enemy back to start position
-        Vector2 firstPosition = startPosition; //changes the first position of the animation back to the starting position of the enemy
-        while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
+        //Vector2 firstPosition = startPosition; //changes the first position of the animation back to the starting position of the enemy
+        //while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
         
         foreach (GameObject target in targets)
         {
             if (BSM.PerformList[0].chosenAttack.magicClass == BaseAttack.MagicClass.WHITE)
             {
                 StartCoroutine(BSM.ShowHeal(magicDamage, target));
-            } else
+            }
+            else
             {
-                StartCoroutine(BSM.ShowDamage(magicDamage, target));
+                foreach (BaseDamage BD in finalDamages)
+                {
+                    if (BD.obj == target)
+                    {
+                        StartCoroutine(BSM.ShowDamage(BD.finalDamage, target));
+                        break;
+                    }
+                }
             }
         }
 
@@ -446,7 +509,17 @@ public class HeroStateMachine : MonoBehaviour
     {
         GetStatusEffectsFromCurrentAttack();
 
+        checkAddedEffects.Clear();
+
+        finalDamages.Clear();
+
         UpdateHeroStats();
+
+        GameObject[] attackAnims = GameObject.FindGameObjectsWithTag("AttackAnimation");
+        foreach (GameObject obj in attackAnims)
+        {
+            Destroy(obj);
+        }
 
         playerMove.EndTurn(this);
     }
@@ -508,7 +581,7 @@ public class HeroStateMachine : MonoBehaviour
     /// </summary>
     /// <param name="target">GameObject of who is being attacked</param>
     /// <param name="crit">If true, process critical damage methods</param>
-    void DoDamage(GameObject target, bool crit) //deals damage to enemy
+    void ProcessAttack(GameObject target, bool crit) //deals damage to enemy
     {
         int calc_damage = 0;
 
@@ -567,20 +640,34 @@ public class HeroStateMachine : MonoBehaviour
         {
             if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.PHYSICAL)
             {
-                calc_damage = hero.finalATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
-                if (crit)
+                foreach (BaseAddedEffect BAE in checkAddedEffects)
                 {
-                    calc_damage = calc_damage * 2;
-                    Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
-                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
-                    StartCoroutine(BSM.ShowCrit(calc_damage, target));
-                } else
-                {
-                    Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
-                    Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
-                    StartCoroutine(BSM.ShowDamage(calc_damage, target));
-                }
-                
+                    if (BAE.target == target)
+                    {
+                        calc_damage = hero.finalATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+                        if (crit)
+                        {
+                            calc_damage = calc_damage * 2;
+                            Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and crits for " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
+                            Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " * 2 = " + calc_damage);
+                            if (BAE.addedEffectProcced)
+                            {
+                                calc_damage = Mathf.CeilToInt(calc_damage * 2f);
+                            }
+                            StartCoroutine(BSM.ShowCrit(calc_damage, target));
+                        }
+                        else
+                        {
+                            Debug.Log(hero.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
+                            Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + hero.finalATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+                            if (BAE.addedEffectProcced)
+                            {
+                                calc_damage = Mathf.CeilToInt(calc_damage * 2f);
+                            }
+                            StartCoroutine(BSM.ShowDamage(calc_damage, target));
+                        }
+                    }
+                }                
             }
             else if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.MAGIC) //--process from magic script
             {
@@ -594,7 +681,22 @@ public class HeroStateMachine : MonoBehaviour
                 magicScript.heroPerformingAction = hero; //sets hero performing action to this hero
                 magicScript.heroReceivingAction = target.GetComponent<HeroStateMachine>().hero; //sets the hero receiving action to the target's hero
                 magicScript.hsm = this;
-                magicScript.ProcessMagicHeroToHero(); //actually process the magic to hero
+
+                foreach (BaseAddedEffect BAE in checkAddedEffects)
+                {
+                    if (BAE.target == target)
+                    {
+                        magicScript.ProcessMagicHeroToHero(BAE.addedEffectProcced); //actually process the magic to hero
+
+                        BaseDamage damage = new BaseDamage();
+                        damage.obj = target;
+                        damage.finalDamage = magicDamage;
+                        finalDamages.Add(damage);
+
+                        break;
+                    }
+                }
+                //magicScript.ProcessMagicHeroToHero(); //actually process the magic to hero
                 //StartCoroutine(BSM.ShowDamage(magicDamage, target));
             }
             else //if attack type not found

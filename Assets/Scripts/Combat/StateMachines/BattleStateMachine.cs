@@ -163,6 +163,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         audioSource = GameObject.Find("BattleManager").GetComponent<AudioSource>();
 
         HidePanel(victoryCanvas);
+        HidePanel(GameObject.Find("BattleCanvas")); //for battle transition
     }
 
     private void Awake()
@@ -233,6 +234,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 {
                     ClearAttackPanel(); //resets/clears enemySelect, actionPanel, magicPanel, and attack buttons
                     HeroInput = HeroGUI.ACTIVATE;
+                    battleState = battleStates.WAIT;
                 }
             break;
 
@@ -707,6 +709,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             if (cancelledEnemySelect) //if choosing enemy is cancelled
             {
                 //Debug.Log("cancelled enemy select");
+                GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.backSE);
                 choosingTarget = false; //disables ability to click/hover gameObjects
                 cancelledEnemySelect = false; //resets cancelledEnemySelect
 
@@ -720,6 +723,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
             yield return null;
         }
+
+        GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
 
         //HeroChoice.AttackersTarget = chosenEnemy;
         //HeroChoice.targetType = HandleTurn.Types.ENEMY;
@@ -995,6 +1000,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         if (Input.GetButtonDown("Cancel") && !buttonPressed)
         {
+            GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.backSE);
             if (moveMenuCancel) //in movement phase
             {
                 HidePanel(actionPanel);
@@ -1276,6 +1282,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         damageText.transform.position = new Vector2(target.transform.position.x, target.transform.position.y + damageTextDistance);
         damageText.transform.GetComponent<TextMeshPro>().color = Color.white;
         damageText.transform.GetComponent<TextMeshPro>().text = "Miss";
+        AudioManager.instance.PlaySE(AudioManager.instance.attackMiss);
+
         yield return new WaitForSeconds(damageDisplayTime);
         PauseATBWhileDamageFinishes(false);
         Destroy(damageText);

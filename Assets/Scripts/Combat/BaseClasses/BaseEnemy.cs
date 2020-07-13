@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -57,7 +57,7 @@ public class BaseEnemy : BaseClass
     public Type enemyType; //to access the assigned type
     public Rarity rarity; //to access the assigned rarity
 
-    public List<BaseAttack> attacks = new List<BaseAttack>(); //possible attacks
+    public List<BaseEnemyAttack> attacks = new List<BaseEnemyAttack>(); //possible attacks
 
     public int earnedEXP;
 
