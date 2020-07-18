@@ -213,6 +213,18 @@ public class AttackAnimation : MonoBehaviour
 
     #region -----Magic Attack Animations-----
 
+    public void PlayCastingAnimation(GameObject caster)
+    {
+        //Animation
+        GameObject castAnimation = Instantiate(AttackPrefabManager.Instance.magicCast, caster.transform);
+        castAnimation.name = "Casting animation";
+        castAnimation.transform.position = new Vector3(caster.transform.position.x, caster.transform.position.y, 0f);
+        castAnimation.transform.localScale = new Vector3(3f, 3f);
+        castAnimation.GetComponent<Renderer>().sortingLayerName = "Foreground";
+
+        AudioManager.instance.PlaySE(AudioManager.instance.magicCast);
+    }
+
     void Fire1()
     {
         //Animation

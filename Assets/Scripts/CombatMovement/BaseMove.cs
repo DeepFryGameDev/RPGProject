@@ -87,9 +87,10 @@ public class BaseMove : MonoBehaviour
 
     /// <summary>
     /// Algorithm for moving to tile in path
+    /// Ran once when clicking new tile to be moved to
     /// Explanation on tutorial: https://youtu.be/2NVEqBeXdBk?t=1580
     /// </summary>
-    /// <param name="tile">Next tile to be moved to in path</param>
+    /// <param name="tile">Tile to be moved to in path</param>
     public void MoveToTile(Tile tile)
     {
         path.Clear();
@@ -273,12 +274,23 @@ public class BaseMove : MonoBehaviour
     }
 
     /// <summary>
-    /// Increases turn count and allows unit to move
+    /// Increases turn count and allows unit to move - only heroes use this method
     /// </summary>
     public void BeginTurn()
     {
         canMove = true;
         turn++;
+
+        Debug.Log("turning on animation - onTurn");
+
+        gameObject.GetComponent<Animator>().SetBool("onTurn", true);
+
+        Animator heroAnim = gameObject.GetComponent<Animator>();
+
+        heroAnim.SetFloat("moveX", 0.0f);
+        heroAnim.SetFloat("moveY", 0.0f);
+
+
         //Debug.Log(transform.gameObject.name + " starting turn " + turn);
     }
 
@@ -310,15 +322,24 @@ public class BaseMove : MonoBehaviour
         //BSM.battleState = battleStates.WAIT;
         BSM.battleState = battleStates.CHECKALIVE;
         //Debug.Log(transform.gameObject.name + " ending turn " + turn);
+
+        Debug.Log("turning off animation - onTurn");
+        gameObject.GetComponent<Animator>().SetBool("onTurn", false);
     }
 
     /// <summary>
-    /// Handles terminating turn for enemy unit
+    /// Handles terminating turn for unit
     /// </summary>
     public void EndTurn()
     {
         Debug.Log("ending turn");
         RemoveSelectableTiles();
         canMove = false;
+
+        if (gameObject.tag == "Hero")
+        {
+            Debug.Log("turning off animation - onTurn");
+            gameObject.GetComponent<Animator>().SetBool("onTurn", false);
+        }
     }
 }

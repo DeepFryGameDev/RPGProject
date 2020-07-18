@@ -61,6 +61,8 @@ public class HeroStateMachine : MonoBehaviour
     public bool choosingTarget;
     List<Tile> tilesInRange = new List<Tile>();
 
+    Animator heroAnim;
+
     void Start()
     {
         HeroPanelSpacer = GameObject.Find("BattleCanvas").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer"); //find spacer and make connection
@@ -163,8 +165,11 @@ public class HeroStateMachine : MonoBehaviour
                             }
                         }
                     }
-                    
-                    this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change color/ play animation
+
+                    //gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change color/ play animation
+
+                    gameObject.GetComponent<Animator>().SetBool("onDeath", true);
+
                     Debug.Log(hero.name + " - DEAD");
                     BSM.battleState = battleStates.CHECKALIVE;
 
@@ -323,13 +328,21 @@ public class HeroStateMachine : MonoBehaviour
         actionStarted = true;
 
         //animate the hero to the enemy (this is where attack animations will go)
-        Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
-        while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
+        //Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
+        //while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
 
-        yield return new WaitForSeconds(0.5f); //wait a bit
+        heroAnim = gameObject.GetComponent<Animator>();
 
         foreach (GameObject target in targets)
         {
+            SetHeroFacingDir(target, "atkDirX", "atkDirY");
+
+            yield return new WaitForSeconds(.2f); //wait a bit
+
+            heroAnim.SetBool("onPhysAtk", true);
+
+            yield return new WaitForSeconds(.25f);
+
             AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
             animation.attack = BSM.PerformList[0].chosenAttack;
             animation.target = target;
@@ -349,11 +362,19 @@ public class HeroStateMachine : MonoBehaviour
             animation.addedEffectAchieved = false;
         }
 
+        heroAnim.SetBool("onPhysAtk", false);
+
         foreach (GameObject target in targets)
         {
+            Animator tarAnim = target.GetComponent<Animator>();
+            SetTargetFacingDir(target, "rcvDamX", "rcvDamY");
+
             int hitRoll = GetRandomInt(0, 100);
             if (hitRoll <= hero.GetHitChance(hero.finalHitRating, hero.finalAgility))
             {
+                Debug.Log("turning on takeDamage - " + target.name);
+                tarAnim.SetBool("onRcvDam", true);
+
                 Debug.Log("Hero hits!");
                 int critRoll = GetRandomInt(0, 100);
                 if (critRoll <= hero.GetCritChance(hero.finalCritRating, hero.finalDexterity))
@@ -367,7 +388,6 @@ public class HeroStateMachine : MonoBehaviour
                     ProcessAttack(target, false); //do damage with calculations (this will change later)
                 }
                 Debug.Log(hero.GetCritChance(hero.finalCritRating, hero.finalDexterity) + "% chance to crit, roll was: " + critRoll);
-
             }
             else
             {
@@ -378,9 +398,9 @@ public class HeroStateMachine : MonoBehaviour
         }
 
         //animate the enemy back to start position
-        Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
+        //Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
 
-        while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position     
+        //while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position     
 
         PostAnimationCleanup();
 
@@ -405,12 +425,23 @@ public class HeroStateMachine : MonoBehaviour
 
         Debug.Log("Casting: " + BSM.PerformList[0].chosenAttack.name);
 
-        yield return new WaitForSeconds(0.5f);
+        heroAnim = gameObject.GetComponent<Animator>();
+
+        SetHeroFacingDir(targets[0], "atkDirX", "atkDirY");
+
+        yield return new WaitForSeconds(.2f); //wait a bit
+
+        heroAnim.SetBool("onMagAtk", true);
+
+        AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+        animation.attack = BSM.PerformList[0].chosenAttack;
+
+        animation.PlayCastingAnimation(gameObject);
+
+        yield return new WaitForSeconds(AudioManager.instance.magicCast.length);
 
         foreach (GameObject target in targets)
         {
-            AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
-            animation.attack = BSM.PerformList[0].chosenAttack;
             animation.target = target;
             animation.BuildAnimation();
 
@@ -428,8 +459,21 @@ public class HeroStateMachine : MonoBehaviour
             animation.addedEffectAchieved = false;
         }
 
+        Destroy(GameObject.Find("Casting animation"));
+
+        if (!targets.Contains(gameObject))
+        {
+            heroAnim.SetBool("onMagAtk", false);
+        }
+
         foreach (GameObject target in targets)
         {
+            Animator tarAnim = target.GetComponent<Animator>();
+            SetTargetFacingDir(target, "rcvDamX", "rcvDamY");
+
+            if (BSM.PerformList[0].chosenAttack.magicClass != BaseAttack.MagicClass.WHITE)
+            tarAnim.SetBool("onRcvDam", true);
+
             ProcessAttack(target, false);
         }
 
@@ -457,6 +501,8 @@ public class HeroStateMachine : MonoBehaviour
         }
 
         yield return new WaitForSeconds(BSM.damageDisplayTime);
+
+        heroAnim.SetBool("onMagAtk", false);
 
         PostAnimationCleanup();
 
@@ -522,6 +568,65 @@ public class HeroStateMachine : MonoBehaviour
         }
 
         playerMove.EndTurn(this);
+    }
+
+    void SetTargetFacingDir(GameObject target, string paramNameX, string paramNameY)
+    {
+        Animator tarAnim = target.GetComponent<Animator>();
+
+        float xDiff = gameObject.transform.position.x - target.transform.position.x;
+        float yDiff = gameObject.transform.position.y - target.transform.position.y;
+        tarAnim.SetFloat(paramNameX, 0);
+        tarAnim.SetFloat(paramNameY, 0);
+
+        if (xDiff < 0)
+        {
+            tarAnim.SetFloat(paramNameX, -1f);
+        }
+        else if (xDiff > 0)
+        {
+            tarAnim.SetFloat(paramNameX, 1f);
+        }
+
+        if (yDiff < 0)
+        {
+            tarAnim.SetFloat(paramNameY, -1f);
+        }
+        else if (yDiff > 0)
+        {
+            tarAnim.SetFloat(paramNameY, 1f);
+        }
+    }
+
+    void SetHeroFacingDir(GameObject target, string paramNameX, string paramNameY)
+    {
+        heroAnim.SetFloat(paramNameX, 0);
+        heroAnim.SetFloat(paramNameY, 0);
+
+        float xDiff = gameObject.transform.position.x - target.transform.position.x;
+        float yDiff = gameObject.transform.position.y - target.transform.position.y;
+
+        if (xDiff < 0)
+        {
+            heroAnim.SetFloat(paramNameX, 1f);
+            heroAnim.SetFloat("moveX", 1f);
+        }
+        else if (xDiff > 0)
+        {
+            heroAnim.SetFloat(paramNameX, -1f);
+            heroAnim.SetFloat("moveX", -1f);
+        }
+
+        if (yDiff < 0)
+        {
+            heroAnim.SetFloat(paramNameY, 1f);
+            heroAnim.SetFloat("moveY", 1f);
+        }
+        else if (yDiff > 0)
+        {
+            heroAnim.SetFloat(paramNameY, -1f);
+            heroAnim.SetFloat("moveY", -1f);
+        }
     }
 
     /// <summary>

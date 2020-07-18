@@ -542,7 +542,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 584006560}
   m_HandleRect: {fileID: 584006559}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -10168,7 +10168,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2010755818}
   m_HandleRect: {fileID: 2010755817}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -15652,7 +15652,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5522775518378982488}
   m_HandleRect: {fileID: 3844827809909897732}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -22618,7 +22618,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 727492154337328273}
   m_HandleRect: {fileID: 2065734484991967705}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -25633,7 +25633,7 @@ MonoBehaviour:
       earnedEXP: 20
       goldDropped: 50
       itemsDropped: []
-    prefab: {fileID: 8285240672625080309, guid: 6f9866b043559674795166ebd1fb7eb7,
+    prefab: {fileID: 4992876725585091340, guid: 2ccf081a7f8c258448f0db38684fe4b6,
       type: 3}
     description: Enemy 2 description
 --- !u!1 &1003100542942503137
@@ -30382,7 +30382,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2172499479678470752}
   m_HandleRect: {fileID: 3208445580069370129}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -61591,7 +61591,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1062317}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7043180370596036766
@@ -61819,7 +61819,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1062317}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &8661471618974728855
@@ -78586,7 +78586,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1062317}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &3943971790255259669
@@ -89774,7 +89774,7 @@ MonoBehaviour:
   - name: Test dude 1
     ID: 0
     spawnPoint: 
-    heroPrefab: {fileID: 5283472708567023886, guid: f31e2440029908648a71b25a0459470f,
+    heroPrefab: {fileID: 7551644091857005198, guid: 38cd601167c64564397d33484160bfd4,
       type: 3}
     faceImage: {fileID: 21300000, guid: 4b9b67bae7659b84883e9a05f12a2565, type: 3}
     currentLevel: 1
@@ -90006,7 +90006,7 @@ MonoBehaviour:
   - name: Test dude 2
     ID: 0
     spawnPoint: 
-    heroPrefab: {fileID: 5582548927720070609, guid: c4f6974639048ab44b419760ec3c8a23,
+    heroPrefab: {fileID: 4158507382510371892, guid: 07f0d1b037f07de4795ee70572aff593,
       type: 3}
     faceImage: {fileID: 21300000, guid: 753ae9302a7e52b46aa9aa4388e57552, type: 3}
     currentLevel: 2
@@ -93558,7 +93558,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4874046966152121861}
   m_HandleRect: {fileID: 8911545646607614822}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -95894,7 +95894,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.028219305, y: 0.055202022}
   m_AnchorMax: {x: 0.9673316, y: 0.94600004}
-  m_AnchoredPosition: {x: 0, y: 9.589371}
+  m_AnchoredPosition: {x: 0, y: 9.589386}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6251700543750088694
@@ -99053,7 +99053,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.028219305, y: 0.055202022}
   m_AnchorMax: {x: 0.9673316, y: 0.94600004}
-  m_AnchoredPosition: {x: 0, y: 9.58934}
+  m_AnchoredPosition: {x: 0, y: 9.589386}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6293297646467654863
@@ -103984,7 +103984,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3624979420968300061}
   m_HandleRect: {fileID: 4033257590135405994}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -104250,7 +104250,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4311116653340282998}
   m_HandleRect: {fileID: 3202420835647378449}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -116365,7 +116365,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2696685713487000147}
   m_HandleRect: {fileID: 7206342140716660390}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -120553,7 +120553,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7209916556716224159}
   m_HandleRect: {fileID: 7097651160141466794}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -123818,7 +123818,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.106201}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1062317}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &629602874503215192

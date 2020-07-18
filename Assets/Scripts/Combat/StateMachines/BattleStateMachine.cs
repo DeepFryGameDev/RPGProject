@@ -1188,6 +1188,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         PauseATBWhileDamageFinishes(false);
         //Destroy(damageText);
         DestroyDamageTexts();
+
+        target.GetComponent<Animator>().SetBool("onRcvDam", false);
     }
 
     /// <summary>
@@ -1211,6 +1213,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         PauseATBWhileDamageFinishes(false);
         //Destroy(damageText);
         DestroyDamageTexts();
+
+        target.GetComponent<Animator>().SetBool("onRcvDam", false);
     }
 
     /// <summary>
@@ -1235,6 +1239,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         PauseATBWhileDamageFinishes(false);
         //Destroy(damageText);
         DestroyDamageTexts();
+
+        target.GetComponent<Animator>().SetBool("onRcvDam", false);
     }
 
     /// <summary>

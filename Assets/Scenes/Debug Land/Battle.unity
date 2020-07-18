@@ -12305,6 +12305,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   attack: {fileID: 0}
+  attackDur: 0
+  addedEffectAchieved: 0
+  enemyAEChance: 0
 --- !u!1 &966860481
 GameObject:
   m_ObjectHideFlags: 0
@@ -21305,7 +21308,7 @@ MonoBehaviour:
   battleDetailsPanel: {fileID: 0}
   expTick: {fileID: 8300000, guid: 9275d82ebe0b4e14399c94e6e8a548ff, type: 3}
   victoryPoseTime: 1
-  damageTextDistance: 0.75
+  damageTextDistance: 1.25
   damageDisplayTime: 1.5
   battleState: 0
   HeroInput: 0

@@ -159,6 +159,9 @@ public class EnemyBehavior : EnemyMove
     /// </summary>
     protected void ProcessAnimation()
     {
+        Debug.Log("turning off animation - onTurn");
+        gameObject.GetComponent<Animator>().SetBool("onTurn", false);
+
         readyToAnimateAction = false;
 
         //need to add animation for magic casting, as well as ranged physical damage
@@ -537,6 +540,9 @@ public class EnemyBehavior : EnemyMove
     {
         turn++;
         behaviorStates = BehaviorStates.CHOOSEACTION;
+
+        Debug.Log("turning on animation - onTurn");
+        gameObject.GetComponent<Animator>().SetBool("onTurn", true);
     }
 
     /// <summary>
@@ -592,6 +598,9 @@ public class EnemyBehavior : EnemyMove
         readyForAction = false;
         
         behaviorStates = BehaviorStates.IDLE;
+
+        Debug.Log("turning off animation - onTurn");
+        gameObject.GetComponent<Animator>().SetBool("onTurn", false);
     }
 
     /// <summary>

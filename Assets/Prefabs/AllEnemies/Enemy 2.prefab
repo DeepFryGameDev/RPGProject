@@ -85,7 +85,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6279684779598428876}
   - component: {fileID: 8285240672625080308}
-  - component: {fileID: -3102673619476205243}
+  - component: {fileID: 5687340367337084683}
   - component: {fileID: 8285240672625080310}
   - component: {fileID: 7342477490985153018}
   - component: {fileID: 4792632166308917418}
@@ -171,7 +171,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &-3102673619476205243
+--- !u!114 &5687340367337084683
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -197,7 +197,7 @@ MonoBehaviour:
   magicDamage: 0
   itemDamage: 0
   maxThreat: 0
-  threatBar: {fileID: 5920510810164654950}
+  threatBar: {fileID: 0}
 --- !u!114 &8285240672625080310
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,8 +240,10 @@ MonoBehaviour:
     enemyType: 0
     rarity: 0
     attacks:
-    - {fileID: 458636252490780732, guid: 77b71f7bd7e88bd418d716fbf8d4e68b, type: 3}
-    - {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea, type: 3}
+    - attack: {fileID: 0}
+      addedEffectChance: 0
+    - attack: {fileID: 0}
+      addedEffectChance: 0
     earnedEXP: 30
     goldDropped: 100
     itemsDropped:

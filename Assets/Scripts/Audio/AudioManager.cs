@@ -19,6 +19,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip slash;
     public AudioClip slashAE;
 
+    public AudioClip magicCast;
     public AudioClip attackMiss;
 
 

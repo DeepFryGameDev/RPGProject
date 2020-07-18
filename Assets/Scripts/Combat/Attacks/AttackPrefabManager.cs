@@ -5,6 +5,7 @@ public class AttackPrefabManager : MonoBehaviour
     //Houses prefabs that need to be instantiated in UI
 
     // Assign the prefab in the inspector
+    public GameObject magicCast;
     public GameObject fire;
     public GameObject slash;
 

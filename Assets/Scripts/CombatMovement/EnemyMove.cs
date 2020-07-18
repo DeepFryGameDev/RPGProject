@@ -18,6 +18,8 @@ public class EnemyMove : BaseMove
     protected GameObject actionTarget;
     protected List<GameObject> targets = new List<GameObject>();
 
+    Vector3 lastPos;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -38,6 +40,8 @@ public class EnemyMove : BaseMove
         //Debug.Log("Path count " + path.Count);
         if (path.Count > 0)
         {
+            ProcessWalkingAnimation();
+
             //Debug.Log("found path");
             Tile t = path.Peek();
             Vector3 target = t.transform.position;
@@ -82,6 +86,8 @@ public class EnemyMove : BaseMove
     /// </summary>
     public void MoveToRange()
     {
+        ProcessWalkingAnimation();
+
         //Debug.Log("Path count " + path.Count);
         if (path.Count > 0)
         {
@@ -127,6 +133,62 @@ public class EnemyMove : BaseMove
             //GetComponent<EnemyBehavior>().ChooseAction(); //enemy chooses random attack from their available attacks (this is where enemy behavior will likely need to go)
             readyForAction = true;
             transform.gameObject.GetComponent<EnemyStateMachine>().inMove = false;
+        }
+    }
+
+    void ProcessWalkingAnimation()
+    {
+        Vector3 newPos = gameObject.transform.position;
+
+        if (lastPos == new Vector3(0.0f, 0.0f, 0.0f))
+        {
+            lastPos = newPos;
+        }
+
+        Debug.Log("last position: " + lastPos);
+        Debug.Log("current position: " + newPos);
+
+        if (lastPos != newPos)
+        {
+            Animator enemyAnim = gameObject.GetComponent<Animator>();
+
+            enemyAnim.SetFloat("moveX", 0.0f);
+            enemyAnim.SetFloat("moveY", 0.0f);
+
+            if (lastPos.x != newPos.x)
+            {
+                float xDiff = lastPos.x - newPos.x;
+                if (xDiff > 0)
+                {
+                    Debug.Log("moving left");
+                    enemyAnim.SetFloat("moveX", -1.0f);
+                }
+                else
+                {
+                    Debug.Log("moving right");
+                    enemyAnim.SetFloat("moveX", 1.0f);
+                }
+            }
+
+            if (lastPos.y != newPos.y)
+            {
+                float yDiff = lastPos.y - newPos.y;
+                if (yDiff > 0)
+                {
+                    Debug.Log("moving down");
+                    enemyAnim.SetFloat("moveY", -1.0f);
+                }
+                else
+                {
+                    Debug.Log("moving up");
+                    enemyAnim.SetFloat("moveY", 1.0f);
+                }
+            }
+        }
+
+        if (lastPos != null && lastPos != newPos)
+        {
+            lastPos = newPos;
         }
     }
 

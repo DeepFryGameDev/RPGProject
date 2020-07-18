@@ -7,13 +7,15 @@ public class PlayerMove : BaseMove
     HeroStateMachine HSM;
     public int tilesToMove;
     bool ignoreMoveOnce;
-    
+
+    Vector3 lastPos;
+
     void Start()
     {
         InitMove();
         HSM = GetComponent<HeroStateMachine>();
     }
-    
+
     void Update()
     {
         if (!canMove)
@@ -40,6 +42,8 @@ public class PlayerMove : BaseMove
     {
         if (path.Count > 0)
         {
+            ProcessWalkingAnimation();
+
             Tile t = path.Peek();
 
             Vector3 target = t.transform.position;
@@ -58,6 +62,7 @@ public class PlayerMove : BaseMove
             else
             {
                 //tile center reached
+
                 transform.position = target;
                 path.Pop();
 
@@ -83,6 +88,60 @@ public class PlayerMove : BaseMove
                 readyForMove = false;
                 //EndTurn();
             }
+        }
+    }
+
+    void ProcessWalkingAnimation()
+    {
+        Vector3 newPos = gameObject.transform.position;
+
+        if (lastPos == new Vector3(0.0f, 0.0f, 0.0f))
+        {
+            lastPos = newPos;
+        }
+
+        //Debug.Log("last position: " + lastPos);
+        //Debug.Log("current position: " + newPos);
+
+        if (lastPos != newPos)
+        {
+            Animator heroAnim = gameObject.GetComponent<Animator>();
+
+            heroAnim.SetFloat("moveX", 0.0f);
+            heroAnim.SetFloat("moveY", 0.0f);
+
+            if (lastPos.x != newPos.x)
+            {
+                float xDiff = lastPos.x - newPos.x;
+                if (xDiff > 0)
+                {
+                    //Debug.Log("moving left");
+                    heroAnim.SetFloat("moveX", -1.0f);
+                } else
+                {
+                    //Debug.Log("moving right");
+                    heroAnim.SetFloat("moveX", 1.0f);
+                }
+            }
+
+            if (lastPos.y != newPos.y)
+            {
+                float yDiff = lastPos.y - newPos.y;
+                if (yDiff > 0)
+                {
+                    //Debug.Log("moving down");
+                    heroAnim.SetFloat("moveY", -1.0f);
+                } else
+                {
+                    //Debug.Log("moving up");
+                    heroAnim.SetFloat("moveY", 1.0f);
+                }
+            }
+        }
+
+        if (lastPos != null && lastPos != newPos)
+        {
+            lastPos = newPos;
         }
     }
 
