@@ -81,9 +81,9 @@ namespace Prime31.TransitionKit
 
                 //here is where to enable battle start
 
-                GameObject.Find("BattleCanvas").GetComponent<CanvasGroup>().alpha = 1;
-                GameObject.Find("BattleCanvas").GetComponent<CanvasGroup>().interactable = true;
-                GameObject.Find("BattleCanvas").GetComponent<CanvasGroup>().blocksRaycasts = true;
+                GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().alpha = 1;
+                GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().interactable = true;
+                GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().blocksRaycasts = true;
 
                 GameObject[] heroes = GameObject.FindGameObjectsWithTag("Hero");
                 GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
@@ -97,7 +97,7 @@ namespace Prime31.TransitionKit
                 foreach (GameObject enemy in enemies)
                 {
                     EnemyStateMachine ESM = enemy.GetComponent<EnemyStateMachine>();
-                    ESM.currentState = EnemyStateMachine.TurnState.PROCESSING;
+                    ESM.currentState = TurnState.PROCESSING;
                 }
             }
         }

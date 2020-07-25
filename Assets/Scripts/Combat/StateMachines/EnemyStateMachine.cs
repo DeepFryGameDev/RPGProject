@@ -12,14 +12,6 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
 
     [HideInInspector] public BaseEnemy enemy;
 
-    public enum TurnState
-    {
-        PROCESSING,
-        CHOOSEACTION,
-        WAITING,
-        DEAD
-    }
-
     public bool waitForDamageToFinish;
 
     public TurnState currentState;
@@ -40,6 +32,11 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
     //for movement
     public bool inMove;
     bool runMoveOnce;
+
+    //for death animation
+    bool deathAnimationStarted;
+    bool deathAnimationFinished;
+    float deathFadeTime = 1.0f;
 
     void Start()
     {
@@ -64,6 +61,11 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
         switch (currentState)
         {
             case (TurnState.PROCESSING):
+                if (BSM.enemyToManage != null)
+                {
+                    BSM.enemyToManage = null;
+                }
+
                 if (!waitForDamageToFinish)
                 {
                     if (BSM.activeATB)
@@ -83,6 +85,9 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
             case (TurnState.CHOOSEACTION):
                 if (runMoveOnce)
                 {
+                    BSM.enemyToManage = gameObject;
+                    BattleCameraManager.instance.camState = camStates.ENEMYTURN;
+
                     enemyBehavior.BeginEnemyTurn();
                     runMoveOnce = false;
                 }
@@ -104,18 +109,22 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                 {
                     return;
                 } else
-                {
-                    BSM.expPool += enemy.earnedEXP; //increases enemy's exp to exp pool to take after battle
-                    this.gameObject.tag = "DeadEnemy"; //change tag of enemy to DeadEnemy
-                    BSM.EnemiesInBattle.Remove(this.gameObject); //Makes this enemy not attackable by heroes
-                    BSM.HideSelector(Selector); //disable the selector cursor for the enemy
-                    
-                    if (BSM.EnemiesInBattle.Count > 0) //remove all enemyAttacks inputs from active perform list if there are still enemies on the field
+                {           
+                    if (gameObject.GetComponent<Animator>().GetBool("onDeath") == false)
                     {
-                        for (int i = 0; i < BSM.PerformList.Count; i++) //go through all actions in perform list
+                        gameObject.GetComponent<Animator>().SetBool("onDeath", true);
+
+                        BSM.expPool += enemy.earnedEXP; //increases enemy's exp to exp pool to take after battle
+                        this.gameObject.tag = "DeadEnemy"; //change tag of enemy to DeadEnemy
+                        BSM.EnemiesInBattle.Remove(this.gameObject); //Makes this enemy not attackable by heroes
+                        BSM.HideSelector(Selector); //disable the selector cursor for the enemy
+
+                        if (BSM.EnemiesInBattle.Count > 0) //remove all enemyAttacks inputs from active perform list if there are still enemies on the field
                         {
-                            //if (i != 0) //can remove later if enemies can kill themselves. otherwise only checks for items in the perform list after 0 (as 0 would be the hero's action)
-                            //{
+                            for (int i = 0; i < BSM.PerformList.Count; i++) //go through all actions in perform list
+                            {
+                                //if (i != 0) //can remove later if enemies can kill themselves. otherwise only checks for items in the perform list after 0 (as 0 would be the hero's action)
+                                //{
                                 if (BSM.PerformList[i].AttackersGameObject == this.gameObject) //if the attacker in the loop is this enemy
                                 {
                                     BSM.PerformList.Remove(BSM.PerformList[i]); //removes this action from the perform list
@@ -124,16 +133,26 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                                 {
                                     BSM.PerformList[i].AttackersTarget = BSM.EnemiesInBattle[Random.Range(0, BSM.EnemiesInBattle.Count)]; //changes the target from the dead enemy to a random enemy so dead enemy cannot be attacked
                                 }
-                            //}
+                                //}
+                            }
                         }
                     }
-                    
-                    this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255); //change the color to gray. later play death animation
-                    
-                    alive = false; //set alive to false to exit out of the turn state
 
-                    Debug.Log("setting BSM Battlestate to checkalive");
-                    BSM.battleState = battleStates.CHECKALIVE; //changes battle state to check alive
+                    if (!deathAnimationStarted)
+                    {
+                        deathAnimationStarted = true;
+                        ProcessDeathFade();
+                    }
+
+                    if (deathAnimationFinished)
+                    {
+                        alive = false; //set alive to false to exit out of the turn state
+
+                        Debug.Log("setting BSM Battlestate to checkalive");
+                        BSM.battleState = battleStates.CHECKALIVE; //changes battle state to check alive
+
+                        Destroy(gameObject);
+                    }
                 }
             break;
         }
@@ -154,6 +173,31 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
             runMoveOnce = true;
             currentState = TurnState.CHOOSEACTION; //choose the action
         }
+    }
+
+    void ProcessDeathFade()
+    {
+        StartCoroutine(FadeOutObject());
+    }
+
+    IEnumerator FadeOutObject()
+    {
+        float counter = 0;
+        Color spriteColor = gameObject.GetComponent<Renderer>().material.color;
+
+        AudioManager.instance.PlaySE(AudioManager.instance.enemyDeath);
+
+        while (counter < deathFadeTime)
+        {
+            counter += Time.deltaTime;
+            float alpha = Mathf.Lerp(1, 0, counter / deathFadeTime);
+
+            gameObject.GetComponent<Renderer>().material.color = new Color(spriteColor.r, spriteColor.g, spriteColor.b, alpha);
+
+            yield return null;
+        }
+
+        deathAnimationFinished = true;
     }
 
 }

@@ -37,6 +37,14 @@ public enum BehaviorStates
     ACTION
 }
 
+public enum TurnState
+{
+    PROCESSING,
+    CHOOSEACTION,
+    WAITING,
+    DEAD
+}
+
 public enum Types
 {
     HERO,
@@ -57,4 +65,17 @@ public enum FaceState
     LEFT,
     RIGHT,
     DEFAULT
+}
+
+public enum camStates
+{
+    BATTLESTART,
+    IDLE,
+    HEROTURN,
+    ENEMYTURN,
+    CHOOSEACTION,
+    CHOOSETARGET,
+    ATTACK,
+    VICTORY,
+    LOSS
 }

@@ -15,7 +15,7 @@ public class HeroMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     void Start()
     {
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
-        detailsText = GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
+        detailsText = GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
     }
 
     /// <summary>

@@ -75,9 +75,7 @@ public class AttackAnimation : MonoBehaviour
 
         //Physical attacks
         if (attack.name == "Slash")
-        {
             Slash();
-        }
 
         //Magic attacks
         if (attack.name == "Fire 1")
@@ -86,8 +84,8 @@ public class AttackAnimation : MonoBehaviour
         if (attack.name == "Bio 1")
             Bio1();
 
-        if (attack.name == "Heal 1")
-            Heal1();
+        if (attack.name == "Cure 1")
+            Cure1();
     }
 
     /// <summary>
@@ -153,6 +151,16 @@ public class AttackAnimation : MonoBehaviour
         if (attack.name == "Fire 1")
         {
             Fire1AddedEffect();
+        }
+
+        if (attack.name == "Bio 1")
+        {
+            Bio1AddedEffect();
+        }
+
+        if (attack.name == "Cure 1")
+        {
+            Cure1AddedEffect();
         }
 
         if (attack.name == "Slash")
@@ -267,10 +275,56 @@ public class AttackAnimation : MonoBehaviour
 
     void Bio1()
     {
+        //Animation
+        GameObject piece1 = Instantiate(AttackPrefabManager.Instance.bio, attackAnim.transform);
+        attackAnim.transform.position = new Vector3(target.transform.position.x, target.transform.position.y, 0f);
+        piece1.transform.localScale = new Vector3(3f, 3f);
+        piece1.GetComponent<Renderer>().sortingLayerName = "Foreground";
+
+        attackDur = piece1.GetComponent<ParticleSystem>().main.duration;
+
+        //Audio
+        BaseAttackAudio se = new BaseAttackAudio
+        {
+            frame = 1,
+            SE = AudioManager.instance.bio1
+        };
+        attackSoundEffects.Add(se);
+
+        //Added effect threshold
+        frameAEThresholdMin = 10;
+        frameAEThresholdMax = 40;
+    }
+
+    void Bio1AddedEffect()
+    {
 
     }
 
-    void Heal1()
+    void Cure1()
+    {
+        //Animation
+        GameObject piece1 = Instantiate(AttackPrefabManager.Instance.cure, attackAnim.transform);
+        attackAnim.transform.position = new Vector3(target.transform.position.x, target.transform.position.y, 0f);
+        piece1.transform.localScale = new Vector3(3f, 3f);
+        piece1.GetComponent<Renderer>().sortingLayerName = "Foreground";
+
+        attackDur = piece1.GetComponent<ParticleSystem>().main.duration;
+
+        //Audio
+        BaseAttackAudio se = new BaseAttackAudio
+        {
+            frame = 1,
+            SE = AudioManager.instance.cure1
+        };
+        attackSoundEffects.Add(se);
+
+        //Added effect threshold
+        frameAEThresholdMin = 10;
+        frameAEThresholdMax = 40;
+    }
+
+    void Cure1AddedEffect()
     {
 
     }

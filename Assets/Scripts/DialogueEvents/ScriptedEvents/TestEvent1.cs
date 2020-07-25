@@ -27,6 +27,6 @@ public class TestEvent1 : BaseScriptedEvent
 
         StartCoroutine(ShowMessage("Here you go dude!", voice, true, true));*/
 
-        CallBattle(0, "Battle");
+        CallBattle(1, "Battle");
     }
 }

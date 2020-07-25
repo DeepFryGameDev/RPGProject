@@ -10,6 +10,8 @@ public class PlayerMove : BaseMove
 
     Vector3 lastPos;
 
+    Camera battleCam;
+
     void Start()
     {
         InitMove();
@@ -78,6 +80,10 @@ public class PlayerMove : BaseMove
         }
         else
         {
+            ToggleMoveActionPanel(true);
+
+            GameObject.Find("Main Camera").transform.SetParent(null);
+
             if (tilesToMove > 0)
             {
                 ignoreMoveOnce = false;

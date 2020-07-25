@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BaseMove : MonoBehaviour
 {
@@ -28,6 +29,8 @@ public class BaseMove : MonoBehaviour
     protected int turn;
 
     protected BattleStateMachine BSM;
+
+    public bool canChooseAction;
 
     /// <summary>
     /// Facilitates setting the tiles array to tile GameObjects, sets BSM to the battle state machine, and sets turn count to 0
@@ -93,6 +96,13 @@ public class BaseMove : MonoBehaviour
     /// <param name="tile">Tile to be moved to in path</param>
     public void MoveToTile(Tile tile)
     {
+        if (gameObject.tag == "Hero")
+        {
+            ToggleMoveActionPanel(false);
+        }
+
+        GameObject.Find("Main Camera").transform.SetParent(gameObject.transform);
+
         path.Clear();
         tile.target = true;
         readyForMove = true;
@@ -281,6 +291,8 @@ public class BaseMove : MonoBehaviour
         canMove = true;
         turn++;
 
+        canChooseAction = true;
+
         Debug.Log("turning on animation - onTurn");
 
         gameObject.GetComponent<Animator>().SetBool("onTurn", true);
@@ -290,6 +302,7 @@ public class BaseMove : MonoBehaviour
         heroAnim.SetFloat("moveX", 0.0f);
         heroAnim.SetFloat("moveY", 0.0f);
 
+        BattleCameraManager.instance.camState = camStates.HEROTURN;
 
         //Debug.Log(transform.gameObject.name + " starting turn " + turn);
     }
@@ -325,6 +338,8 @@ public class BaseMove : MonoBehaviour
 
         Debug.Log("turning off animation - onTurn");
         gameObject.GetComponent<Animator>().SetBool("onTurn", false);
+
+        BattleCameraManager.instance.camState = camStates.IDLE;
     }
 
     /// <summary>
@@ -340,6 +355,24 @@ public class BaseMove : MonoBehaviour
         {
             Debug.Log("turning off animation - onTurn");
             gameObject.GetComponent<Animator>().SetBool("onTurn", false);
+        }
+        BattleCameraManager.instance.camState = camStates.IDLE;
+    }
+
+    protected void ToggleMoveActionPanel(bool toggle)
+    {
+        Text actionText = GameObject.Find("BattleCanvas/BattleUI/MoveActionPanel/MoveActionSpacer/ActionButton/Text").GetComponent<Text>();
+        Text defendText = GameObject.Find("BattleCanvas/BattleUI/MoveActionPanel/MoveActionSpacer/DefendButton/Text").GetComponent<Text>();
+        if (toggle)
+        {
+            canChooseAction = true;
+            actionText.color = new Color(1.0f, 1.0f, 1.0f);
+            defendText.color = new Color(1.0f, 1.0f, 1.0f);
+        } else
+        {
+            canChooseAction = false;
+            actionText.color = new Color(0.5f, 0.5f, 0.5f);
+            defendText.color = new Color(0.5f, 0.5f, 0.5f);
         }
     }
 }

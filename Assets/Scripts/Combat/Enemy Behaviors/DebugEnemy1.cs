@@ -126,7 +126,7 @@ public class DebugEnemy1 : EnemyBehavior
             }
         }
 
-        // 3) Attack target (Hammer Swing) with highest threat
+        // 3) Attack target (Slash) with highest threat
         Debug.Log("Don't need to heal or cast bio, attacking highest threat target");
         chosenAttack = ESM.enemy.attacks[0].attack;
         chosenTarget = GetHeroWithHighestThreat();

@@ -208,7 +208,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                     {
                         if (target.collider.gameObject.tag == "Enemy" && !BSM.targets.Contains(target.collider.gameObject))
                         {
-                            GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = target.collider.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
+                            GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = target.collider.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
                         }
                     }
                 }
@@ -227,9 +227,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                     {
                         if (target.collider.gameObject.tag == "Hero" && !BSM.targets.Contains(target.collider.gameObject))
                         {
-                            GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = target.collider.gameObject.GetComponent<HeroStateMachine>().hero.name;
+                            GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = target.collider.gameObject.GetComponent<HeroStateMachine>().hero.name;
 
-                            foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
+                            foreach (Transform child in GameObject.Find("BattleCanvas/BattleUI/HeroPanel/HeroPanelSpacer").transform)
                             {
                                 string ID = target.collider.gameObject.name.Replace("BattleHero - ID ", "");
                                 if (child.name.Replace("BattleHeroPanel - ID ","") == ID)
@@ -296,9 +296,9 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     public void OnPointerExit(PointerEventData eventData)
     {
         //resets enemy name on hover to blank when exiting tile
-        GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = "";
+        GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = "";
 
-        foreach (Transform child in GameObject.Find("BattleCanvas/HeroPanel/HeroPanelSpacer").transform)
+        foreach (Transform child in GameObject.Find("BattleCanvas/BattleUI/HeroPanel/HeroPanelSpacer").transform)
         {
             child.transform.Find("BorderCanvas").GetComponent<CanvasGroup>().alpha = 0.0f;
         }

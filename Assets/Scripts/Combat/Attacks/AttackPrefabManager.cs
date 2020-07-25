@@ -6,9 +6,11 @@ public class AttackPrefabManager : MonoBehaviour
 
     // Assign the prefab in the inspector
     public GameObject magicCast;
-    public GameObject fire;
     public GameObject slash;
-
+    public GameObject fire;
+    public GameObject bio;
+    public GameObject cure;
+    
     //Singleton
     private static AttackPrefabManager m_Instance = null;
     public static AttackPrefabManager Instance

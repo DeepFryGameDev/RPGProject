@@ -14,14 +14,14 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     void Start()
     {
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
-        detailsText = GameObject.Find("BattleCanvas/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
+        detailsText = GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
     }
 
     void Update()
     {
         if (BSM.cancelledEnemySelect)
         {
-            this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //removes selector from being active if ChooseTarget is cancelled
+            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //removes selector from being active if ChooseTarget is cancelled
         }
     }
 
@@ -33,8 +33,8 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (BSM.choosingTarget)
         {
             GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
-            BSM.chosenTarget = this.gameObject; //sets BSM target to this gameObject
-            this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //hides selector after being chosen
+            BSM.chosenTarget = gameObject; //sets BSM target to this gameObject
+            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //hides selector after being chosen
             detailsText.GetComponent<Text>().text = "";
         }
     }
@@ -46,7 +46,7 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (BSM.choosingTarget)
         {
-            this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(true);
+            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(true);
         }
         detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
     }
@@ -60,7 +60,7 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
         if (BSM.choosingTarget)
         {
-            this.gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false);
+            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false);
         }
         detailsText.GetComponent<Text>().text = "";
     }

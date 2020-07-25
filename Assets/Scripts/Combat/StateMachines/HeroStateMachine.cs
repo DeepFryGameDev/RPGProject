@@ -65,7 +65,7 @@ public class HeroStateMachine : MonoBehaviour
 
     void Start()
     {
-        HeroPanelSpacer = GameObject.Find("BattleCanvas").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer"); //find spacer and make connection
+        HeroPanelSpacer = GameObject.Find("BattleCanvas/BattleUI").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer"); //find spacer and make connection
 
         CreateHeroPanel(); //create panel and fill in info
 
@@ -430,6 +430,8 @@ public class HeroStateMachine : MonoBehaviour
         SetHeroFacingDir(targets[0], "atkDirX", "atkDirY");
 
         yield return new WaitForSeconds(.2f); //wait a bit
+
+        StartCoroutine(BSM.ShowAttackName(BSM.PerformList[0].chosenAttack.name, AudioManager.instance.magicCast.length));
 
         heroAnim.SetBool("onMagAtk", true);
 

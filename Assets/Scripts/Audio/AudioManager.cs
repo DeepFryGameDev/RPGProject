@@ -14,15 +14,20 @@ public class AudioManager : MonoBehaviour
 
     public AudioClip battleTransition;
 
-    public AudioClip fire1;
-    public AudioClip fire1AE;
-    public AudioClip slash;
-    public AudioClip slashAE;
-
     public AudioClip magicCast;
     public AudioClip attackMiss;
+    public AudioClip enemyDeath;
 
+    public AudioClip fire1;
+    public AudioClip fire1AE;
+    public AudioClip bio1;
+    public AudioClip bio1AE;
+    public AudioClip cure1;
+    public AudioClip cure1AE;
 
+    public AudioClip slash;
+    public AudioClip slashAE;
+    
     #region Singleton
     public static AudioManager instance; //call instance to get the single active inventory for the game
 

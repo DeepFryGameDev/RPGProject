@@ -46,6 +46,8 @@ public class EnemyBehavior : EnemyMove
 
     protected bool foundTarget;
 
+    Animator enemyAnim;
+
     /// <summary>
     /// Sets initial values for attached enemy's state machine, as well as threat and threatlist
     /// </summary>
@@ -159,9 +161,6 @@ public class EnemyBehavior : EnemyMove
     /// </summary>
     protected void ProcessAnimation()
     {
-        Debug.Log("turning off animation - onTurn");
-        gameObject.GetComponent<Animator>().SetBool("onTurn", false);
-
         readyToAnimateAction = false;
 
         //need to add animation for magic casting, as well as ranged physical damage
@@ -194,12 +193,21 @@ public class EnemyBehavior : EnemyMove
         ShowAffectPattern(chosenAttack, bestTargetTile);
 
         //this is where actual attack animation would go
-        Vector2 targetPosition = new Vector2(actionTarget.transform.position.x - .5f, actionTarget.transform.position.y); //gets hero's position (minus a few pixels on the x axis) to move to for attack animation
-        while (MoveToTarget(targetPosition)) { yield return null; } //move towards the target
-        yield return new WaitForSeconds(0.5f); //wait a bit
+        //Vector2 targetPosition = new Vector2(actionTarget.transform.position.x - .5f, actionTarget.transform.position.y); //gets hero's position (minus a few pixels on the x axis) to move to for attack animation
+        //while (MoveToTarget(targetPosition)) { yield return null; } //move towards the target
+        
+        enemyAnim = gameObject.GetComponent<Animator>();
 
         foreach (GameObject target in targets)
         {
+            SetEnemyFacingDir(target, "atkDirX", "atkDirY");
+
+            yield return new WaitForSeconds(.2f); //wait a bit
+
+            enemyAnim.SetBool("onPhysAtk", true);
+
+            yield return new WaitForSeconds(0.5f); //wait a bit
+
             AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
             animation.attack = BSM.PerformList[0].chosenAttack;
             animation.target = target;
@@ -229,11 +237,20 @@ public class EnemyBehavior : EnemyMove
             animation.addedEffectAchieved = false;*/ //will update later when calculating if enemy succeeds added effect
         }
 
-        DoDamage(); //do damage with calculations (this will change later)
+        enemyAnim.SetBool("onPhysAtk", false);
+
+        foreach (GameObject target in targets)
+        {
+            Animator tarAnim = target.GetComponent<Animator>();
+            SetTargetFacingDir(target, "rcvDamX", "rcvDamY");
+            tarAnim.SetBool("onRcvDam", true);
+
+            ProcessAttack(target);
+        }
 
         //animate the enemy back to start position
-        Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
-        while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
+        //Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
+        //while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
 
         FinishAction();
     }
@@ -254,9 +271,51 @@ public class EnemyBehavior : EnemyMove
         ShowAffectPattern(chosenAttack, bestTargetTile);
 
         //this is where actual attack animation would go
-        Vector2 targetPosition = new Vector2(actionTarget.transform.position.x - .5f, actionTarget.transform.position.y); //gets hero's position (minus a few pixels on the x axis) to move to for attack animation
-        while (MoveToTarget(targetPosition)) { yield return null; } //move towards the target
-        yield return new WaitForSeconds(0.5f); //wait a bit
+        //Vector2 targetPosition = new Vector2(actionTarget.transform.position.x - .5f, actionTarget.transform.position.y); //gets hero's position (minus a few pixels on the x axis) to move to for attack animation
+        //while (MoveToTarget(targetPosition)) { yield return null; } //move towards the target
+
+        Debug.Log("Casting: " + BSM.PerformList[0].chosenAttack.name);
+
+        enemyAnim = gameObject.GetComponent<Animator>();
+
+        SetEnemyFacingDir(targets[0], "atkDirX", "atkDirY");
+
+        yield return new WaitForSeconds(.2f); //wait a bit
+
+        StartCoroutine(BSM.ShowAttackName(BSM.PerformList[0].chosenAttack.name, AudioManager.instance.magicCast.length));
+
+        enemyAnim.SetBool("onMagAtk", true);
+
+        AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+        animation.attack = BSM.PerformList[0].chosenAttack;
+
+        animation.PlayCastingAnimation(gameObject);
+
+        yield return new WaitForSeconds(AudioManager.instance.magicCast.length);
+
+        //show spell animation
+
+        foreach (BaseEnemyAttack BEA in self.attacks)
+        {
+            if (BEA.attack == BSM.PerformList[0].chosenAttack)
+            {
+                animation.enemyAEChance = BEA.addedEffectChance;
+                break;
+            }
+        }
+
+        foreach (GameObject target in targets)
+        {
+            animation.target = target;
+
+            animation.BuildAnimation();
+
+            StartCoroutine(animation.PlayAnimation());
+
+            yield return new WaitForSeconds(animation.attackDur); //wait a bit
+        }
+
+        //process spell
 
         BaseMagicScript magicScript = new BaseMagicScript();
         magicScript.spell = chosenAttack;
@@ -278,9 +337,25 @@ public class EnemyBehavior : EnemyMove
             }
         }
 
+        Destroy(GameObject.Find("Casting animation"));
+
+        if (!targets.Contains(gameObject))
+        {
+            enemyAnim.SetBool("onMagAtk", false);
+        }
+
+        foreach (GameObject target in targets)
+        {
+            Animator tarAnim = target.GetComponent<Animator>();
+            SetTargetFacingDir(target, "rcvDamX", "rcvDamY");
+
+            if (BSM.PerformList[0].chosenAttack.magicClass != BaseAttack.MagicClass.WHITE)
+                tarAnim.SetBool("onRcvDam", true);
+        }
+
         //animate the enemy back to start position
-        Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
-        while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
+        //Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
+        //while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
 
         foreach (GameObject target in targets)
         {
@@ -296,7 +371,68 @@ public class EnemyBehavior : EnemyMove
 
         yield return new WaitForSeconds(BSM.damageDisplayTime);
 
+        enemyAnim.SetBool("onMagAtk", false);
+
         FinishAction();
+    }
+
+    void SetTargetFacingDir(GameObject target, string paramNameX, string paramNameY)
+    {
+        Animator tarAnim = target.GetComponent<Animator>();
+
+        float xDiff = gameObject.transform.position.x - target.transform.position.x;
+        float yDiff = gameObject.transform.position.y - target.transform.position.y;
+        tarAnim.SetFloat(paramNameX, 0);
+        tarAnim.SetFloat(paramNameY, 0);
+
+        if (xDiff < 0)
+        {
+            tarAnim.SetFloat(paramNameX, -1f);
+        }
+        else if (xDiff > 0)
+        {
+            tarAnim.SetFloat(paramNameX, 1f);
+        }
+
+        if (yDiff < 0)
+        {
+            tarAnim.SetFloat(paramNameY, -1f);
+        }
+        else if (yDiff > 0)
+        {
+            tarAnim.SetFloat(paramNameY, 1f);
+        }
+    }
+
+    void SetEnemyFacingDir(GameObject target, string paramNameX, string paramNameY)
+    {
+        enemyAnim.SetFloat(paramNameX, 0);
+        enemyAnim.SetFloat(paramNameY, 0);
+
+        float xDiff = gameObject.transform.position.x - target.transform.position.x;
+        float yDiff = gameObject.transform.position.y - target.transform.position.y;
+
+        if (xDiff < 0)
+        {
+            enemyAnim.SetFloat(paramNameX, 1f);
+            enemyAnim.SetFloat("moveX", 1f);
+        }
+        else if (xDiff > 0)
+        {
+            enemyAnim.SetFloat(paramNameX, -1f);
+            enemyAnim.SetFloat("moveX", -1f);
+        }
+
+        if (yDiff < 0)
+        {
+            enemyAnim.SetFloat(paramNameY, 1f);
+            enemyAnim.SetFloat("moveY", 1f);
+        }
+        else if (yDiff > 0)
+        {
+            enemyAnim.SetFloat(paramNameY, -1f);
+            enemyAnim.SetFloat("moveY", -1f);
+        }
     }
 
     /// <summary>
@@ -330,40 +466,32 @@ public class EnemyBehavior : EnemyMove
     /// <summary>
     /// Processes dealing damage to chosen action's targets
     /// </summary>
-    void DoDamage()
+    void ProcessAttack(GameObject target)
     {
         int calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by enemy's current attack + the attack's damage
         
-        foreach (GameObject target in targets)
+        if (target.tag == "Hero")
         {
-            if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.PHYSICAL)
-            {
-                calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
-                target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
-                Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
-                Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - hero's ATK: " + self.baseATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
-            }
-            else if (BSM.PerformList[0].chosenAttack.type == BaseAttack.Type.MAGIC)
-            {
-                //can check if magic attack should have a flat value, ie gravity spell
-                calc_damage = self.baseMATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's magic attack + the chosen attack's damage
-                target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
-                Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
-                Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - magic - hero's MATK: " + self.baseMATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
-            }
-            else //if attack type not found
-            {
-                calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
-                target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
-                Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "! -- NOTE: ATTACK TYPE NOT FOUND: " + BSM.PerformList[0].chosenAttack.type);
-            }
+            calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+            target.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes enemy take damage by above value
+            Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<HeroStateMachine>().hero.name + "!");
+            Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - enemy's ATK: " + self.baseATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+        }
+
+        if (target.tag == "Enemy")
+        {
+            calc_damage = self.baseATK + BSM.PerformList[0].chosenAttack.damage; //calculates damage by hero's attack + the chosen attack's damage
+            target.GetComponent<EnemyBehavior>().TakeDamage(calc_damage); //processes enemy take damage by above value
+            Debug.Log(self.name + " has chosen " + BSM.PerformList[0].chosenAttack.name + " and does " + calc_damage + " damage to " + target.GetComponent<EnemyStateMachine>().enemy.name + "!");
+            Debug.Log(BSM.PerformList[0].chosenAttack.name + " calc_damage - physical - enemy's ATK: " + self.baseATK + " + chosenAttack's damage: " + BSM.PerformList[0].chosenAttack.damage + " = " + calc_damage);
+
             //HeroToAttack.GetComponent<HeroStateMachine>().TakeDamage(calc_damage); //processes the damage to the hero from the enemy
             //Debug.Log(this.gameObject.name + " has chosen " + BSM.PerformList[0].chosenAttack.attackName + " and does " + calc_damage + " damage to " + HeroToAttack.GetComponent<HeroStateMachine>().hero.name + "!");
 
             //enemy.curMP -= BSM.PerformList[0].chosenAttack.attackCost; //remove MP from enemy
-
-            StartCoroutine(BSM.ShowDamage(calc_damage, target));
         }
+
+        StartCoroutine(BSM.ShowDamage(calc_damage, target));
     }
 
     /// <summary>
@@ -441,7 +569,7 @@ public class EnemyBehavior : EnemyMove
         if (self.curHP <= 0) //checks if enemy is dead
         {
             self.curHP = 0; //sets HP to 0 if lower than 0
-            ESM.currentState = EnemyStateMachine.TurnState.DEAD; //changes enemy state to DEAD
+            ESM.currentState = TurnState.DEAD; //changes enemy state to DEAD
         }
     }
 
@@ -567,13 +695,16 @@ public class EnemyBehavior : EnemyMove
         ESM.actionStarted = false; //end the coroutine
 
         ESM.cur_cooldown = 0f; //reset the enemy ATB to 0
-        ESM.currentState = EnemyStateMachine.TurnState.PROCESSING; //starts the turn over from waiting for the enemy ATB gauge to fill
+        ESM.currentState = TurnState.PROCESSING; //starts the turn over from waiting for the enemy ATB gauge to fill
 
         foundTarget = false;
         readyForAction = false;
 
         ClearTiles();
         RemoveSelectableTiles();
+
+        Debug.Log("turning off animation - onTurn");
+        gameObject.GetComponent<Animator>().SetBool("onTurn", false);
     }
 
     /// <summary>
@@ -592,7 +723,7 @@ public class EnemyBehavior : EnemyMove
         ESM.actionStarted = false; //end the coroutine
 
         ESM.cur_cooldown = 0f; //reset the enemy ATB to 0
-        ESM.currentState = EnemyStateMachine.TurnState.PROCESSING; //starts the turn over from waiting for the enemy ATB gauge to fill
+        ESM.currentState = TurnState.PROCESSING; //starts the turn over from waiting for the enemy ATB gauge to fill
 
         foundTarget = false;
         readyForAction = false;

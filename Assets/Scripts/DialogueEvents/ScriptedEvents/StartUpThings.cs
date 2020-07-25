@@ -41,6 +41,7 @@ public class StartUpThings : BaseScriptedEvent
 
     void SetRandomGridSpawnPoints()
     {
+        /*
         List<string> savedSpawnPoints = new List<string>();
 
         foreach (BaseHero hero in HeroDB.instance.heroes)
@@ -59,7 +60,12 @@ public class StartUpThings : BaseScriptedEvent
                     Debug.Log("Setting random spawn point for " + hero.name + " - " + spawnPoint);
                 }
             }
-        }
+        }*/ //remove comments when not testing
+
+        //for testing purposes
+        HeroDB.instance.heroes[0].spawnPoint = "12";
+        HeroDB.instance.heroes[1].spawnPoint = "13";
+        //------
     }
 
     void AssignQuestIDs()
