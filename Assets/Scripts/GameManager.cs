@@ -9,8 +9,8 @@ public class GameManager : MonoBehaviour
     bool canBattle = true; //for debugging purposes, change to true to allow battles
 
     //TOOLS FOR DEBUGGING THAT WILL STILL BE USED
-    [HideInInspector] public int battleChance = 10; //lower number is lower chance battle will occur.  set higher for battle debugging purposes so battle is encountered instantly - up to maxBattleChance
-    [HideInInspector] public int maxBattleChance = 10; //higher number is lower chance the battle will occur depending on battleChance, default is 1000
+    public int battleChance = 10; //lower number is lower chance battle will occur.  set higher for battle debugging purposes so battle is encountered instantly - up to maxBattleChance
+    public int maxBattleChance = 1000; //higher number is lower chance the battle will occur depending on battleChance, default is 1000
 
     //DEBUGGING NOTES
     //Each hero needs it's own prefab

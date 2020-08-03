@@ -55,6 +55,8 @@ public class ItemShop : MonoBehaviour
 
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().PauseBackground(false);
             GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().disableMenu = false;
+
+            AudioManager.instance.PlaySE(AudioManager.instance.backSE);
         }
     }
 

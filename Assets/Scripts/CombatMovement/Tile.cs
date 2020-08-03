@@ -348,6 +348,8 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                         {
                             BSM.HeroesToManage[0].GetComponent<HeroStateMachine>().ActionTarget = hit.collider.gameObject; //sets the primary target for animation to occur on the tile clicked
 
+                            BattleCameraManager.instance.parentTile = hit.collider.gameObject;
+
                             foreach (Tile tile in tilesInRange)
                             {
                                 RaycastHit2D[] tilesHit = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);

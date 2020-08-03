@@ -13,10 +13,10 @@ public class TestEvent1 : BaseScriptedEvent
         //GameManager.instance.completedQuests.Add(GetQuest(0));
         //GameManager.instance.activeQuests.Add(GetQuest(1));
 
-        /*AddItem(0, 2);
+        AddItem(0, 2);
         AddItem(1, 5);
         AddItem(2); //key item
-        AddEquipment(0);
+        /*AddEquipment(0);
         AddEquipment(1);
         AddEquipment(2);
         AddEquipment(3);
@@ -27,6 +27,6 @@ public class TestEvent1 : BaseScriptedEvent
 
         StartCoroutine(ShowMessage("Here you go dude!", voice, true, true));*/
 
-        CallBattle(1, "Battle");
+        CallBattle(0, "Battle");
     }
 }

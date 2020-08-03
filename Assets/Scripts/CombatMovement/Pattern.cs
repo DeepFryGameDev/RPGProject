@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -69,10 +69,14 @@ public class Pattern
     /// <param name="index">Which pattern to be drawn</param>
     public List<Tile> GetRangePattern(Tile parentTile, int index)
     {
+        BattleStateMachine BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
+
         pattern.Clear();
 
         if (index == 0) //cross shaped
         {
+            BSM.tileRange = 1;
+
             pattern.Add(parentTile);
             pattern.Add(UpTile(parentTile, 1));
             pattern.Add(DownTile(parentTile, 1));
@@ -82,6 +86,8 @@ public class Pattern
 
         if (index == 1) //cross shaped without middle
         {
+            BSM.tileRange = 1;
+
             pattern.Add(UpTile(parentTile, 1));
             pattern.Add(DownTile(parentTile, 1));
             pattern.Add(LeftTile(parentTile, 1));
@@ -90,6 +96,8 @@ public class Pattern
 
         if (index == 2) //diamond shaped
         {
+            BSM.tileRange = 2;
+
             pattern.Add(parentTile);
             pattern.Add(UpTile(parentTile, 1));
             pattern.Add(DownTile(parentTile, 1));

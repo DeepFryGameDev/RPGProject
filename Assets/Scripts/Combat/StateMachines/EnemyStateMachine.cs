@@ -61,12 +61,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
         switch (currentState)
         {
             case (TurnState.PROCESSING):
-                if (BSM.enemyToManage != null)
-                {
-                    BSM.enemyToManage = null;
-                }
-
-                if (!waitForDamageToFinish)
+                if (!waitForDamageToFinish && BattleCameraManager.instance.camState != camStates.LOSS)
                 {
                     if (BSM.activeATB)
                     {
@@ -83,9 +78,12 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
             break;
 
             case (TurnState.CHOOSEACTION):
+                BSM.enemyToManage = gameObject;
+
+                BattleCameraManager.instance.currentUnit = gameObject;
+
                 if (runMoveOnce)
                 {
-                    BSM.enemyToManage = gameObject;
                     BattleCameraManager.instance.camState = camStates.ENEMYTURN;
 
                     enemyBehavior.BeginEnemyTurn();

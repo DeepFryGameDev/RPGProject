@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -90,14 +90,27 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
     bool CanMakeTransaction()
     {
-        bool canBuy = true;
-
         if (GameManager.instance.itemShopCost > GameManager.instance.gold)
         {
-            canBuy = false;
+            return false;
         }
 
-        return canBuy;
+        if (Inventory.instance.items.Contains(GameManager.instance.itemShopItem))
+        {
+            int count = 0;
+            foreach (Item item in Inventory.instance.items)
+            {
+                if (item == GameManager.instance.itemShopItem)
+                {
+                    count++;
+                }
+            }
+            if (count == 99)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     static List<RaycastResult> GetEventSystemRaycastResults() //gets all objects being clicked on

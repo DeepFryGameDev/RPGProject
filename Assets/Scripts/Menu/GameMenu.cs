@@ -2232,13 +2232,13 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ListEquipment()
     {
-        PlaySE(AudioManager.instance.confirmSE);
-
         string buttonName = EventSystem.current.currentSelectedGameObject.name;
         equipButtonClicked = buttonName;
 
         if (equipMode == "Equip")
         {
+            PlaySE(AudioManager.instance.confirmSE);
+
             inEquipList = true;
             List<Equipment> equipmentList = new List<Equipment>();
             List<Equipment> equipmentAccountedFor = new List<Equipment>();
@@ -2594,6 +2594,8 @@ public class GameMenu : MonoBehaviour
             DrawEquipMenuStats();
             
             UpdateEquipmentArrowsToNeutral();
+
+            AudioManager.instance.PlaySE(AudioManager.instance.equipSE);
         }
     }
 
@@ -2691,6 +2693,8 @@ public class GameMenu : MonoBehaviour
         DrawEquipMenuStats();
 
         inEquipList = false;
+
+        AudioManager.instance.PlaySE(AudioManager.instance.equipSE);
     }
 
     /// <summary>

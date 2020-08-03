@@ -189,6 +189,14 @@ public class EnemyBehavior : EnemyMove
 
         ESM.actionStarted = true;
 
+        BattleCameraManager.instance.physAttackObj = targets[0];
+        BattleCameraManager.instance.camState = camStates.ATTACK;
+
+        while (!BattleCameraManager.instance.physAttackCameraZoomFinished)
+        {
+            yield return null;
+        }
+
         ShowRangePattern(chosenAttack, GetCurrentTile());
         ShowAffectPattern(chosenAttack, bestTargetTile);
 
@@ -248,6 +256,8 @@ public class EnemyBehavior : EnemyMove
             ProcessAttack(target);
         }
 
+        yield return new WaitForSeconds(BSM.damageDisplayTime);
+
         //animate the enemy back to start position
         //Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
         //while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
@@ -267,13 +277,11 @@ public class EnemyBehavior : EnemyMove
 
         ESM.actionStarted = true;
 
+        BattleCameraManager.instance.camState = camStates.ATTACK;
+
         ShowRangePattern(chosenAttack, GetCurrentTile());
         ShowAffectPattern(chosenAttack, bestTargetTile);
-
-        //this is where actual attack animation would go
-        //Vector2 targetPosition = new Vector2(actionTarget.transform.position.x - .5f, actionTarget.transform.position.y); //gets hero's position (minus a few pixels on the x axis) to move to for attack animation
-        //while (MoveToTarget(targetPosition)) { yield return null; } //move towards the target
-
+        
         Debug.Log("Casting: " + BSM.PerformList[0].chosenAttack.name);
 
         enemyAnim = gameObject.GetComponent<Animator>();
@@ -293,6 +301,8 @@ public class EnemyBehavior : EnemyMove
 
         yield return new WaitForSeconds(AudioManager.instance.magicCast.length);
 
+        BattleCameraManager.instance.magicCastingAnimFinished = true;
+
         //show spell animation
 
         foreach (BaseEnemyAttack BEA in self.attacks)
@@ -306,6 +316,8 @@ public class EnemyBehavior : EnemyMove
 
         foreach (GameObject target in targets)
         {
+            BattleCameraManager.instance.currentMagicTarget = target;
+
             animation.target = target;
 
             animation.BuildAnimation();
@@ -353,10 +365,6 @@ public class EnemyBehavior : EnemyMove
                 tarAnim.SetBool("onRcvDam", true);
         }
 
-        //animate the enemy back to start position
-        //Vector2 firstPosition = ESM.startPosition; //changes the first position of the animation back to the starting position of the enemy
-        //while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
-
         foreach (GameObject target in targets)
         {
             if (chosenAttack.magicClass == BaseAttack.MagicClass.WHITE)
@@ -368,6 +376,8 @@ public class EnemyBehavior : EnemyMove
                 StartCoroutine(BSM.ShowDamage(magicDamage, target));
             }
         }
+
+        gameObject.GetComponent<HeroStateMachine>().hero.curMP -= BSM.PerformList[0].chosenAttack.MPCost;
 
         yield return new WaitForSeconds(BSM.damageDisplayTime);
 
@@ -705,6 +715,9 @@ public class EnemyBehavior : EnemyMove
 
         Debug.Log("turning off animation - onTurn");
         gameObject.GetComponent<Animator>().SetBool("onTurn", false);
+
+        if (BattleCameraManager.instance.camState != camStates.LOSS)
+            BattleCameraManager.instance.camState = camStates.IDLE;
     }
 
     /// <summary>
@@ -732,6 +745,9 @@ public class EnemyBehavior : EnemyMove
 
         Debug.Log("turning off animation - onTurn");
         gameObject.GetComponent<Animator>().SetBool("onTurn", false);
+
+        if (BattleCameraManager.instance.camState != camStates.LOSS)
+            BattleCameraManager.instance.camState = camStates.IDLE;
     }
 
     /// <summary>

@@ -49,8 +49,11 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked = true;
-        gameObject.transform.Find("EnemyNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked)
+        {
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked = true;
+            gameObject.transform.Find("EnemyNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        }
     }
 
     /// <summary>
@@ -77,7 +80,7 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
     /// <param name="ID">ID of enemy entry to be returned</param>
     BaseEnemyDBEntry GetEnemyDBEntry(int ID)
     {
-        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/EnemyDB").GetComponent<EnemyDB>().enemies)
+        foreach (BaseEnemyDBEntry entry in GameObject.Find("GameManager/DBs/EnemyDB").GetComponent<EnemyDB>().enemies)
         {
             if (entry.enemy.ID == ID)
             {

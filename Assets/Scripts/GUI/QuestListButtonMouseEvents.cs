@@ -135,11 +135,14 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
-        menu.PlaySE(AM.confirmSE);
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked)
+        {
+            menu.PlaySE(AM.confirmSE);
 
-        GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked = true;
-        gameObject.transform.Find("QuestNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
-        gameObject.transform.Find("QuestLevelText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked = true;
+            gameObject.transform.Find("QuestNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+            gameObject.transform.Find("QuestLevelText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        }
     }
 
     /// <summary>

@@ -327,80 +327,86 @@ public class HeroStateMachine : MonoBehaviour
 
         actionStarted = true;
 
+        BattleCameraManager.instance.physAttackObj = targets[0];
+        BattleCameraManager.instance.camState = camStates.ATTACK;
+
         //animate the hero to the enemy (this is where attack animations will go)
         //Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
         //while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
 
         heroAnim = gameObject.GetComponent<Animator>();
 
-        foreach (GameObject target in targets)
+        SetHeroFacingDir(targets[0], "atkDirX", "atkDirY");
+
+        while (!BattleCameraManager.instance.physAttackCameraZoomFinished)
         {
-            SetHeroFacingDir(target, "atkDirX", "atkDirY");
-
-            yield return new WaitForSeconds(.2f); //wait a bit
-
-            heroAnim.SetBool("onPhysAtk", true);
-
-            yield return new WaitForSeconds(.25f);
-
-            AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
-            animation.attack = BSM.PerformList[0].chosenAttack;
-            animation.target = target;
-            animation.BuildAnimation();
-
-            StartCoroutine(animation.PlayAnimation());
-
-            yield return new WaitForSeconds(animation.attackDur); //wait a bit
-
-            Debug.Log("addedEffect: " + animation.addedEffectAchieved);
-
-            BaseAddedEffect BAE = new BaseAddedEffect();
-            BAE.target = target;
-            BAE.addedEffectProcced = animation.addedEffectAchieved;
-            checkAddedEffects.Add(BAE);
-
-            animation.addedEffectAchieved = false;
+            yield return null;
         }
+
+        yield return new WaitForSeconds(.2f); //wait a bit
+
+        heroAnim.SetBool("onPhysAtk", true);
+
+        yield return new WaitForSeconds(.25f);
+
+        AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+        animation.attack = BSM.PerformList[0].chosenAttack;
+        animation.target = targets[0];
+        animation.BuildAnimation();
+
+        StartCoroutine(animation.PlayAnimation());
+
+        yield return new WaitForSeconds(animation.attackDur); //wait a bit
+
+        BattleCameraManager.instance.physAttackAnimFinished = true;
+
+        Debug.Log("addedEffect: " + animation.addedEffectAchieved);
+
+        BaseAddedEffect BAE = new BaseAddedEffect();
+        BAE.target = targets[0];
+        BAE.addedEffectProcced = animation.addedEffectAchieved;
+        checkAddedEffects.Add(BAE);
+
+        animation.addedEffectAchieved = false;
 
         heroAnim.SetBool("onPhysAtk", false);
 
-        foreach (GameObject target in targets)
+        Animator tarAnim = targets[0].GetComponent<Animator>();
+        SetTargetFacingDir(targets[0], "rcvDamX", "rcvDamY");
+
+        int hitRoll = GetRandomInt(0, 100);
+        if (hitRoll <= hero.GetHitChance(hero.finalHitRating, hero.finalAgility))
         {
-            Animator tarAnim = target.GetComponent<Animator>();
-            SetTargetFacingDir(target, "rcvDamX", "rcvDamY");
+            Debug.Log("turning on takeDamage - " + targets[0].name);
+            tarAnim.SetBool("onRcvDam", true);
 
-            int hitRoll = GetRandomInt(0, 100);
-            if (hitRoll <= hero.GetHitChance(hero.finalHitRating, hero.finalAgility))
+            Debug.Log("Hero hits!");
+            int critRoll = GetRandomInt(0, 100);
+            if (critRoll <= hero.GetCritChance(hero.finalCritRating, hero.finalDexterity))
             {
-                Debug.Log("turning on takeDamage - " + target.name);
-                tarAnim.SetBool("onRcvDam", true);
-
-                Debug.Log("Hero hits!");
-                int critRoll = GetRandomInt(0, 100);
-                if (critRoll <= hero.GetCritChance(hero.finalCritRating, hero.finalDexterity))
-                {
-                    Debug.Log("Hero crits!");
-                    ProcessAttack(target, true); //do damage with calculations (this will change later)
-                }
-                else
-                {
-                    Debug.Log("Hero doesn't crit.");
-                    ProcessAttack(target, false); //do damage with calculations (this will change later)
-                }
-                Debug.Log(hero.GetCritChance(hero.finalCritRating, hero.finalDexterity) + "% chance to crit, roll was: " + critRoll);
+                Debug.Log("Hero crits!");
+                ProcessAttack(targets[0], true); //do damage with calculations (this will change later)
             }
             else
             {
-                StartCoroutine(BSM.ShowMiss(ActionTarget));
-                Debug.Log(hero.name + " missed!");
+                Debug.Log("Hero doesn't crit.");
+                ProcessAttack(targets[0], false); //do damage with calculations (this will change later)
             }
-            Debug.Log(hero.GetHitChance(hero.finalHitRating, hero.finalAgility) + "% chance to hit, roll was: " + hitRoll);
+            Debug.Log(hero.GetCritChance(hero.finalCritRating, hero.finalDexterity) + "% chance to crit, roll was: " + critRoll);
         }
+        else
+        {
+            StartCoroutine(BSM.ShowMiss(ActionTarget));
+            Debug.Log(hero.name + " missed!");
+        }
+        Debug.Log(hero.GetHitChance(hero.finalHitRating, hero.finalAgility) + "% chance to hit, roll was: " + hitRoll);
 
         //animate the enemy back to start position
         //Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
 
         //while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position     
+
+        yield return new WaitForSeconds(BSM.damageDisplayTime);
 
         PostAnimationCleanup();
 
@@ -419,9 +425,7 @@ public class HeroStateMachine : MonoBehaviour
 
         actionStarted = true;
 
-        //animate the hero to the enemy (this is where casting animation will go)
-        //Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
-        //while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
+        BattleCameraManager.instance.camState = camStates.ATTACK;
 
         Debug.Log("Casting: " + BSM.PerformList[0].chosenAttack.name);
 
@@ -442,8 +446,13 @@ public class HeroStateMachine : MonoBehaviour
 
         yield return new WaitForSeconds(AudioManager.instance.magicCast.length);
 
+        BattleCameraManager.instance.magicCastingAnimFinished = true;
+
         foreach (GameObject target in targets)
         {
+
+            BattleCameraManager.instance.currentMagicTarget = target;
+
             animation.target = target;
             animation.BuildAnimation();
 
@@ -477,14 +486,7 @@ public class HeroStateMachine : MonoBehaviour
             tarAnim.SetBool("onRcvDam", true);
 
             ProcessAttack(target, false);
-        }
 
-        //animate the enemy back to start position
-        //Vector2 firstPosition = startPosition; //changes the first position of the animation back to the starting position of the enemy
-        //while (MoveToTarget(firstPosition)) { yield return null; } //moves back towards the starting position
-        
-        foreach (GameObject target in targets)
-        {
             if (BSM.PerformList[0].chosenAttack.magicClass == BaseAttack.MagicClass.WHITE)
             {
                 StartCoroutine(BSM.ShowHeal(magicDamage, target));
@@ -493,6 +495,8 @@ public class HeroStateMachine : MonoBehaviour
             {
                 foreach (BaseDamage BD in finalDamages)
                 {
+                    //Debug.Log("BD obj name:" + BD.obj.name);
+                    //Debug.Log("BD dmg: " + BD.finalDamage);
                     if (BD.obj == target)
                     {
                         StartCoroutine(BSM.ShowDamage(BD.finalDamage, target));
@@ -503,6 +507,8 @@ public class HeroStateMachine : MonoBehaviour
         }
 
         yield return new WaitForSeconds(BSM.damageDisplayTime);
+
+        gameObject.GetComponent<HeroStateMachine>().hero.curMP -= BSM.PerformList[0].chosenAttack.MPCost;
 
         heroAnim.SetBool("onMagAtk", false);
 
@@ -523,26 +529,40 @@ public class HeroStateMachine : MonoBehaviour
 
         actionStarted = true;
 
-        //animate the hero to the enemy (this is where attack animations will go)
-        Vector2 enemyPosition = new Vector2(ActionTarget.transform.position.x + 1.5f, ActionTarget.transform.position.y); //sets enemyPosition to the chosen enemy's position + a few pixels on the x axis
-        while (MoveToTarget(enemyPosition)) { yield return null; } //moves the hero to the calculated position above
+        BattleCameraManager.instance.camState = camStates.ATTACK;
 
-        yield return new WaitForSeconds(0.5f); //wait a bit
+        StartCoroutine(BSM.ShowAttackName(BSM.PerformList[0].chosenItem.name, AudioManager.instance.magicCast.length));
+
+        yield return new WaitForSeconds(1.0f); //wait a bit
+
+        AttackAnimation animation = GameObject.Find("BattleManager/AttackAnimationManager").GetComponent<AttackAnimation>();
+        animation.item = BSM.PerformList[0].chosenItem;
+
+        animation.PlayUsingItemAnimation(gameObject);
+
+        BattleCameraManager.instance.itemAnimFinished = true;
 
         PerformItem(); //process the item
 
-        //animate the enemy back to start position
-        Vector2 firstPosition = startPosition; //changes the hero's position back to the starting position
-        while (MoveToTarget(firstPosition)) { yield return null; } //move the hero back to the starting position
-
         foreach (GameObject target in targets)
         {
+            BattleCameraManager.instance.itemUsedUnit = target;
+
+            animation.target = target;
+            animation.BuildItemAnimation();
+
+            StartCoroutine(animation.PlayItemAnimation());
+
+            yield return new WaitForSeconds(animation.itemDur); //wait a bit
+
             if (BSM.PerformList[0].chosenItem.type == Item.Types.RESTORATIVE)
             {
                 StartCoroutine(BSM.ShowHeal(itemDamage, target));
             }
         }
-        
+
+        yield return new WaitForSeconds(BSM.damageDisplayTime);
+
         BSM.ResetItemList();
 
         PostAnimationCleanup();
@@ -570,6 +590,8 @@ public class HeroStateMachine : MonoBehaviour
         }
 
         playerMove.EndTurn(this);
+
+        BSM.lastHeroToProcess = gameObject;
     }
 
     void SetTargetFacingDir(GameObject target, string paramNameX, string paramNameY)
@@ -725,10 +747,25 @@ public class HeroStateMachine : MonoBehaviour
                 magicScript.heroPerformingAction = hero; //sets hero performing action to this hero
                 magicScript.enemyReceivingAction = target.GetComponent<EnemyStateMachine>().enemy; //sets the enemy receiving action to the target's enemy
                 magicScript.hsm = this;
-                magicScript.ProcessMagicHeroToEnemy(); //actually process the magic to enemy
 
                 float calc_threat = (((magicDamage / 2) + hero.finalThreatRating) * BSM.PerformList[0].chosenAttack.threatMultiplier);
                 IncreaseThreat(target, hero, calc_threat);
+
+                foreach (BaseAddedEffect BAE in checkAddedEffects)
+                {
+                    if (BAE.target == target)
+                    {
+                        magicScript.ProcessMagicHeroToEnemy(BAE.addedEffectProcced); //actually process the magic to hero
+
+                        BaseDamage damage = new BaseDamage();
+                        damage.obj = target;
+                        damage.finalDamage = magicDamage;
+                        finalDamages.Add(damage);
+
+                        break;
+                    }
+                }
+
                 //StartCoroutine(BSM.ShowDamage(magicDamage, target));
             }
             else //if attack type not found

@@ -14,6 +14,7 @@ public class AudioManager : MonoBehaviour
 
     public AudioClip battleTransition;
 
+    public AudioClip turnReady;
     public AudioClip magicCast;
     public AudioClip attackMiss;
     public AudioClip enemyDeath;

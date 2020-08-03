@@ -302,6 +302,7 @@ public class BaseMove : MonoBehaviour
         heroAnim.SetFloat("moveX", 0.0f);
         heroAnim.SetFloat("moveY", 0.0f);
 
+        BattleCameraManager.instance.currentUnit = gameObject;
         BattleCameraManager.instance.camState = camStates.HEROTURN;
 
         //Debug.Log(transform.gameObject.name + " starting turn " + turn);
@@ -339,7 +340,11 @@ public class BaseMove : MonoBehaviour
         Debug.Log("turning off animation - onTurn");
         gameObject.GetComponent<Animator>().SetBool("onTurn", false);
 
-        BattleCameraManager.instance.camState = camStates.IDLE;
+        if (BattleCameraManager.instance.camState != camStates.VICTORY)
+        {
+            BattleCameraManager.instance.ResetVars();
+            BattleCameraManager.instance.camState = camStates.IDLE;
+        }
     }
 
     /// <summary>
@@ -356,7 +361,12 @@ public class BaseMove : MonoBehaviour
             Debug.Log("turning off animation - onTurn");
             gameObject.GetComponent<Animator>().SetBool("onTurn", false);
         }
-        BattleCameraManager.instance.camState = camStates.IDLE;
+
+        if (BattleCameraManager.instance.camState != camStates.VICTORY)
+        {
+            BattleCameraManager.instance.ResetVars();
+            BattleCameraManager.instance.camState = camStates.IDLE;
+        }
     }
 
     protected void ToggleMoveActionPanel(bool toggle)

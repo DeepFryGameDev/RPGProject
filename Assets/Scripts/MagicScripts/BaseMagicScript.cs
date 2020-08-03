@@ -44,31 +44,30 @@ public class BaseMagicScript
         SetDamage();
 
         HPBaseline(heroReceivingAction, null);
-        SpendMP();
     }
 
-    public void ProcessMagicHeroToEnemy()
+    public void ProcessMagicHeroToEnemy(bool checkAddedEffect)
     {
+        Debug.Log("checkAddedEffect: " + checkAddedEffect);
 
         SetBaseDamage();
 
         if (spell.name == "Cure 1")
         {
-            Cure1HeroToEnemy();
+            Cure1HeroToEnemy(checkAddedEffect);
         }
         if (spell.name == "Bio 1")
         {
-            Bio1HeroToEnemy();
+            Bio1HeroToEnemy(checkAddedEffect);
         }
         if (spell.name == "Fire 1")
         {
-            Fire1HeroToEnemy();
+            Fire1HeroToEnemy(checkAddedEffect);
         }
 
         SetDamage();
 
         HPBaseline(null, enemyReceivingAction);
-        SpendMP();
     }
 
     //---MAGIC HERO TO HERO
@@ -112,7 +111,7 @@ public class BaseMagicScript
 
     //---MAGIC HERO TO ENEMY
     #region HEROTOENEMY
-    void Cure1HeroToEnemy()
+    void Cure1HeroToEnemy(bool checkAddedEffect)
     {
         enemyReceivingAction.curHP += spell.damage;
 
@@ -121,7 +120,7 @@ public class BaseMagicScript
         Debug.Log("Casting Cure 1 on " + enemyReceivingAction.name + "!");
     }
 
-    void Bio1HeroToEnemy()
+    void Bio1HeroToEnemy(bool checkAddedEffect)
     {
         enemyReceivingAction.curHP -= spell.damage;
 
@@ -130,7 +129,7 @@ public class BaseMagicScript
         Debug.Log("Casting Bio 1 on " + enemyReceivingAction.name + "!");
     }
 
-    void Fire1HeroToEnemy()
+    void Fire1HeroToEnemy(bool checkAddedEffect)
     {
         enemyReceivingAction.curHP -= spell.damage;
 
@@ -160,7 +159,6 @@ public class BaseMagicScript
         SetDamage();
 
         HPBaseline(null, enemyReceivingAction);
-        SpendMP();
     }
 
     public void ProcessMagicEnemyToHero()
@@ -181,7 +179,6 @@ public class BaseMagicScript
         SetDamage();
 
         HPBaseline(heroReceivingAction, null);
-        SpendMP();
     }
 
     //---MAGIC ENEMY TO HERO
@@ -243,18 +240,6 @@ public class BaseMagicScript
         Debug.Log("Casting Fire 1 on " + enemyReceivingAction.name + "!");
     }
     #endregion
-
-    void SpendMP()
-    {
-        if (heroPerformingAction != null)
-        {
-            heroPerformingAction.curMP -= spell.MPCost;
-        }
-        else if (enemyPerformingAction != null)
-        {
-            enemyPerformingAction.curMP -= spell.MPCost;
-        }
-    }
 
     void SetDamage()
     {

@@ -69,6 +69,10 @@ namespace Prime31.TransitionKit
             {
                 //modify between here
 
+                BattleCameraManager.instance.cam.orthographicSize = 10.0f;
+                BattleCameraManager.instance.cam.transform.position = new Vector3(BattleCameraManager.instance.cam.transform.position.x, 1.7f, BattleCameraManager.instance.cam.transform.position.z);
+                BattleCameraManager.instance.camState = camStates.BATTLESTART;
+
                 crossfadeTransition = GameObject.Find("GameManager/SceneLoader/Crossfade").GetComponent<Animator>();
 
                 crossfadeTransition.SetTrigger("Start");
@@ -79,26 +83,7 @@ namespace Prime31.TransitionKit
 
                 yield return transitionKit.StartCoroutine( transitionKit.waitForLevelToLoad( nextScene ) );
 
-                //here is where to enable battle start
-
-                GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().alpha = 1;
-                GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().interactable = true;
-                GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().blocksRaycasts = true;
-
-                GameObject[] heroes = GameObject.FindGameObjectsWithTag("Hero");
-                GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-                foreach (GameObject hero in heroes)
-                {
-                    HeroStateMachine HSM = hero.GetComponent<HeroStateMachine>();
-                    HSM.currentState = HeroStateMachine.TurnState.PROCESSING;
-                }
-
-                foreach (GameObject enemy in enemies)
-                {
-                    EnemyStateMachine ESM = enemy.GetComponent<EnemyStateMachine>();
-                    ESM.currentState = TurnState.PROCESSING;
-                }
+                BattleCameraManager.instance.startBattleZoom = true;
             }
         }
 

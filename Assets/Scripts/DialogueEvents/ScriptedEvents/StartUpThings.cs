@@ -65,6 +65,7 @@ public class StartUpThings : BaseScriptedEvent
         //for testing purposes
         HeroDB.instance.heroes[0].spawnPoint = "12";
         HeroDB.instance.heroes[1].spawnPoint = "13";
+        HeroDB.instance.heroes[2].spawnPoint = "33";
         //------
     }
 

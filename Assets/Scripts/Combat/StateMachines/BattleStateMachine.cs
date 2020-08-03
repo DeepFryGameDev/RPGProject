@@ -47,6 +47,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     AudioSource audioSource;
     public float victoryPoseTime;
 
+    public GameObject lastHeroToProcess;
+
     //for displaying damage
     public float damageTextDistance;
     public float damageDisplayTime;
@@ -59,6 +61,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     public bool choosingTarget;
     public GameObject chosenTarget;
     List<Tile> tilesInRange = new List<Tile>();
+    public int tileRange;
 
     private List<GameObject> atkBtns = new List<GameObject>();
 
@@ -243,11 +246,11 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
             case (battleStates.LOSE): //lose battle
                 Debug.Log("Game lost"); //things to go here later - retry battle, go back to world map, load from save
+                BattleCameraManager.instance.camState = camStates.LOSS;
             break;
 
             case (battleStates.WIN): //win battle
                 StartCoroutine(RunVictory());
-                                
             break;
         }
 
@@ -256,6 +259,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             case (HeroGUI.ACTIVATE): //hero's turn is available
                 if (HeroesToManage.Count > 0) //if there is a hero's turn available (ATB gauge filled up and pending input)
                 {
+                    //BattleCameraManager.instance.currentHero = HeroesToManage[0];
                     ShowSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //Show hero's selector cursor
                     HeroChoice = new HandleTurn(); //new handle turn instance as HeroChoice
 
@@ -270,6 +274,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                         EnemyBehavior eb = enObj.GetComponent<EnemyBehavior>();
                         eb.DrawThreatBar();
                     }
+
+                    AudioManager.instance.PlaySE(AudioManager.instance.turnReady);
 
                     HeroInput = HeroGUI.WAITING;
                 }
@@ -646,7 +652,9 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         HidePanel(magicPanel); //hides the magic panel
         ShowPanel(enemySelectPanel); //opens the enemy select panel
+
         StartCoroutine(ChooseTarget()); //select which gameObject to be targetted
+
         SetCancelButton(3);
     }
 
@@ -704,6 +712,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         ShowRange();
 
+        BattleCameraManager.instance.camState = camStates.CHOOSETARGET;
+
         choosingTarget = true; //to ensure clicking on gameObjects are only processed when choosing target - used by Tile script as tiles are the clicked object
         //Debug.Log(choosingTarget);
 
@@ -733,7 +743,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         //HeroChoice.targetType = HandleTurn.Types.ENEMY;
         battleDetailsPanel.transform.Find("BattleDetailsText").GetComponent<Text>().text = "";
         HeroInput = HeroGUI.DONE;
-
+        
         choosingTarget = false;
     }
 
@@ -848,6 +858,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (playerMove.canChooseAction)
         {
+            BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
+
             SetCancelButton(0);
             ShowPanel(actionPanel); //enables actionPanel (attack, magic, etc)
             HidePanel(moveActionPanel);
@@ -866,6 +878,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (playerMove.canChooseAction)
         {
+            BattleCameraManager.instance.camState = camStates.IDLE;
+
             ClearMoveActionPanel();
             ClearActionLists();
             ClearThreatBars();
@@ -1016,6 +1030,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.backSE);
             if (moveMenuCancel) //in movement phase
             {
+                BattleCameraManager.instance.camState = camStates.HEROTURN;
+
                 HidePanel(actionPanel);
                 ShowPanel(moveActionPanel);
                 SetCancelButton(6);
@@ -1025,6 +1041,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
             if (enemySelectAfterAttackCancel)
             {
+                BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
+
                 ShowPanel(actionPanel); //shows action panel
                 HidePanel(moveActionPanel);
                 HidePanel(enemySelectPanel); //hides enemy select panel
@@ -1040,6 +1058,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
             if (enemySelectAfterMagicCancel)
             {
+                BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
+
                 ShowPanel(magicPanel); //shows the magic panel
                 cancelledEnemySelect = true;
                 HidePanel(enemySelectPanel); //hides the enemy select panel
@@ -1053,6 +1073,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
             if (enemySelectAfterItemMenuCancel)
             {
+                BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
+
                 ShowPanel(itemPanel); //shows the item panel
                 HidePanel(enemySelectPanel); //hides the enemy select panel
                 HeroChoice.chosenItem = null;
@@ -1188,6 +1210,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     /// <param name="target">GameObject for damage to be displayed above</param>
     public IEnumerator ShowDamage(int damage, GameObject target)
     {
+        BattleCameraManager.instance.showingDamage = true;
+
         PauseATBWhileDamageFinishes(true);
         Debug.Log("ShowDamage: " + damage + ", " + target.name);
         damageText = Instantiate(PrefabManager.Instance.damagePrefab);
@@ -1204,6 +1228,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (target != null)
         target.GetComponent<Animator>().SetBool("onRcvDam", false);
+
+        BattleCameraManager.instance.showingDamage = false;
     }
 
     /// <summary>
@@ -1214,6 +1240,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     /// <param name="color">Color of font to be displayed</param>
     public IEnumerator ShowElementalDamage(int damage, GameObject target, Color color)
     {
+        BattleCameraManager.instance.showingDamage = true;
+
         PauseATBWhileDamageFinishes(true);
         Debug.Log("ShowElementalDamage: " + damage + ", " + target.name + ", Color: " + color.ToString());
         damageText = Instantiate(PrefabManager.Instance.damagePrefab);
@@ -1230,6 +1258,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (target != null)
         target.GetComponent<Animator>().SetBool("onRcvDam", false);
+
+        BattleCameraManager.instance.showingDamage = false;
     }
 
     /// <summary>
@@ -1239,6 +1269,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     /// <param name="target">GameObject for damage to be displayed above</param>
     public IEnumerator ShowCrit(int damage, GameObject target)
     {
+        BattleCameraManager.instance.showingDamage = true;
+
         PauseATBWhileDamageFinishes(true);
         Debug.Log("ShowCritDamage: " + damage + ", " + target.name);
         damageText = Instantiate(PrefabManager.Instance.damagePrefab);
@@ -1257,6 +1289,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         if (target != null)
         target.GetComponent<Animator>().SetBool("onRcvDam", false);
+
+        BattleCameraManager.instance.showingDamage = false;
     }
 
     /// <summary>
@@ -1266,6 +1300,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     /// <param name="target">GameObject for heal to be displayed above</param>
     public IEnumerator ShowHeal(int healVal, GameObject target)
     {
+        BattleCameraManager.instance.showingDamage = true;
+
         PauseATBWhileDamageFinishes(true);
         Debug.Log("ShowHeal: " + healVal + ", " + target.name);
         damageText = Instantiate(PrefabManager.Instance.damagePrefab);
@@ -1279,6 +1315,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         PauseATBWhileDamageFinishes(false);
         //Destroy(damageText);
         DestroyDamageTexts();
+
+        BattleCameraManager.instance.showingDamage = false;
     }
 
     /// <summary>
@@ -1405,6 +1443,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             victoryConfirmButtonPressed = false;
 
             DoPostBattleStuff();
+
+            BattleCameraManager.instance.camState = camStates.VICTORY;
 
             yield return ShowVictoryPoses();
 

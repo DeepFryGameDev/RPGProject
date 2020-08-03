@@ -6,8 +6,10 @@ public class AttackAnimation : MonoBehaviour
 {
     public GameObject target;
     public BaseAttack attack;
+    public Item item;
 
     public float attackDur;
+    public float itemDur;
 
     GameObject attackAnim;
     GameObject addedEffectAnim;
@@ -325,6 +327,135 @@ public class AttackAnimation : MonoBehaviour
     }
 
     void Cure1AddedEffect()
+    {
+
+    }
+
+    #endregion
+
+    #region -----Item Animations-----
+
+    public void PlayUsingItemAnimation(GameObject user)
+    {
+        //Animation of user actually using item not yet implemented
+    }
+
+    /// <summary>
+    /// Generates new animation GameObject, and builds specific animation based on attack on the new GameObject
+    /// </summary>
+    public void BuildItemAnimation()
+    {
+        attackAnim = new GameObject
+        {
+            tag = "AttackAnimation",
+
+            name = item.name + " animation"
+        };
+        
+        if (item.name == "Potion")
+            Potion();
+
+        if (item.name == "Ether")
+            Ether();
+    }
+
+    /// <summary>
+    /// Coroutine.  Plays the animation and begins 'inAnimation' process in Update method for checking if user gets added effect
+    /// </summary>
+    public IEnumerator PlayItemAnimation()
+    {
+        Debug.Log("beginning animation");
+
+        foreach (Transform child in attackAnim.transform)
+        {
+            child.GetComponent<ParticleSystem>().Play();
+            playingAnims.Add(child.GetComponent<ParticleSystem>());
+        }
+
+        foreach (ParticleSystem ps in playingAnims)
+        {
+            if (!ps.isPlaying)
+            {
+                yield return new WaitForSeconds(.01f);
+            }
+        }
+
+        playingAnims.Clear();
+
+        inAnimation = true;
+
+        Debug.Log("duration: " + itemDur);
+
+        yield return new WaitForSeconds(itemDur);
+
+        Debug.Log("ending animation");
+
+        itemDur = 0;
+        frame = 0;
+        AEframe = 0;
+
+        frameAEThresholdMin = 0;
+        frameAEThresholdMax = 0;
+
+        inAnimation = false;
+        buttonPressed = false;
+
+        attackSoundEffects.Clear();
+        addedEffectSoundEffects.Clear();
+    }
+
+    void Potion()
+    {
+        //Animation
+        GameObject piece1 = Instantiate(AttackPrefabManager.Instance.cure, attackAnim.transform);
+        attackAnim.transform.position = new Vector3(target.transform.position.x, target.transform.position.y, 0f);
+        piece1.transform.localScale = new Vector3(3f, 3f);
+        piece1.GetComponent<Renderer>().sortingLayerName = "Foreground";
+
+        itemDur = piece1.GetComponent<ParticleSystem>().main.duration;
+
+        //Audio
+        BaseAttackAudio se = new BaseAttackAudio
+        {
+            frame = 1,
+            SE = AudioManager.instance.cure1
+        };
+        attackSoundEffects.Add(se);
+
+        //Added effect threshold
+        frameAEThresholdMin = 10;
+        frameAEThresholdMax = 40;
+    }
+
+    void PotionAddedEffect()
+    {
+
+    }
+
+    void Ether()
+    {
+        //Animation
+        GameObject piece1 = Instantiate(AttackPrefabManager.Instance.cure, attackAnim.transform);
+        attackAnim.transform.position = new Vector3(target.transform.position.x, target.transform.position.y, 0f);
+        piece1.transform.localScale = new Vector3(3f, 3f);
+        piece1.GetComponent<Renderer>().sortingLayerName = "Foreground";
+
+        attackDur = piece1.GetComponent<ParticleSystem>().main.duration;
+
+        //Audio
+        BaseAttackAudio se = new BaseAttackAudio
+        {
+            frame = 1,
+            SE = AudioManager.instance.cure1
+        };
+        attackSoundEffects.Add(se);
+
+        //Added effect threshold
+        frameAEThresholdMin = 10;
+        frameAEThresholdMax = 40;
+    }
+
+    void EtherAddedEffect()
     {
 
     }
