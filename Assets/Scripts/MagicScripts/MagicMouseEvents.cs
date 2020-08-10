@@ -99,6 +99,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         magicScript.heroPerformingAction = heroFromMenu; //sets the casting hero in magic script
         magicScript.heroReceivingAction = heroToCastOn; //sets the receiving hero in magic script
         magicScript.ProcessMagicHeroToHero(false); //processes the spell
+        heroFromMenu.curMP -= magicUsed.MPCost;
         UpdateUI(); //updates interface
         magicUsed = null; //sets magicUsed to null so it isn't used again next time
         magicScript = null; //sets magicScript to null so it can't be used again next time

@@ -109,7 +109,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.025629295, y: 0.046300985}
   m_AnchorMax: {x: 0.90800005, y: 0.96300006}
-  m_AnchoredPosition: {x: 0.5054321, y: 4.462677}
+  m_AnchoredPosition: {x: 0.5054321, y: 4.4627075}
   m_SizeDelta: {x: -0.5054779, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &27307798
@@ -550,8 +550,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 584006560}
   m_HandleRect: {fileID: 584006559}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 1
+  m_Value: 0
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7908,7 +7908,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.6317444, y: 6.1071014}
+  m_AnchoredPosition: {x: -7.6317444, y: 6.107132}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1254931689
@@ -10311,7 +10311,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2010755817}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -15870,8 +15870,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5522775518378982488}
   m_HandleRect: {fileID: 3844827809909897732}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.00000018576544
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -22926,8 +22926,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 727492154337328273}
   m_HandleRect: {fileID: 2065734484991967705}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.00000018576544
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -25953,7 +25953,7 @@ MonoBehaviour:
       name: Enemy 2
       ID: 1
       level: 1
-      baseHP: 50
+      baseHP: 100
       baseMP: 0
       curHP: 0
       curMP: 0
@@ -30796,7 +30796,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3208445580069370129}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -40903,6 +40903,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   method: AutostartStuff
+  confirmPressed: 0
+  messageFinished: 0
   menuButton: 0
 --- !u!114 &6161917093640872257
 MonoBehaviour:
@@ -62380,7 +62382,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.160507}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1604767}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7043180370596036766
@@ -62611,7 +62613,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.160507}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1604767}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &8661471618974728855
@@ -70578,7 +70580,7 @@ MonoBehaviour:
     killReqs: []
     boolReqs: []
     rewardGold: 100
-    rewardExp: 200
+    rewardExp: 3
     rewardItems:
     - item: {fileID: 11400000, guid: 957e2b4405174094ea57cbc9ca081bac, type: 2}
       quantity: 1
@@ -70587,16 +70589,16 @@ MonoBehaviour:
     name: Test Kill Quest
     type: 1
     level: 3
-    description: Kill an Enemy 2, and let Test NPC know about it.
+    description: Kill Test Enemy 2, and let Test NPC know about it.
     completedText: 
     gatherReqs: []
     killReqs:
-    - enemyID: 0
+    - enemyID: 1
       quantity: 1
       targetsKilled: 0
     boolReqs: []
     rewardGold: 150
-    rewardExp: 250
+    rewardExp: 5
     rewardItems:
     - item: {fileID: 11400000, guid: 57e6d789f4a7ba74881a9f7bf0fc2aec, type: 2}
       quantity: 5
@@ -70615,7 +70617,7 @@ MonoBehaviour:
       boolDescription: Talk to other test NPC
       objectiveFulfilled: 0
     rewardGold: 50
-    rewardExp: 100
+    rewardExp: 2
     rewardItems: []
     fulfilled: 0
 --- !u!1 &4138419014407173274
@@ -79594,7 +79596,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.160507}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1604767}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &3943971790255259669
@@ -79671,7 +79673,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.6317368, y: 6.1071167}
+  m_AnchoredPosition: {x: -7.6317368, y: 6.107132}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &821955318597977660
@@ -88909,7 +88911,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5508740146763078827}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -90968,7 +90970,7 @@ MonoBehaviour:
       effect: Test2
       isActive: 0
     - name: Test Talent 3
-      description: Holy shit it's #3
+      description: Third test talent
       icon: {fileID: 21300000, guid: 2d5ccb9ec2f50864ba7c3c557e121edc, type: 3}
       effect: Test3
       isActive: 0
@@ -94746,7 +94748,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8911545646607614822}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -97110,7 +97112,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.028219305, y: 0.055202022}
   m_AnchorMax: {x: 0.9673316, y: 0.94600004}
-  m_AnchoredPosition: {x: 0, y: 9.58934}
+  m_AnchoredPosition: {x: 0, y: 9.589355}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6251700543750088694
@@ -100303,7 +100305,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.028219305, y: 0.055202022}
   m_AnchorMax: {x: 0.9673316, y: 0.94600004}
-  m_AnchoredPosition: {x: 0, y: 9.58931}
+  m_AnchoredPosition: {x: 0, y: 9.589371}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6293297646467654863
@@ -105298,8 +105300,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3624979420968300061}
   m_HandleRect: {fileID: 4033257590135405994}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.00000018576544
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -105567,8 +105569,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4311116653340282998}
   m_HandleRect: {fileID: 3202420835647378449}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 1
+  m_Value: 0
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -117836,8 +117838,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2696685713487000147}
   m_HandleRect: {fileID: 7206342140716660390}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.00000018576544
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -119412,6 +119414,7 @@ MonoBehaviour:
   cantActionSE: {fileID: 8300000, guid: b6b7286807cf4c949ba472b58a05c7da, type: 3}
   equipSE: {fileID: 8300000, guid: 630c9783477cc6f4eab4a1c437148d39, type: 3}
   openMenuSE: {fileID: 8300000, guid: 0925563f96df25843b8ea61eaad5cb50, type: 3}
+  purchaseSE: {fileID: 8300000, guid: e2ca868fe07a8bc4fa2022932d17efd4, type: 3}
   battleTransition: {fileID: 8300000, guid: d50a785f40c6739459777829e775cb2f, type: 3}
   turnReady: {fileID: 8300000, guid: e267517e8ef00d04da0c315a16aeb4ba, type: 3}
   magicCast: {fileID: 8300000, guid: d2c0e1ed922651d47b87126e1f4ed562, type: 3}
@@ -122083,7 +122086,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 7097651160141466794}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.00000008592683
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -122196,7 +122199,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7954295667522061817}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -125383,7 +125386,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.030777166, y: 0.026311351}
   m_AnchorMax: {x: 0.96961147, y: 0.975}
-  m_AnchoredPosition: {x: -7.631775, y: 6.160507}
+  m_AnchoredPosition: {x: -7.631775, y: 6.1604767}
   m_SizeDelta: {x: 15.17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &629602874503215192

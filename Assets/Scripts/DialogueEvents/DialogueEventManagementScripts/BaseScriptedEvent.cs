@@ -33,8 +33,10 @@ public class BaseScriptedEvent : MonoBehaviour
     Button Choice4Button;
     string choiceMade;
 
-    bool confirmPressed;
+    [HideInInspector] public bool confirmPressed;
     bool checkForConfirmPressed;
+
+    [HideInInspector] public bool messageFinished;
 
     AudioSource audioSource;
     AudioClip confirmSE;
@@ -42,7 +44,7 @@ public class BaseScriptedEvent : MonoBehaviour
     AudioSource voiceAudioSource;
 
     //Enums
-    public enum MenuButtons
+    [HideInInspector] public enum MenuButtons
     {
         Item,
         Magic,
@@ -54,7 +56,7 @@ public class BaseScriptedEvent : MonoBehaviour
         Quests,
         Bestiary
     }
-    public MenuButtons menuButton;
+    [HideInInspector] public MenuButtons menuButton;
 
     private void Start()
     {
@@ -67,6 +69,8 @@ public class BaseScriptedEvent : MonoBehaviour
         audioSource = GameObject.Find("GameManager/DialogueCanvas").GetComponent<AudioSource>();
         confirmSE = Resources.Load<AudioClip>("Sounds/000 - Cursor Move");
         voiceAudioSource = GameObject.Find("GameManager/DialogueCanvas/VoiceAudio").GetComponent<AudioSource>();
+
+        messageFinished = true;
     }
 
     private void Update()
@@ -1279,6 +1283,7 @@ public class BaseScriptedEvent : MonoBehaviour
     public IEnumerator ShowMessage(string message, AudioClip voiceTone, float textSpeed, bool waitForEnd, bool lockPlayerMovement)
     {
         checkForConfirmPressed = true;
+        messageFinished = false;
         if (!confirmPressed)
         {
             if (lockPlayerMovement)
@@ -1294,11 +1299,17 @@ public class BaseScriptedEvent : MonoBehaviour
             {
                 StartCoroutine(WriteToMessagePanel(message, textSpeed, voiceTone));
             }
+
+            yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
+            PlaySE(confirmSE);
+
             if (lockPlayerMovement)
             {
                 Debug.Log("Enabling player movement");
                 EnablePlayerMovement();
             }
+
+            messageFinished = true;
             //CheckConfirmButtonStatus();
         }
     }
@@ -1313,6 +1324,8 @@ public class BaseScriptedEvent : MonoBehaviour
     public IEnumerator ShowMessage(string message, AudioClip voiceTone, bool waitForEnd, bool lockPlayerMovement)
     {
         checkForConfirmPressed = true;
+        messageFinished = false;
+
         if (!confirmPressed)
         {
             if (lockPlayerMovement)
@@ -1328,11 +1341,17 @@ public class BaseScriptedEvent : MonoBehaviour
             {
                 StartCoroutine(WriteToMessagePanel(message, baseTextSpeed, voiceTone));
             }
+
+            yield return new WaitUntil(() => Input.GetButtonDown("Confirm")); //wait until confirm button pressed before continuing
+            PlaySE(confirmSE);
+
             if (lockPlayerMovement)
             {
                 Debug.Log("Enabling player movement");
                 EnablePlayerMovement();
             }
+
+            messageFinished = true;
             //CheckConfirmButtonStatus();
         }
     }
@@ -1676,9 +1695,22 @@ public class BaseScriptedEvent : MonoBehaviour
             if (activeQuest == quest)
             {
                 return true;
-            } else
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns if given quest is in completed quest list
+    /// </summary>
+    /// <param name="quest">Quest to check</param>
+    public bool IfQuestIsCompleted(BaseQuest quest)
+    {
+        foreach (BaseQuest completedQuest in GameManager.instance.completedQuests)
+        {
+            if (completedQuest == quest)
             {
-                return false;
+                return true;
             }
         }
         return false;

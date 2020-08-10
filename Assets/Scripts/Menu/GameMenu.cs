@@ -5339,13 +5339,13 @@ public class GameMenu : MonoBehaviour
         } else
         {
             baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
-            heroEXP = (hero.currentExp - baseLineEXP);
+            heroEXP = (hero.currentExp - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
             //Debug.Log("baseLine: " + baseLineEXP);
+            //Debug.Log(hero.currentExp - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
         }
 
-        //Debug.Log(heroEXP + " / " + baseLineEXP + ": " + calcEXP);
-
         float calcEXP = heroEXP / baseLineEXP;
+
 
         return calcEXP;
     }

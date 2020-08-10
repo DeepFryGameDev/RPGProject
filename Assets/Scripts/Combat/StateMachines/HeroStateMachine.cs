@@ -288,6 +288,8 @@ public class HeroStateMachine : MonoBehaviour
     /// </summary>
     private void TimeForAction()
     {
+        BSM.lastHeroToProcess = gameObject;
+
         if (BSM.PerformList[0].actionType == ActionType.ATTACK)
         {
             StartCoroutine(AttackAnimation());
@@ -590,8 +592,6 @@ public class HeroStateMachine : MonoBehaviour
         }
 
         playerMove.EndTurn(this);
-
-        BSM.lastHeroToProcess = gameObject;
     }
 
     void SetTargetFacingDir(GameObject target, string paramNameX, string paramNameY)

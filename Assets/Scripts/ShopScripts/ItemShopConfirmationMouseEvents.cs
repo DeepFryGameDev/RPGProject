@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -206,6 +206,7 @@ public class ItemShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHandl
         if (HasEnoughGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text)))
         {
             //play buy sound effect
+            AudioManager.instance.PlaySE(AudioManager.instance.purchaseSE);
 
             //subtract gold
             SubtractGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text));
@@ -224,6 +225,7 @@ public class ItemShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHandl
     void ConfirmSell()
     {
         //play buy sound effect
+        AudioManager.instance.PlaySE(AudioManager.instance.purchaseSE);
 
         //add gold
         AddGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text));

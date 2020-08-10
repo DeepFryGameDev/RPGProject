@@ -315,10 +315,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 584006559, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1254931687, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 6.107132
@@ -345,10 +341,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2010755817, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2010755817, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
-      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2076615467, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
@@ -533,11 +525,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3202420835647378449, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
-        type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3208445580069370129, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -546,11 +533,6 @@ PrefabInstance:
     - target: {fileID: 3208445580069370129, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3208445580069370129, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
-        type: 3}
-      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3476588639171232544, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
@@ -673,11 +655,6 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5931309866794556058, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
-        type: 3}
-      propertyPath: enemies.Array.data[1].enemy.baseHP
-      value: 100
-      objectReference: {fileID: 0}
     - target: {fileID: 6051472453317516352, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -718,6 +695,11 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6512983732163671923, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
+        type: 3}
+      propertyPath: battleChance
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7097651160141466794, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -726,11 +708,6 @@ PrefabInstance:
     - target: {fileID: 7097651160141466794, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7097651160141466794, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
-        type: 3}
-      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7155900429397724596, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
@@ -813,11 +790,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8911545646607614822, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
-        type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8987829032837390399, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -871,13 +843,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 631343309}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ad67208c2597a848ad726de5180fbbc, type: 3}
+  m_Script: {fileID: 11500000, guid: d0913b1a93ef3874fbe8f5ebc9ad3ff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  method: BattleTest
-  menuButton: 0
-  enemy: {fileID: 0}
-  voice: {fileID: 8300000, guid: d6008d58737b44d41b7c3d21b8115476, type: 3}
+  method: QuestTest
+  confirmPressed: 0
+  messageFinished: 0
+  menuButton: 7
 --- !u!114 &631343311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -898,15 +870,15 @@ MonoBehaviour:
     eventsBefore:
     - index: 0
       waitTime: 0
-      method: BattleTest
+      method: QuestTest
     enablePlayerMovementDuringDialogue: 0
     dialogText: []
     eventsAfter: []
     processOptions: 0
     processIfTrue: 
     dontProcessOptions: 0
-    dontProcessIfTrue: 01000000
-    markAsTrue: 01000000
+    dontProcessIfTrue: 
+    markAsTrue: 
     markAsFalse: 
   - triggerAction: 0
     switch1: 0
@@ -1585,7 +1557,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1822220132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1599,6 +1571,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   method: QuestTest
+  confirmPressed: 0
+  messageFinished: 0
   menuButton: 0
 --- !u!114 &1822220133
 MonoBehaviour:
@@ -1612,7 +1586,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6767c2547a2d574b9297d11f171360c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventOrDialogue: []
+  eventOrDialogue:
+  - triggerAction: 0
+    switch1: 0
+    switch2: 0
+    voiceTone: {fileID: 0}
+    eventsBefore:
+    - index: 0
+      waitTime: 0
+      method: QuestTest
+    enablePlayerMovementDuringDialogue: 0
+    dialogText: []
+    eventsAfter: []
+    processOptions: 0
+    processIfTrue: 
+    dontProcessOptions: 0
+    dontProcessIfTrue: 
+    markAsTrue: 
+    markAsFalse: 
   activeScripts: []
 --- !u!114 &1822220134
 MonoBehaviour:
@@ -1719,7 +1710,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 7cefe9e9e8c984bbd9ff43235be8f54f, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9716981, g: 0.66460484, b: 0.66460484, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1966,6 +1957,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   method: TestMethod
+  confirmPressed: 0
+  messageFinished: 0
   menuButton: 0
   voice: {fileID: 8300000, guid: 6ee73e9f883ee4d56ac38e8d1a36349b, type: 3}
   testItem: {fileID: 0}

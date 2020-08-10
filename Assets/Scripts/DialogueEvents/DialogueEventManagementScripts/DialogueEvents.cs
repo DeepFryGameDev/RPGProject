@@ -352,6 +352,7 @@ public class DialogueEvents : MonoBehaviour
         {
             dialogueStarted = true;
             //bool messageFinished = false; //to check if message has finished processing
+            messageText.text = "";
             GameManager.instance.DisplayPanel(true); //shows message panel
 
             TurnTowardPlayer();

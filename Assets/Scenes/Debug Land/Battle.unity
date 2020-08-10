@@ -12682,7 +12682,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   attack: {fileID: 0}
+  item: {fileID: 0}
   attackDur: 0
+  itemDur: 0
   addedEffectAchieved: 0
   enemyAEChance: 0
 --- !u!1 &966860481
@@ -21989,12 +21991,14 @@ MonoBehaviour:
   startBattleZoom: 0
   magicCastingAnimFinished: 0
   currentMagicTarget: {fileID: 0}
-  showingDamage: 0
-  parentTile: {fileID: 0}
   physAttackObj: {fileID: 0}
   physAttackAnimFinished: 0
   physAttackCameraZoomFinished: 0
+  itemUsedUnit: {fileID: 0}
+  itemAnimFinished: 0
   currentUnit: {fileID: 0}
+  showingDamage: 0
+  parentTile: {fileID: 0}
 --- !u!1 &1938116979
 GameObject:
   m_ObjectHideFlags: 0
@@ -22398,7 +22402,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: d3d72ee188215fb4d86834691bfcc2be, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 42473177e27deec47a049056af08c108, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.25
   m_Pitch: 1

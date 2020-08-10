@@ -344,13 +344,23 @@ public class BattleCameraManager : MonoBehaviour
                         }
 
                         //Center camera to unit
-                        if (cam.transform.position != new Vector3(currentUnit.transform.position.x, currentUnit.transform.position.y, baseZ))
+                        /*if (cam.transform.position != new Vector3(currentUnit.transform.position.x, currentUnit.transform.position.y, baseZ))
                         {
                             cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(currentUnit.transform.position.x, currentUnit.transform.position.y, baseZ), baseMoveTime * Time.deltaTime);
                         } else
                         {
                             physAttackCameraZoomFinished = true;
+                        }*/
+
+                        if (cam.transform.position != new Vector3(physAttackObj.transform.position.x, physAttackObj.transform.position.y, baseZ))
+                        {
+                            cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(physAttackObj.transform.position.x, physAttackObj.transform.position.y, baseZ), baseMoveTime * Time.deltaTime);
                         }
+                        else
+                        {
+                            physAttackCameraZoomFinished = true;
+                        }
+
                     }
 
                     if (showingDamage)

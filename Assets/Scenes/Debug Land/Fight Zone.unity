@@ -6039,6 +6039,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Encounter Region 2
       objectReference: {fileID: 0}
+    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: m_Offset.y
+      value: -1.3784232
+      objectReference: {fileID: 0}
+    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 5.8133383
+      objectReference: {fileID: 0}
+    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: m_Offset.x
+      value: 12.784215
+      objectReference: {fileID: 0}
+    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 25.56853
+      objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: possibleEnemies.Array.size
@@ -6052,7 +6072,7 @@ PrefabInstance:
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: troopEncounters.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
@@ -6079,12 +6099,12 @@ PrefabInstance:
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: troopEncounters.Array.data[1].encounterChance
-      value: 1
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: troopEncounters.Array.data[0].encounterChance
-      value: 20
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
@@ -14629,7 +14649,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 27307796, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 4.462677
+      value: 4.462738
       objectReference: {fileID: 0}
     - target: {fileID: 27307796, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7, type: 3}
       propertyPath: m_SizeDelta.y
@@ -14750,6 +14770,11 @@ PrefabInstance:
     - target: {fileID: 2065734484991967705, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2065734484991967705, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
+        type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2382723858364630718, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
@@ -14887,6 +14912,11 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3844827809909897732, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4033257590135405994, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -14895,6 +14925,11 @@ PrefabInstance:
     - target: {fileID: 4033257590135405994, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4033257590135405994, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
+        type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4509403126739651023, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
@@ -15017,6 +15052,11 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6512983732163671923, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
+        type: 3}
+      propertyPath: battleChance
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7097651160141466794, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -15045,6 +15085,11 @@ PrefabInstance:
     - target: {fileID: 7206342140716660390, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
         type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7206342140716660390, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
+        type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7826724191136848821, guid: 22a0a0e3d0a270a4e837e0a33ac0c8e7,
@@ -15649,7 +15694,7 @@ PrefabInstance:
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: troopEncounters.Array.size
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
@@ -15657,5 +15702,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1969741401569731856, guid: 408bbc082ca29884aa9d7900d8f7e6ce,
         type: 3}
+    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: troopEncounters.Array.data[0].index
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dee49e6344c63b343bf50ed6910de92b, type: 3}
