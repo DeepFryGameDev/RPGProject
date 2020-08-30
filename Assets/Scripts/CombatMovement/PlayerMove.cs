@@ -16,6 +16,7 @@ public class PlayerMove : BaseMove
     {
         InitMove();
         HSM = GetComponent<HeroStateMachine>();
+        move = HSM.hero.finalMoveRating;
     }
 
     void Update()

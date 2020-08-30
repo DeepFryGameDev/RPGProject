@@ -94,6 +94,8 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public int heroAmount;
 
     [HideInInspector] public bool startBattleFromScript; //if battle is being started from script
+
+    [HideInInspector] public string battleSceneToLoad;
     
 
     void Awake()
@@ -213,7 +215,7 @@ public class GameManager : MonoBehaviour
         if (fromRegion)
         {
             //SceneManager.LoadScene(curRegion.BattleScene); //loads battle scene -- Disable when not testing
-            GameObject.Find("SceneLoader").GetComponent<SceneLoader>().LoadBattle(curRegion.BattleScene);
+            GameObject.Find("SceneLoader").GetComponent<SceneLoader>().LoadBattle(battleSceneToLoad);
         } else
         {
             //SceneManager.LoadScene(battleSceneFromScript); //loads battle scene from script -- Disable when not testing
@@ -292,6 +294,7 @@ public class GameManager : MonoBehaviour
             heroToAdd.baseDEX = fromHero.baseDEX;
             heroToAdd.baseAGI = fromHero.baseAGI;
             heroToAdd.baseSPI = fromHero.baseSPI;
+            heroToAdd.baseMove = fromHero.baseMove;
             heroToAdd.finalStrength = fromHero.finalStrength;
             heroToAdd.finalStamina = fromHero.finalStamina;
             heroToAdd.finalIntelligence = fromHero.finalIntelligence;
@@ -309,6 +312,7 @@ public class GameManager : MonoBehaviour
             heroToAdd.finalCritRating = fromHero.finalCritRating;
             heroToAdd.attack = fromHero.attack;
             heroToAdd.MagicAttacks = fromHero.MagicAttacks;
+            heroToAdd.finalMoveRating = fromHero.finalMoveRating;
         }
     }
 
@@ -396,6 +400,7 @@ public class GameManager : MonoBehaviour
                 {
                     Debug.Log("Chose: " + curRegion.troopEncounters[i].index + ", Encounter chance: " + encounterChance);
                     whichTroop = curRegion.troopEncounters[i].index;
+                    battleSceneToLoad = curRegion.troopEncounters[i].BattleScene;
                     gotEncounterChance = true;
                     break;
                 }

@@ -31,6 +31,7 @@ public enum BehaviorStates
 {
     IDLE,
     CHOOSEACTION,
+    THINK,
     BEFOREMOVE,
     MOVE,
     AFTERMOVE,

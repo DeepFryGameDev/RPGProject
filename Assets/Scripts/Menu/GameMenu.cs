@@ -1965,6 +1965,8 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipOptionsPanel/EquipOptionButton/EquipButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
         GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipOptionsPanel/RemoveOptionButton/RemoveButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
 
+        heroToCheck.UpdateStats();
+
         UpdateEquipmentArrowsToNeutral();
         DrawEquipMenuStats();
         DrawCurrentEquipment();
@@ -2172,23 +2174,23 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString();
 
         //Other stats
-        GameObject.Find("EquipStatsPanel/BaseHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/BaseCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString();
-        GameObject.Find("EquipStatsPanel/BaseMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/BaseBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString();
-        GameObject.Find("EquipStatsPanel/BaseParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/BaseThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString();
+        GameObject.Find("EquipStatsPanel/BaseHitText").GetComponent<Text>().text = heroToCheck.finalHitRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseCritText").GetComponent<Text>().text = heroToCheck.finalCritRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMPRegenText").GetComponent<Text>().text = heroToCheck.finalRegenRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseMoveText").GetComponent<Text>().text = heroToCheck.finalMoveRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseDodgeText").GetComponent<Text>().text = heroToCheck.finalDodgeRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseBlockText").GetComponent<Text>().text = heroToCheck.finalBlockRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseParryText").GetComponent<Text>().text = heroToCheck.finalParryRating.ToString();
+        GameObject.Find("EquipStatsPanel/BaseThreatText").GetComponent<Text>().text = heroToCheck.finalThreatRating.ToString();
 
-        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString();
-        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString();
-        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString();
-        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString();
-        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString();
+        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.finalHitRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.finalCritRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.finalRegenRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.finalMoveRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.finalDodgeRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.finalBlockRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.finalParryRating.ToString();
+        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.finalThreatRating.ToString();
     }
 
     /// <summary>
@@ -3198,9 +3200,8 @@ public class GameMenu : MonoBehaviour
                 tempHero.equipment[GetCurrentEquippedSlotIndex()] = null;
             }
         }
-        
-        tempHero.GetCurrentStatsFromEquipment();
-        tempHero.UpdateStatsFromTalents();
+
+        tempHero.UpdateStats();
 
         GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = tempHero.finalStrength.ToString();
             if (tempHero.finalStrength > heroToCheck.finalStrength)
@@ -3374,114 +3375,114 @@ public class GameMenu : MonoBehaviour
             }
 
 
-            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility).ToString();
-            if (tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility) > heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility))
+            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = tempHero.finalHitRating.ToString();
+            if (tempHero.finalHitRating > heroToCheck.finalHitRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Up");
             }
-            else if (tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility) < heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility))
+            else if (tempHero.finalHitRating < heroToCheck.finalHitRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Down");
             }
-            else if (tempHero.GetHitChance(tempHero.finalHitRating, tempHero.finalAgility) == heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility))
+            else if (tempHero.finalHitRating == heroToCheck.finalHitRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity).ToString();
-            if (tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity) > heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity))
+            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = tempHero.finalCritRating.ToString();
+            if (tempHero.finalCritRating > heroToCheck.finalCritRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Up");
             }
-            else if (tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity) < heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity))
+            else if (tempHero.finalCritRating < heroToCheck.finalCritRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Down");
             }
-            else if (tempHero.GetCritChance(tempHero.finalCritRating, tempHero.finalDexterity) == heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity))
+            else if (tempHero.finalCritRating == heroToCheck.finalCritRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity).ToString();
-            if (tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity) > heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity))
+            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = tempHero.finalMoveRating.ToString();
+            if (tempHero.finalMoveRating > heroToCheck.finalMoveRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Up");
             }
-            else if (tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity) < heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity))
+            else if (tempHero.finalMoveRating < heroToCheck.finalMoveRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Down");
             }
-            else if (tempHero.GetMoveRating(tempHero.finalMoveRating, tempHero.finalDexterity) == heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity))
+            else if (tempHero.finalMoveRating == heroToCheck.finalMoveRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit).ToString();
-            if (tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit) > heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit))
+            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = tempHero.finalRegenRating.ToString();
+            if (tempHero.finalRegenRating > heroToCheck.finalRegenRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Up");
             }
-            else if (tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit) < heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit))
+            else if (tempHero.finalRegenRating < heroToCheck.finalRegenRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Down");
             }
-            else if (tempHero.GetRegen(tempHero.finalRegenRating, tempHero.finalSpirit) == heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit))
+            else if (tempHero.finalRegenRating == heroToCheck.finalRegenRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility).ToString();
-            if (tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility) > heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility))
+            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = tempHero.finalDodgeRating.ToString();
+            if (tempHero.finalDodgeRating > heroToCheck.finalDodgeRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Up");
             }
-            else if (tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility) < heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility))
+            else if (tempHero.finalDodgeRating < heroToCheck.finalDodgeRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Down");
             }
-            else if (tempHero.GetDodgeChance(tempHero.finalDodgeRating, tempHero.finalAgility) == heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility))
+            else if (tempHero.finalDodgeRating == heroToCheck.finalDodgeRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = tempHero.GetBlockChance(tempHero.finalBlockRating).ToString();
-            if (tempHero.GetBlockChance(tempHero.finalBlockRating) > heroToCheck.GetBlockChance(heroToCheck.finalBlockRating))
+            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = tempHero.finalBlockRating.ToString();
+            if (tempHero.finalBlockRating > heroToCheck.finalBlockRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Up");
             }
-            else if (tempHero.GetBlockChance(tempHero.finalBlockRating) < heroToCheck.GetBlockChance(heroToCheck.finalBlockRating))
+            else if (tempHero.finalBlockRating < heroToCheck.finalBlockRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Down");
             }
-            else if (tempHero.GetBlockChance(tempHero.finalBlockRating) == heroToCheck.GetBlockChance(heroToCheck.finalBlockRating))
+            else if (tempHero.finalBlockRating == heroToCheck.finalBlockRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity).ToString();
-            if (tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity) > heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity))
+            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = tempHero.finalParryRating.ToString();
+            if (tempHero.finalParryRating > heroToCheck.finalParryRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Up");
             }
-            else if (tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity) < heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity))
+            else if (tempHero.finalParryRating < heroToCheck.finalParryRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Down");
             }
-            else if (tempHero.GetParryChance(tempHero.finalParryRating, tempHero.finalStrength, tempHero.finalDexterity) == heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity))
+            else if (tempHero.finalParryRating == heroToCheck.finalParryRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
             }
 
-            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = tempHero.GetThreatRating(tempHero.finalThreatRating).ToString();
-            if (tempHero.GetThreatRating(tempHero.finalThreatRating) > heroToCheck.GetThreatRating(heroToCheck.finalThreatRating))
+            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = tempHero.finalThreatRating.ToString();
+            if (tempHero.finalThreatRating > heroToCheck.finalThreatRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Up");
             }
-            else if (tempHero.GetThreatRating(tempHero.finalThreatRating) < heroToCheck.GetThreatRating(heroToCheck.finalThreatRating))
+            else if (tempHero.finalThreatRating < heroToCheck.finalThreatRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Down");
             }
-            else if (tempHero.GetThreatRating(tempHero.finalThreatRating) == heroToCheck.GetThreatRating(heroToCheck.finalThreatRating))
+            else if (tempHero.finalThreatRating == heroToCheck.finalThreatRating)
             {
                 ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
             }
@@ -3524,22 +3525,22 @@ public class GameMenu : MonoBehaviour
             GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
 
-            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString();
+            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = heroToCheck.finalHitRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
-            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString();
+            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = heroToCheck.finalCritRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
-            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString();
+            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = heroToCheck.finalMoveRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
-            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString();
+            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = heroToCheck.finalRegenRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
 
-            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString();
+            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = heroToCheck.finalDodgeRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
-            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString();
+            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = heroToCheck.finalBlockRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
-            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString();
+            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = heroToCheck.finalParryRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
-            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString();
+            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.finalThreatRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
         }
         
@@ -3659,6 +3660,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     void DrawStatusMenuBaseStats()
     {
+        heroToCheck.UpdateStats();
+
         DrawHeroFace(heroToCheck, GameObject.Find("StatusMenuPanel/BaseStatsPanel/FacePanel").GetComponent<Image>()); //Draws face graphic
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/NameText").GetComponent<Text>().text = heroToCheck.name; //Name text
         GameObject.Find("StatusMenuPanel/BaseStatsPanel/LevelText").GetComponent<Text>().text = heroToCheck.currentLevel.ToString(); //Level text
@@ -3689,14 +3692,14 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("StatusMenuPanel/StatsPanel/DefenseText").GetComponent<Text>().text = heroToCheck.finalDEF.ToString(); //Defense text
         GameObject.Find("StatusMenuPanel/StatsPanel/MagicDefenseText").GetComponent<Text>().text = heroToCheck.finalMDEF.ToString(); //Magic Defense text
 
-        GameObject.Find("StatusMenuPanel/StatsPanel/HitChanceText").GetComponent<Text>().text = heroToCheck.GetHitChance(heroToCheck.finalHitRating, heroToCheck.finalAgility).ToString(); //Hit Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/CritChanceText").GetComponent<Text>().text = heroToCheck.GetCritChance(heroToCheck.finalCritRating, heroToCheck.finalDexterity).ToString(); //Crit Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MoveRatingText").GetComponent<Text>().text = heroToCheck.GetMoveRating(heroToCheck.finalMoveRating, heroToCheck.finalDexterity).ToString(); //Move Rating text
-        GameObject.Find("StatusMenuPanel/StatsPanel/MPPerTurnText").GetComponent<Text>().text = heroToCheck.GetRegen(heroToCheck.finalRegenRating, heroToCheck.finalSpirit).ToString(); //MP Regen text
-        GameObject.Find("StatusMenuPanel/StatsPanel/DodgeChanceText").GetComponent<Text>().text = heroToCheck.GetDodgeChance(heroToCheck.finalDodgeRating, heroToCheck.finalAgility).ToString(); //Dodge Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = heroToCheck.GetBlockChance(heroToCheck.finalBlockRating).ToString(); //Block Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = heroToCheck.GetParryChance(heroToCheck.finalParryRating, heroToCheck.finalStrength, heroToCheck.finalDexterity).ToString(); //Parry Chance text
-        GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = heroToCheck.GetThreatRating(heroToCheck.finalThreatRating).ToString(); //Threat Rating text
+        GameObject.Find("StatusMenuPanel/StatsPanel/HitChanceText").GetComponent<Text>().text = heroToCheck.finalHitRating.ToString(); //Hit Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/CritChanceText").GetComponent<Text>().text = heroToCheck.finalCritRating.ToString(); //Crit Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/MoveRatingText").GetComponent<Text>().text = heroToCheck.finalMoveRating.ToString();
+        GameObject.Find("StatusMenuPanel/StatsPanel/MPPerTurnText").GetComponent<Text>().text = heroToCheck.finalRegenRating.ToString(); //MP Regen text
+        GameObject.Find("StatusMenuPanel/StatsPanel/DodgeChanceText").GetComponent<Text>().text = heroToCheck.finalDodgeRating.ToString(); //Dodge Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = heroToCheck.finalBlockRating.ToString(); //Block Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = heroToCheck.finalParryRating.ToString(); //Parry Chance text
+        GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = heroToCheck.finalThreatRating.ToString(); //Threat Rating text
     }
 
     #endregion

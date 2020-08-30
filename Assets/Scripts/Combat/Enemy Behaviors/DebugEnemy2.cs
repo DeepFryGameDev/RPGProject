@@ -27,8 +27,21 @@ public class DebugEnemy2 : EnemyBehavior
 
             break;
 
+            case (BehaviorStates.THINK):
+                Debug.Log("Thinking...");
+                //foreach tile in walkable range (inRange) <-- range loop
+                //simulate range for chosen attack using tile in loop as parent tile
+                //foreach tile in attack range <-- affect loop
+                //simulate affect pattern using tile in above loop as parent tile
+                //check for shielded tiles
+                //get count of how many targets affected
+                //when count is highest, set best tile to move as the tile from range loop and best tile to attack as the tile from affect loop
+                //set the shielded tiles based on best tile to attack as center tile
+                //go to BEFOREMOVE
+            break;
+
             case (BehaviorStates.BEFOREMOVE):
-                
+
                 if (AttackInRangeOfTarget(chosenTarget, chosenAttack))
                 {
                     behaviorStates = BehaviorStates.ACTION;
@@ -46,8 +59,7 @@ public class DebugEnemy2 : EnemyBehavior
                 {
                     if (foundTarget)
                     {
-                        //Debug.Log("moving enemy");
-                        MoveEnemy(false);
+                        MoveEnemy(false); //move algorithm should use best tile to move from THINK phase
                     }
                 } else
                 {
@@ -73,15 +85,19 @@ public class DebugEnemy2 : EnemyBehavior
                 break;
 
             case (BehaviorStates.ACTION):
-                
-                if (chosenAttack == self.attacks[0].attack)
+
+                if (!gettingTarget)
                 {
-                    //Debug.Log("run attack");
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
+                    GetTargets(chosenAttack.patternIndex, targetType.ToString()); //update as its coroutine
                 }
 
-                Debug.Log("changing back to idle");
-                behaviorStates = BehaviorStates.IDLE;
+                if (targets.Count != 0 && !gettingTarget)
+                {
+                    RunAction(chosenAttack, targets);
+
+                    Debug.Log("changing back to idle");
+                    behaviorStates = BehaviorStates.IDLE;
+                }
 
             break;
         }
@@ -93,5 +109,6 @@ public class DebugEnemy2 : EnemyBehavior
         Debug.Log("Chosen attack: " + chosenAttack);
         chosenTarget = GetHeroWithHighestThreat(); //chooses target
         Debug.Log("Chosen target: " + chosenTarget);
+        targetType = targetTypes.Hero;
     }
 }

@@ -20,38 +20,46 @@ public class DebugEnemy1 : EnemyBehavior
             break;
 
             case (BehaviorStates.CHOOSEACTION):
-                //Debug.Log("Building action lists");
+
                 BuildActionLists();
-                //Debug.Log("getting action");
                 GetChosenAction();
                 behaviorStates = BehaviorStates.BEFOREMOVE;
 
+            break;
+
+            case (BehaviorStates.THINK):
+                Debug.Log("Thinking...");
+                //foreach tile in walkable range (inRange) <-- range loop
+                //simulate range for chosen attack using tile in loop as parent tile
+                //foreach tile in attack range <-- affect loop
+                //simulate affect pattern using tile in above loop as parent tile
+                //check for shielded tiles
+                //get count of how many targets affected
+                //when count is highest, set best tile to move as the tile from range loop and best tile to attack as the tile from affect loop
+                //set the shielded tiles based on best tile to attack as center tile
+                //go to BEFOREMOVE
             break;
 
             case (BehaviorStates.BEFOREMOVE):
                 
                 if (AttackInRangeOfTarget(chosenTarget, chosenAttack))
                 {
-                    //Debug.Log("Attack is in range");
                     behaviorStates = BehaviorStates.ACTION;
                 }
                 else
                 {
-                    //Debug.Log("attack is NOT in range. moving");
                     behaviorStates = BehaviorStates.MOVE;
                 }
 
                 break;
 
             case (BehaviorStates.MOVE):
+
                 if (!readyForAction)
                 {
                     if (foundTarget)
                     {
-                        //Debug.Log("attack not in range, moving enemy");
-                        //Debug.Log("chosen action: " + chosenAttack);
-                        //Debug.Log("chosen target: " + chosenTarget);
-                        MoveEnemy(true);
+                        MoveEnemy(true); //move algorithm should use best tile to move from THINK phase
                     }
                 } else
                 {
@@ -66,7 +74,6 @@ public class DebugEnemy1 : EnemyBehavior
                 
                 if (AttackInRangeOfTarget(chosenTarget, chosenAttack))
                 {
-                    //Debug.Log("attack is in range");
                     behaviorStates = BehaviorStates.ACTION;
                 }
                 else
@@ -79,18 +86,18 @@ public class DebugEnemy1 : EnemyBehavior
 
             case (BehaviorStates.ACTION):
                 
-                if (chosenAttack == ESM.enemy.attacks[1].attack) //Cure 1
+                if (!gettingTarget)
                 {
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Enemy"));
-                } else if (chosenAttack == ESM.enemy.attacks[2].attack) //Bio 1
-                {
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
-                } else if (chosenAttack == ESM.enemy.attacks[0].attack) //Hammer Swing
-                {
-                    RunAction(chosenAttack, GetTargets(chosenAttack.patternIndex, "Hero"));
+                    StartCoroutine(GetTargets(chosenAttack.patternIndex, targetType.ToString()));
                 }
-                //Debug.Log("changing back to idle");
-                behaviorStates = BehaviorStates.IDLE;
+
+                if (targets.Count != 0 && !gettingTarget)
+                {
+                    RunAction(chosenAttack, targets);
+
+                    Debug.Log("changing back to idle");
+                    behaviorStates = BehaviorStates.IDLE;
+                }
 
             break;
         }
@@ -109,7 +116,7 @@ public class DebugEnemy1 : EnemyBehavior
         if (lowestHPPercent <= 99.0f && HasEnoughMP(chosenAttack))
         {
             Debug.Log("Choosing to heal " + lowestHPAlly.name + " as their HP is " + lowestHPPercent + "%");
-
+            targetType = targetTypes.Enemy;
             return;
         }
 
@@ -122,6 +129,7 @@ public class DebugEnemy1 : EnemyBehavior
             if (!IfStatusApplied(hero, "Poison") && HasEnoughMP(chosenAttack))
             {
                 Debug.Log("Choosing to cast Bio 1 on " + hero.name);
+                targetType = targetTypes.Hero;
                 return;
             }
         }
@@ -130,7 +138,7 @@ public class DebugEnemy1 : EnemyBehavior
         Debug.Log("Don't need to heal or cast bio, attacking highest threat target");
         chosenAttack = ESM.enemy.attacks[0].attack;
         chosenTarget = GetHeroWithHighestThreat();
-
+        targetType = targetTypes.Hero;
 
         //example:
         //chosenAttack = ESM.enemy.attacks[0]; //chooses attack

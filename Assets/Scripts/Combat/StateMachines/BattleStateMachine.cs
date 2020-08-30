@@ -110,6 +110,8 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
     private PlayerMove playerMove;
 
+    [HideInInspector] public GameObject centerTile;
+
     void Start()
     {
         moveActionPanel = GameObject.Find("BattleCanvas/BattleUI/MoveActionPanel");
@@ -679,7 +681,18 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         foreach(Tile tile in tilesInRange)
         {
-            tile.inRange = true;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+            foreach (RaycastHit2D target in hits)
+            {
+                if (target.collider.gameObject.tag != "Shieldable")
+                {
+                    tile.inRange = true;
+                } else
+                {
+                    //Debug.Log(tile.gameObject.name + " is shieldable - inRange");
+                    tile.inRange = false;
+                }
+            }
         }
 
         /*HeroesToManage[0].GetComponent<PlayerMove>().GetCurrentTile();
@@ -1960,5 +1973,16 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     public void ShowSelector(GameObject selector)
     {
         selector.GetComponent<SpriteRenderer>().enabled = true;
+    }
+
+    public void GetCenterTile(GameObject tile)
+    {
+        if (choosingTarget)
+        {
+            centerTile = tile;
+            Debug.Log("centerTile: " + centerTile.name);
+
+            //tile.GetComponent<Tile>().CheckIfTileIsShielded(tile.GetComponent<Tile>());
+        }
     }
 }

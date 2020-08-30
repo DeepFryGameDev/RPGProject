@@ -17,6 +17,7 @@ TagManager:
   - DamageText
   - HeroSpawnPoint
   - AttackAnimation
+  - Shieldable
   layers:
   - Default
   - TransparentFX
@@ -53,6 +54,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Battle Environment
+    uniqueID: 2493565263
     locked: 0
   - name: Sprites
     uniqueID: 3758629655

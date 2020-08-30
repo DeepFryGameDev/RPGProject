@@ -35,7 +35,7 @@ MonoBehaviour:
   threat: 0
   hit: 0
   crit: 0
-  move: 0
+  move: 3
   regen: 0
   dodge: 0
   parry: 0

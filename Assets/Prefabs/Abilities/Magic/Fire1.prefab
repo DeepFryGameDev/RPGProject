@@ -49,8 +49,8 @@ MonoBehaviour:
   damage: 30
   MPCost: 2
   cooldown: 0
-  patternIndex: 1
-  rangeIndex: 0
+  patternIndex: 0
+  rangeIndex: 2
   threatMultiplier: 1.1
   type: 1
   statusEffects: []

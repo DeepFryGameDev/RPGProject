@@ -6,6 +6,11 @@ public class TestEvent3 : BaseScriptedEvent
 {
     public void QuestTest()
     {
+        CallBattle(0, "Battle Test");
+    }
+
+    void Temp() //use above for testing quests
+    {
         if (messageFinished)
         {
             if (IfQuestIsActive(GetQuest(2)))

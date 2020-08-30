@@ -222,7 +222,7 @@ public class HeroStateMachine : MonoBehaviour
             foreach (RaycastHit2D target in tilesHit)
             {
                 Debug.Log(target.collider.gameObject.name);
-                if (!targets.Contains(target.collider.gameObject) && target.collider.gameObject.tag != "Tile")
+                if (!targets.Contains(target.collider.gameObject) && target.collider.gameObject.tag != "Tile" && target.collider.gameObject.tag != "Shieldable")
                 {
                     Debug.Log("adding " + target.collider.gameObject + " to targets");
                     if (!targetsAccountedFor.Contains(target.collider.gameObject))
@@ -250,7 +250,15 @@ public class HeroStateMachine : MonoBehaviour
 
         foreach (Tile rangeTile in affectPattern.ToArray())
         {
-            rangeTile.inAffect = true;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(rangeTile.transform.position, Vector3.forward, 1);
+            foreach (RaycastHit2D target in hits)
+            {
+                if (target.collider.gameObject.tag != "Shieldable")
+                {
+                    Debug.Log(target.collider.gameObject.name + " is shieldable - inAffect");
+                    rangeTile.inAffect = true;
+                }
+            }
         }
     }
 
@@ -265,7 +273,15 @@ public class HeroStateMachine : MonoBehaviour
 
         foreach (Tile rangeTile in rangePattern.ToArray())
         {
-            rangeTile.inRange = true;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(rangeTile.transform.position, Vector3.forward, 1);
+            foreach (RaycastHit2D target in hits)
+            {
+                if (target.collider.gameObject.tag != "Shieldable")
+                {
+                    Debug.Log(target.collider.gameObject.name + " is shieldable - inRange");
+                    rangeTile.inRange = true;
+                }
+            }
         }
     }
 

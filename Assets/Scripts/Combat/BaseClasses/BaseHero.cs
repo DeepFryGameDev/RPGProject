@@ -296,13 +296,15 @@ public class BaseHero : BaseClass
     /// </summary>
     public void UpdateStats()
     {
-        baseATK = GetATK(baseSTR, baseATK);
+        /*baseATK = GetATK(baseSTR, baseATK);
         baseMATK = GetMATK(baseINT, baseMATK);
         baseDEF = GetDEF(baseSTA, baseDEF);
         baseMDEF = GetMDEF(baseSTA, baseMDEF);
 
+        Debug.Log("old Max HP for " + name + ": " + baseHP);
         baseHP = GetMaxHP(baseSTA, baseHP);
-        baseMP = GetMaxMP(baseINT, baseMP);
+        Debug.Log("new Max HP for " + name + ": " + baseHP);
+        baseMP = GetMaxMP(baseINT, baseMP);*/
         
         GetCurrentStatsFromEquipment();
 
@@ -398,14 +400,14 @@ public class BaseHero : BaseClass
 
         postEquipmentHitRating = baseHit + fromEquipmentHitRating;
         postEquipmentCritRating = baseCrit + fromEquipmentCritRating;
-        postEquipmentMoveRating = baseMove + fromEquipmentMoveRating;
+        postEquipmentMoveRating = fromEquipmentMoveRating;
         postEquipmentRegenRating = baseRegen + fromEquipmentRegenRating;
 
         postEquipmentDodgeRating = baseDodge + fromEquipmentDodgeRating;
         postEquipmentBlockRating = baseBlock + fromEquipmentBlockRating;
         postEquipmentParryRating = baseParry + fromEquipmentParryRating;
         postEquipmentThreatRating = baseThreat + fromEquipmentThreatRating;
-
+        
         postEquipmentHP = GetMaxHP(postEquipmentStamina, fromEquipmentHP);
         postEquipmentMP = GetMaxMP(postEquipmentIntelligence, fromEquipmentMP);
     }
@@ -436,7 +438,7 @@ public class BaseHero : BaseClass
         finalBlockRating = postEquipmentBlockRating;
         finalParryRating = postEquipmentParryRating;
         finalThreatRating = postEquipmentThreatRating;
-
+        
         finalMaxHP = postEquipmentHP;
         finalMaxMP = postEquipmentMP;
 
@@ -518,7 +520,7 @@ public class BaseHero : BaseClass
 
         finalHitRating = GetHitChance(finalHitRating, finalAgility);
         finalCritRating = GetCritChance(finalCritRating, finalDexterity);
-        finalMoveRating = GetMoveRating(finalMoveRating, finalDexterity);
+        finalMoveRating = GetMoveRating(finalMoveRating, finalDexterity) + baseMove;
         finalRegenRating = GetRegen(finalRegenRating, finalSpirit);
 
         finalDodgeRating = GetDodgeChance(finalDodgeRating, finalAgility);

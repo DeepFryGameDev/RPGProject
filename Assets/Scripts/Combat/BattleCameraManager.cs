@@ -99,8 +99,8 @@ public class BattleCameraManager : MonoBehaviour
                 //-----
                 //if debugging, use below to skip pre-battle zoom, otherwise comment out
 
-                //startBattleZoom = false;
-                //battleReady = true;
+                startBattleZoom = false;
+                battleReady = true;
 
                 //------
                 if (startBattleZoom)
@@ -215,7 +215,7 @@ public class BattleCameraManager : MonoBehaviour
                 //Hover camera over unit, zoom out if needed
                 if (cam.orthographicSize != homeSize)
                 {
-                    Debug.Log("Zooming camera: " + cam.orthographicSize);
+                    //Debug.Log("Zooming camera: " + cam.orthographicSize);
                     cam.orthographicSize = Mathf.MoveTowards(cam.orthographicSize, homeSize, baseZoomTime * Time.deltaTime);
                 }
 
@@ -233,7 +233,7 @@ public class BattleCameraManager : MonoBehaviour
                 //Zoom into enemy
                 if (cam.orthographicSize != targetZoomSize)
                 {
-                    Debug.Log("Zooming camera: " + cam.orthographicSize);
+                    //Debug.Log("Zooming camera: " + cam.orthographicSize);
                     cam.orthographicSize = Mathf.MoveTowards(cam.orthographicSize, targetZoomSize, baseZoomTime * Time.deltaTime);
                 }
 

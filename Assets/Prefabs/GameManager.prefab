@@ -551,7 +551,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 584006559}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -10311,7 +10311,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2010755817}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -15871,7 +15871,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3844827809909897732}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.00000018576544
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -22927,7 +22927,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2065734484991967705}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.00000018576544
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -30796,7 +30796,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3208445580069370129}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -90941,7 +90941,7 @@ MonoBehaviour:
     baseSPI: 6
     baseHit: 5
     baseCrit: 5
-    baseMove: 5
+    baseMove: 3
     baseRegen: 5
     baseDodge: 5
     baseBlock: 5
@@ -91054,10 +91054,7 @@ MonoBehaviour:
       icon: {fileID: 0}
       effect: 
       isActive: 0
-    attacksToLearn:
-    - attack: {fileID: 6471717555975465330, guid: 02f9538f320f17b4fad42162e79261ea,
-        type: 3}
-      level: 2
+    attacksToLearn: []
     equipment:
     - {fileID: 0}
     - {fileID: 0}
@@ -91173,7 +91170,7 @@ MonoBehaviour:
     baseSPI: 10
     baseHit: 5
     baseCrit: 5
-    baseMove: 5
+    baseMove: 3
     baseRegen: 5
     baseDodge: 5
     baseBlock: 5
@@ -94748,7 +94745,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8911545646607614822}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -105301,7 +105298,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 4033257590135405994}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.00000018576544
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -105570,7 +105567,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3202420835647378449}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -117839,7 +117836,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 7206342140716660390}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.00000018576544
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -119353,7 +119350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16a2b0496a974fa47989e62acbe3eb08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  battleChance: 10
+  battleChance: 2
   maxBattleChance: 1000
   heroCharacter: {fileID: 6064773113169551419, guid: dbf082e3a8fc03c45b8883d49ffdb4cb,
     type: 3}
@@ -119396,6 +119393,7 @@ MonoBehaviour:
   enemySpawnPoints: []
   heroAmount: 0
   startBattleFromScript: 0
+  battleSceneToLoad: 
 --- !u!114 &6470599162190496189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122086,7 +122084,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 7097651160141466794}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.00000008592683
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

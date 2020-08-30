@@ -15,11 +15,8 @@ public class ButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     void Start()
     {
-        if (SceneManager.GetActiveScene().name == "Battle")
-        {
-            BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
-            detailsText = GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
-        }
+        BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
+        detailsText = GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
     }
 
     /// <summary>

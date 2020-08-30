@@ -27,7 +27,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1826917512001696884}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -16.43, y: 9.57, z: -2.5055575}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -48,6 +48,8 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -96,7 +98,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 4.1932526, y: -9.391133}
+  m_Offset: {x: 6.5181518, y: -5.273023}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -107,7 +109,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 8.386604, y: 18.782366}
+  m_Size: {x: 13.036403, y: 13.602538}
   m_EdgeRadius: 0
 --- !u!114 &1826917512001696872
 MonoBehaviour:
@@ -133,6 +135,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df389fe5671b6c24d9e6f228a330beb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAmountEnemies: 4
-  BattleScene: Battle
-  possibleEnemies: []
+  troopEncounters:
+  - index: 1
+    encounterChance: 50
+    BattleScene: Battle Test

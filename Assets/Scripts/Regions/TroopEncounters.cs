@@ -7,4 +7,5 @@ public class TroopEncounters
 {
     public int index;
     public float encounterChance;
+    public string BattleScene; //which battle scene to load
 }

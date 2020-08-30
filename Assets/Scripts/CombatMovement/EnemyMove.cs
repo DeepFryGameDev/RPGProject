@@ -145,8 +145,8 @@ public class EnemyMove : BaseMove
             lastPos = newPos;
         }
 
-        Debug.Log("last position: " + lastPos);
-        Debug.Log("current position: " + newPos);
+        //Debug.Log("last position: " + lastPos);
+        //Debug.Log("current position: " + newPos);
 
         if (lastPos != newPos)
         {
@@ -160,12 +160,12 @@ public class EnemyMove : BaseMove
                 float xDiff = lastPos.x - newPos.x;
                 if (xDiff > 0)
                 {
-                    Debug.Log("moving left");
+                    //Debug.Log("moving left");
                     enemyAnim.SetFloat("moveX", -1.0f);
                 }
                 else
                 {
-                    Debug.Log("moving right");
+                    //Debug.Log("moving right");
                     enemyAnim.SetFloat("moveX", 1.0f);
                 }
             }
@@ -175,12 +175,12 @@ public class EnemyMove : BaseMove
                 float yDiff = lastPos.y - newPos.y;
                 if (yDiff > 0)
                 {
-                    Debug.Log("moving down");
+                    //Debug.Log("moving down");
                     enemyAnim.SetFloat("moveY", -1.0f);
                 }
                 else
                 {
-                    Debug.Log("moving up");
+                    //Debug.Log("moving up");
                     enemyAnim.SetFloat("moveY", 1.0f);
                 }
             }
@@ -278,9 +278,30 @@ public class EnemyMove : BaseMove
         {
             Tile t = process.Dequeue();
 
-            selectableTiles.Add(t);
+            if (!IfShieldable(t))
+            {
+                selectableTiles.Add(t);
+                t.pathable = true;
+
+                if (t.distance < move)
+                {
+                    foreach (Tile tile in t.adjecencyList)
+                    {
+                        //Debug.Log("adjencencyList - " + tile);
+                        if (!tile.visited)
+                        {
+                            //Debug.Log("tile not visited");
+                            tile.parent = t;
+                            tile.visited = true;
+                            tile.distance = 1 + t.distance;
+                            process.Enqueue(tile);
+                        }
+                    }
+                }
+            }
+            /*selectableTiles.Add(t);
             t.pathable = true;
-            
+
             if (t.distance < move)
             {
                 foreach (Tile tile in t.adjecencyList)
@@ -295,7 +316,7 @@ public class EnemyMove : BaseMove
                         process.Enqueue(tile);
                     }
                 }
-            }
+            }*/
         }
     }
 
@@ -310,7 +331,7 @@ public class EnemyMove : BaseMove
             RaycastHit2D[] selectableHits = Physics2D.RaycastAll(obj.transform.position, Vector3.forward, 1);
             foreach (RaycastHit2D hit in selectableHits)
             {
-                if (hit.collider.gameObject.tag == "Hero" || hit.collider.gameObject.tag == "Enemy")
+                if (hit.collider.gameObject.tag == "Hero" || hit.collider.gameObject.tag == "Enemy" || hit.collider.gameObject.tag == "Shieldable")
                 {
                     obj.GetComponent<Tile>().walkable = false;
                     break;

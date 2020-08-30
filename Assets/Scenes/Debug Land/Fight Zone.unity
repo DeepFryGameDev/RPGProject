@@ -6041,75 +6041,33 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
-      propertyPath: m_Offset.y
-      value: -1.3784232
-      objectReference: {fileID: 0}
-    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: m_Size.y
-      value: 5.8133383
-      objectReference: {fileID: 0}
-    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
       propertyPath: m_Offset.x
-      value: 12.784215
+      value: 12.820523
       objectReference: {fileID: 0}
     - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: m_Size.x
-      value: 25.56853
+      value: 25.641146
+      objectReference: {fileID: 0}
+    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: m_Offset.y
+      value: -1.861834
+      objectReference: {fileID: 0}
+    - target: {fileID: 1826917512001696887, guid: dee49e6344c63b343bf50ed6910de92b,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 6.78016
       objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
-      propertyPath: possibleEnemies.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: possibleTroops.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: troopEncounters.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: possibleEnemies.Array.data[0]
-      value: 
-      objectReference: {fileID: 8285240672625080309, guid: 6f9866b043559674795166ebd1fb7eb7,
-        type: 3}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: possibleEnemies.Array.data[1]
-      value: 
-      objectReference: {fileID: 8285240672625080309, guid: 6f9866b043559674795166ebd1fb7eb7,
-        type: 3}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: possibleTroops.Array.data[1]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: troopEncounters.Array.data[1].index
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: troopEncounters.Array.data[1].encounterChance
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: troopEncounters.Array.data[0].encounterChance
-      value: 50
+      propertyPath: troopEncounters.Array.data[0].BattleScene
+      value: Battle Test
       objectReference: {fileID: 0}
     - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
         type: 3}
       propertyPath: troopEncounters.Array.data[0].index
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dee49e6344c63b343bf50ed6910de92b, type: 3}
@@ -15685,27 +15643,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Encounter Region 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: possibleEnemies.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: troopEncounters.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: possibleEnemies.Array.data[0]
-      value: 
-      objectReference: {fileID: 1969741401569731856, guid: 408bbc082ca29884aa9d7900d8f7e6ce,
-        type: 3}
-    - target: {fileID: 8066309113381174515, guid: dee49e6344c63b343bf50ed6910de92b,
-        type: 3}
-      propertyPath: troopEncounters.Array.data[0].index
-      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dee49e6344c63b343bf50ed6910de92b, type: 3}

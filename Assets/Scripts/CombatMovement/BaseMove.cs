@@ -18,7 +18,7 @@ public class BaseMove : MonoBehaviour
     public Tile currentTile;
 
     public bool readyForMove = false;
-    public int move = 3;
+    public int move;
     public float moveSpeed = 2;
 
     protected Vector3 velocity = new Vector3();
@@ -104,6 +104,7 @@ public class BaseMove : MonoBehaviour
         GameObject.Find("Main Camera").transform.SetParent(gameObject.transform);
 
         path.Clear();
+        Debug.Log("target tile: " + tile.gameObject.name);
         tile.target = true;
         readyForMove = true;
 
@@ -273,7 +274,11 @@ public class BaseMove : MonoBehaviour
                     tile.h = Vector3.Distance(tile.transform.position, target.transform.position);
                     tile.f = tile.g + tile.h;
 
-                    openList.Add(tile);
+                    if (!IfShieldable(tile))
+                    {
+                        openList.Add(tile);
+                    }
+                    //openList.Add(tile);
                 }
             }
 
@@ -384,5 +389,39 @@ public class BaseMove : MonoBehaviour
             actionText.color = new Color(0.5f, 0.5f, 0.5f);
             defendText.color = new Color(0.5f, 0.5f, 0.5f);
         }
+    }
+
+    public bool IfShieldable(Tile tile)
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(tile.gameObject.transform.position, Vector3.forward, 1);
+
+        foreach (RaycastHit2D hit in hits) //Allows active hero to move past all heroes, but not land on them.
+        {
+            if (hit.collider.gameObject.tag == "Shieldable")
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    public bool IfShielded(GameObject obj)
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(obj.gameObject.transform.position, Vector3.back, 1);
+
+        foreach (RaycastHit2D hit in hits) //Allows active hero to move past all heroes, but not land on them.
+        {
+            if (hit.collider.gameObject.tag == "Tile")
+            {
+                if (hit.collider.gameObject.GetComponent<Tile>().shielded)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
