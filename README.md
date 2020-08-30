@@ -4,7 +4,7 @@ You can watch a preview of the game at the below link, where you will see the va
 
 Please note, the music was taken from an already existing game, Final Fantasy 7, and is simply a placeholder. The sound effects and graphics were all largely taken from the Unity Asset Store, which you can find more details from below. All existing assets are placeholders which will be replaced when the permanent solution has been found.
 
-------------
+-----
 
 NPC Sprites: https://assetstore.unity.com/packages/2d/characters/tiny-rpg-forest-114685
 
