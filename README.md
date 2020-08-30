@@ -43,3 +43,7 @@ Fight Zone theme - Final Fantasy 7: Sandy Exile Place
 Victory theme - Final Fantasy 7: Fanfare
 
 Menu transition SE - ripped from Shining Force 2
+
+-----
+
+You can also visit my portfolio containing previous projects I have developed: https://github.com/DeepFryGameDev/portfolio
