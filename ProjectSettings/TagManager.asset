@@ -18,6 +18,7 @@ TagManager:
   - HeroSpawnPoint
   - AttackAnimation
   - Shieldable
+  - Shielded
   layers:
   - Default
   - TransparentFX

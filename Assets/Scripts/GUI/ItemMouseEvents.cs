@@ -7,8 +7,8 @@ using UnityEngine.UI;
 public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler //for displaying item details in menus
 {
     //Facilitates mouse cursor interaction with item objects instantiated in item menu
-    Text itemDesc;
-    BaseHero hero;
+    public Text itemDesc;
+    public BaseHero hero;
     BaseItemScript itemScript = new BaseItemScript();
     GameMenu menu;
     AudioManager AM;
@@ -25,7 +25,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// Returns item by given ID
     /// </summary>
     /// <param name="ID">Given ID to return item</param>
-    Item GetItem(int ID)
+    public Item GetItem(int ID)
     {
         foreach (BaseItem item in ItemDB.instance.items)
         {
@@ -41,7 +41,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// Returns equipment by given ID
     /// </summary>
     /// <param name="ID">Given ID to return equipment</param>
-    Item GetEquipment(int ID)
+    public Item GetEquipment(int ID)
     {
         foreach (BaseEquipment equip in EquipmentDB.instance.equipment)
         {
@@ -56,7 +56,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// <summary>
     /// Returns item ID from the attached GameObject name
     /// </summary>
-    int GetItemID()
+    public int GetItemID()
     {
         foreach (BaseItem item in ItemDB.instance.items)
         {
@@ -71,7 +71,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// <summary>
     /// Returns equip ID from the attached GameObject name
     /// </summary>
-    int GetEquipID()
+    public int GetEquipID()
     {
         foreach (BaseEquipment equip in EquipmentDB.instance.equipment)
         {
@@ -86,7 +86,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// <summary>
     /// Returns item type (item or equipment) from attached GameObject
     /// </summary>
-    string GetItemType()
+    public string GetItemType()
     {
         foreach (BaseEquipment equip in EquipmentDB.instance.equipment)
         {
@@ -125,6 +125,11 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// Begins item processing when item object in item menu is clicked, or helps swap items if item sort customize mode is on
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
+    {
+        UseItem();
+    }
+
+    public void UseItem()
     {
         if (GetItemType() == "item")
         {
@@ -297,7 +302,7 @@ public class ItemMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Debug.Log("choose a hero");
         while (hero == null)
         {
-            GetHeroClicked();
+            //GetHeroClicked();
             yield return null;
         }
     }

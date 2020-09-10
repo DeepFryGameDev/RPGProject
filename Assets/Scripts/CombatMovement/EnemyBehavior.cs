@@ -23,11 +23,18 @@ public class EnemyBehavior : EnemyMove
     //for finding which attacks are in range
     protected List<BaseAttack> attacksWithinRange = new List<BaseAttack>();
 
-    Tile bestTargetTile;
-    Tile bestMoveTile;
+    protected Tile bestTargetTile;
+    protected Tile bestMoveTile;
+
+    Tile bestPositionTile;
+    int tempPosition;
     
     protected bool gettingTarget;
+    protected bool thinking;
+    protected bool doneThinking;
     //bool gettingBestTargetTile;
+
+    bool showingThinkIcon;
 
     protected enum targetTypes
     {
@@ -56,6 +63,7 @@ public class EnemyBehavior : EnemyMove
     protected BehaviorStates behaviorStates;
 
     protected bool foundTarget;
+    protected bool foundPath;
 
     Animator enemyAnim;
 
@@ -568,7 +576,7 @@ public class EnemyBehavior : EnemyMove
         }*/
 
         //gettingBestTargetTile = true;
-        GetBestTargetTile();
+        //GetBestTargetTile();
 
         Tile targetTile = bestTargetTile;
         BattleCameraManager.instance.parentTile = targetTile.gameObject;
@@ -606,7 +614,7 @@ public class EnemyBehavior : EnemyMove
     }
 
     /// <summary>
-    /// Calculates the best target tile for processing the action using all possible target tiles, and returns the tile with the most targets that also includes the priority target
+    /// Calculates the best target tile for processing the action using all possible target tiles, and returns the tile with the most targets that also includes the priority target -- might not need
     /// </summary>
     void GetBestTargetTile()
     {
@@ -654,7 +662,7 @@ public class EnemyBehavior : EnemyMove
                     foreach (Tile targetTile in affectTiles)
                     {
                         //Debug.Log("checking " + targetTile.gameObject.name + " for shielded");
-                        t.CheckIfTileIsShielded(targetTile);
+                        //t.CheckIfTileIsShielded(targetTile);
                     }
 
                     foreach (Tile targetTile in affectTiles)
@@ -692,6 +700,517 @@ public class EnemyBehavior : EnemyMove
         bestTargetTile = tempTile;
         //gettingBestTargetTile = false;
     }
+
+    //----- for THINK phase-----
+
+    protected IEnumerator Think()
+    {
+        Debug.Log("-----THINKING-----");
+
+        showingThinkIcon = true;
+        StartCoroutine(ShowThinkingIcon());
+
+        doneThinking = false;
+        bestMoveTile = null;
+        bestTargetTile = null;
+        targets.Clear();
+
+        FindSelectableTiles();
+
+        //foreach tile in walkable range (pathable) <-- pathable loop
+        List<Tile> pathableTiles = GetPathableTiles();
+        List<Tile> possibleAttackTiles = new List<Tile>();
+        List<Tile> fPossibleAttackTiles = new List<Tile>();
+        List<BaseEnemyBehaviorMove> possibleFinalTiles = new List<BaseEnemyBehaviorMove>();
+        
+        startingTile = currentTile;
+
+        int highCount = 0;
+
+        foreach (Tile pathableTile in pathableTiles)
+        {
+            //Debug.Log("pathableTile: " + pathableTile.gameObject.name);
+
+            //simulate range for chosen attack using tile in loop as parent tile
+            //foreach tile in attack range <-- range loop
+            foreach (Tile attackTile in GetTilesInAttackRange(pathableTile))
+            {
+                //Debug.Log("attackTile: " + attackTile.gameObject.name);
+
+                //simulate affect pattern using tile in above loop as parent tile
+                //foreach tile in affect range <-- affect loop
+                int targetCount = 0;
+                foreach (Tile affectTile in GetTilesInAffectRange(attackTile))
+                {
+                    //Debug.Log("affectTile: " + affectTile.gameObject.name);
+
+                    //this is every affected tile after simulating all attackable tiles after simulating all available pathable tiles.
+                    //get count of how many targets affected
+                    if (IfPossibleTargetOnTile(affectTile))
+                    {
+                        targetCount++;
+                    }
+                }
+
+                if (targetCount > 0 && !possibleAttackTiles.Contains(attackTile) && !attackTile.shieldable)
+                {
+                    //Debug.Log("adding possible attack tile: " + attackTile.gameObject.name);
+                    possibleAttackTiles.Add(attackTile);
+
+                    BaseEnemyBehaviorMove newTileGroup = new BaseEnemyBehaviorMove
+                    {
+                        moveTile = pathableTile,
+                        attackTile = attackTile
+                    };
+                    possibleFinalTiles.Add(newTileGroup);
+                }
+            }
+        }
+
+        foreach (Tile possibleAttackTile in possibleAttackTiles)
+        {
+            BSM.centerTile = possibleAttackTile.gameObject;
+            List<GameObject> tempTargetList = new List<GameObject>();
+
+            int count = 0;
+
+            //Debug.Log("possible attack tile: " + possibleAttackTile.gameObject.name);
+
+            //clear shielded for all potential tiles if they are marked already
+            foreach (Tile affectTile in GetTilesInAffectRange(possibleAttackTile))
+            {
+                affectTile.shielded = false;
+            }
+
+            //check for shielded tiles
+            foreach (Tile affectTile in GetTilesInAffectRange(possibleAttackTile))
+            {
+                if (possibleAttackTile != affectTile)
+                {
+                    yield return GetShieldableTiles(affectTile);
+                }
+            }
+
+            //get count of how many targets affected
+            foreach (Tile affectTile in GetTilesInAffectRange(possibleAttackTile))
+            {
+                if (IfPossibleTargetOnTile(affectTile) && !tempTargetList.Contains(ObjectOnTile(affectTile)) && affectTile.shielded == false)
+                {
+                    tempTargetList.Add(ObjectOnTile(affectTile));
+                    count++;
+                }
+            }
+
+            //Get possible attack tiles with highest count of targets
+            if (count > 0)
+            {
+                if (count > highCount) //new high count
+                {
+                    fPossibleAttackTiles.Clear();
+
+                    highCount = count;
+
+                    //Debug.Log("Adding to final list: " + possibleAttackTile.gameObject.name + " with count of " + count);
+                    fPossibleAttackTiles.Add(possibleAttackTile);
+                } else if (count == highCount) //same as high count
+                {
+                    //Debug.Log("Adding to final list: " + possibleAttackTile.gameObject.name + " with count of " + count);
+                    fPossibleAttackTiles.Add(possibleAttackTile);
+                }
+            }
+        }
+
+        //simulate affect tiles for all possible attack tiles
+        foreach (Tile possibleFinalAttackTile in fPossibleAttackTiles)
+        {
+            //Debug.Log("possible final attack tile: " + possibleFinalAttackTile.gameObject.name);
+            foreach (Tile affectTile in GetTilesInAffectRange(possibleFinalAttackTile))
+            {
+                affectTile.shielded = false;
+            }
+
+            //check for shielded tiles
+            foreach (Tile affectTile in GetTilesInAffectRange(possibleFinalAttackTile))
+            {
+                if (possibleFinalAttackTile != affectTile)
+                {
+                    yield return GetShieldableTiles(affectTile);
+                }
+            }
+            SetBestPositionTile(GetTilesInAffectRange(possibleFinalAttackTile));
+        }
+
+        //set best tile to move as the tile from range loop and best tile to attack as the tile from affect loop
+        tempPosition = 0; //reset tempPosition
+
+        Debug.Log("-----------------------------");
+        //Debug.Log("Best target tile: " + bestTargetTile.gameObject.name);
+
+        foreach (BaseEnemyBehaviorMove posTiles in possibleFinalTiles)
+        {
+            //Debug.Log("posTiles - move tile: " + posTiles.moveTile.gameObject.name + ", attackTile: " + posTiles.attackTile.gameObject.name);
+            if (bestPositionTile.gameObject == posTiles.attackTile.gameObject)
+            {
+                Debug.Log("Best move tile: " + posTiles.moveTile.gameObject.name);
+                Debug.Log("Best attack tile: " + posTiles.attackTile.gameObject.name);
+                
+                bestTargetTile = posTiles.attackTile;
+                bestMoveTile = posTiles.moveTile;
+            }
+        }
+
+        Debug.Log("-----------------------------");
+
+        //finally set the shielded tiles based on best tile to attack as center tile and gather targets
+        if (bestTargetTile != null)
+        {
+            BSM.centerTile = bestTargetTile.gameObject;
+
+            //set the shielded tiles
+            foreach (Tile affectTile in GetTilesInAffectRange(bestTargetTile))
+            {
+                yield return GetShieldableTiles(affectTile);
+            }
+
+            //set targets
+            foreach (Tile affectTile in GetTilesInAffectRange(bestTargetTile))
+            {
+                if (!affectTile.shielded && IfPossibleTargetOnTile(affectTile))
+                {
+                    targets.Add(ObjectOnTile(affectTile));
+                }
+            }
+        }
+
+        Debug.Log("-----DONE THINKING-----");
+
+        showingThinkIcon = false;
+        doneThinking = true;
+    }
+
+    IEnumerator ShowThinkingIcon()
+    {
+        GameObject icon = gameObject.transform.Find("ThinkingIcon").gameObject;
+
+        float rotateSpeed = 2.0f;
+        
+        if (!icon.GetComponent<SpriteRenderer>().enabled)
+        {
+            icon.GetComponent<SpriteRenderer>().enabled = true;
+        }
+
+        while (showingThinkIcon)
+        {
+            icon.transform.Rotate(0.0f, 0.0f, (-1 * rotateSpeed));
+
+            //yield return new WaitForSeconds(0.05f);
+            yield return new WaitForEndOfFrame();
+        }
+
+        icon.transform.rotation = new Quaternion(0, 0, 0, 0);
+        icon.GetComponent<SpriteRenderer>().enabled = false;
+    }
+
+    List<Tile> GetPathableTiles()
+    {
+        List<Tile> pathableTiles = new List<Tile>();
+
+        GameObject[] allTiles = GameObject.FindGameObjectsWithTag("Tile");
+
+        foreach (GameObject tileObj in allTiles)
+        {
+            if (IfPossibleTargetOnTile(tileObj.GetComponent<Tile>()) && ObjectOnTile(tileObj.GetComponent<Tile>()).tag == "Hero")
+            {
+                tileObj.GetComponent<Tile>().pathable = false;
+            }
+
+            if (tileObj.GetComponent<Tile>().pathable)
+            {
+                pathableTiles.Add(tileObj.GetComponent<Tile>());
+            }
+        }
+
+        return pathableTiles;
+    }
+
+    List<Tile> GetTilesInAttackRange(Tile parentTile)
+    {
+        Pattern attackRangePattern = new Pattern();
+        List<Tile> tilesInAttackRange = attackRangePattern.GetRangePattern(parentTile, chosenAttack.rangeIndex);
+
+        return tilesInAttackRange;
+    }
+
+    List<Tile> GetTilesInAffectRange(Tile parentTile)
+    {
+        Pattern affectRangePattern = new Pattern();
+        List<Tile> tilesInAffectRange = affectRangePattern.GetAffectPattern(parentTile, chosenAttack.patternIndex);
+
+        return tilesInAffectRange;
+    }
+
+    bool IfPossibleTargetOnTile(Tile tileToCheck)
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(tileToCheck.transform.position, Vector3.forward, 1);
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider.gameObject.tag == chosenTarget.tag)
+            {
+                return true;
+            }
+        }
+
+            return false;
+    }
+
+    void SetBestPositionTile(List<Tile> affectTiles)
+    {
+        int position = 0;
+
+        foreach (Tile affectTile in affectTiles)
+        {
+            position++;
+            if (!affectTile.shielded && ObjectOnTile(affectTile) == chosenTarget)
+            {
+                if (tempPosition == 0)
+                {
+                    bestPositionTile = affectTile;
+                    tempPosition = position;
+                    break;
+                } else if (position < tempPosition)
+                {
+                    bestPositionTile = affectTile;
+                    break;
+                }
+
+            }
+        }
+    }
+
+    GameObject ObjectOnTile(Tile tileToCheck)
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(tileToCheck.transform.position, Vector3.forward, 1);
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider.gameObject.tag == "Hero" || hit.collider.gameObject.tag == "Enemy")
+            {
+                return hit.collider.gameObject;
+            }
+        }
+        return null;
+    }
+
+    IEnumerator GetShieldableTiles(Tile tile)
+    {
+        //check each tile in each direction 1 tile - done
+        //if tile is shieldable or shielded - done
+        //get direction of that tile from center tile - done
+        //check tile 1 over in that direction - done
+        //if in affect - done
+        //mark tile as shielded - done
+
+        yield return new WaitForEndOfFrame();
+
+        string dir = "null";
+        Tile tileToCheck = null;
+
+        //Debug.Log(BSM.centerTile.name);
+        //Debug.Log("checking for shieldable tiles from: " + BSM.centerTile.name + " to: " + tile.gameObject.name);
+
+        //up
+        RaycastHit2D[] upHits = Physics2D.RaycastAll(tile.transform.position, Vector3.up, 1);
+        foreach (RaycastHit2D target in upHits)
+        {
+            if (target.collider.gameObject.tag == "Tile" && target.collider.gameObject.GetComponent<Tile>() != tile)
+            {
+                if (target.collider.gameObject.GetComponent<Tile>().shieldable || target.collider.gameObject.GetComponent<Tile>().shielded)
+                {
+                    if (DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) != "null")
+                    {
+                        //Debug.Log(target.collider.gameObject.name + " is shieldable/shielded and is " + DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) + " from center tile");
+                        tileToCheck = target.collider.gameObject.GetComponent<Tile>();
+                        dir = DirectionFromCenterTile(tileToCheck);
+                    }
+                }
+            }
+        }
+        //down
+        RaycastHit2D[] downHits = Physics2D.RaycastAll(tile.transform.position, Vector3.down, 1);
+        foreach (RaycastHit2D target in downHits)
+        {
+            if (target.collider.gameObject.tag == "Tile" && target.collider.gameObject.GetComponent<Tile>() != tile)
+            {
+                if (target.collider.gameObject.GetComponent<Tile>().shieldable || target.collider.gameObject.GetComponent<Tile>().shielded)
+                {
+                    if (DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) != "null")
+                    {
+                        //Debug.Log(target.collider.gameObject.name + " is shieldable/shielded and is " + DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) + " from center tile");
+                        tileToCheck = target.collider.gameObject.GetComponent<Tile>();
+                        dir = DirectionFromCenterTile(tileToCheck);
+                    }
+                }
+            }
+        }
+        //left
+        RaycastHit2D[] leftHits = Physics2D.RaycastAll(tile.transform.position, Vector3.left, 1);
+        foreach (RaycastHit2D target in leftHits)
+        {
+            if (target.collider.gameObject.tag == "Tile" && target.collider.gameObject.GetComponent<Tile>() != tile)
+            {
+                if (target.collider.gameObject.GetComponent<Tile>().shieldable || target.collider.gameObject.GetComponent<Tile>().shielded)
+                {
+                    if (DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) != "null")
+                    {
+                        //Debug.Log(target.collider.gameObject.name + " is shieldable/shielded and is " + DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) + " from center tile");
+                        tileToCheck = target.collider.gameObject.GetComponent<Tile>();
+                        dir = DirectionFromCenterTile(tileToCheck);
+                    }
+                }
+            }
+        }
+        //right
+        RaycastHit2D[] rightHits = Physics2D.RaycastAll(tile.transform.position, Vector3.right, 1);
+        foreach (RaycastHit2D target in rightHits)
+        {
+            if (target.collider.gameObject.tag == "Tile" && target.collider.gameObject.GetComponent<Tile>() != tile)
+            {
+                if (target.collider.gameObject.GetComponent<Tile>().shieldable || target.collider.gameObject.GetComponent<Tile>().shielded)
+                {
+                    if (DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) != "null")
+                    {
+                        //Debug.Log(target.collider.gameObject.name + " is shieldable/shielded and is " + DirectionFromCenterTile(target.collider.gameObject.GetComponent<Tile>()) + " from center tile");
+                        tileToCheck = target.collider.gameObject.GetComponent<Tile>();
+                        dir = DirectionFromCenterTile(tileToCheck);
+                    }
+                }
+            }
+        }
+
+        if (dir != "null" && tileToCheck != null)
+        {
+            if (dir == "up" && tileToCheck.gameObject != BSM.centerTile)
+            {
+                //Debug.Log("checking 1 tile up from " + tileToCheck.gameObject.name);
+                RaycastHit2D[] dirHits = Physics2D.RaycastAll(tileToCheck.transform.position, Vector3.up, 1);
+                foreach (RaycastHit2D target in dirHits)
+                {
+                    if (target.collider.gameObject.tag == "Tile")
+                    {
+                        //Debug.Log("shielding " + target.collider.gameObject.name);
+                        SetShielded(target.collider.gameObject);
+                    }
+                }
+            }
+            if (dir == "down" && tileToCheck.gameObject != BSM.centerTile)
+            {
+                //Debug.Log("checking 1 tile down from " + tileToCheck.gameObject.name);
+                RaycastHit2D[] dirHits = Physics2D.RaycastAll(tileToCheck.transform.position, Vector3.down, 1);
+                foreach (RaycastHit2D target in dirHits)
+                {
+                    if (target.collider.gameObject.tag == "Tile")
+                    {
+                        SetShielded(target.collider.gameObject);
+                    }
+                }
+            }
+            if (dir == "left" && tileToCheck.gameObject != BSM.centerTile)
+            {
+                //Debug.Log("checking 1 tile left from " + tileToCheck.gameObject.name);
+                RaycastHit2D[] dirHits = Physics2D.RaycastAll(tileToCheck.transform.position, Vector3.left, 1);
+                foreach (RaycastHit2D target in dirHits)
+                {
+                    if (target.collider.gameObject.tag == "Tile")
+                    {
+                        SetShielded(target.collider.gameObject);
+                    }
+                }
+            }
+            if (dir == "right" && tileToCheck.gameObject != BSM.centerTile)
+            {
+                //Debug.Log("checking 1 tile right from " + tileToCheck.gameObject.name);
+                RaycastHit2D[] dirHits = Physics2D.RaycastAll(tileToCheck.transform.position, Vector3.right, 1);
+                foreach (RaycastHit2D target in dirHits)
+                {
+                    if (target.collider.gameObject.tag == "Tile")
+                    {
+                        SetShielded(target.collider.gameObject);
+                    }
+                }
+            }
+        }
+    }
+
+    void SetShielded(GameObject tileObj)
+    {
+        //Debug.Log("shielding " + tileObj.name);
+        tileObj.GetComponent<Tile>().shielded = true;
+        tileObj.GetComponent<Tile>().inAffect = false;
+
+        RaycastHit2D[] hits = Physics2D.RaycastAll(tileObj.transform.position, Vector3.forward, 1);
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider.gameObject.tag == "Enemy" || hit.collider.gameObject.tag == "Hero")
+            {
+                BSM.HideSelector(hit.collider.gameObject.transform.Find("Selector").gameObject);
+            }
+        }
+    }
+
+    string DirectionFromCenterTile(Tile tileToCheck)
+    {
+        Vector3 centerTilePos = BSM.centerTile.gameObject.transform.position;
+        Vector3 tileToCheckPos = tileToCheck.gameObject.transform.position;
+
+        //Debug.Log(centerTilePos + " - " + tileToCheckPos);
+
+        if (centerTilePos.x != tileToCheckPos.x && centerTilePos.y != tileToCheckPos.y)
+        {
+            return "null";
+        }
+        else
+        {
+            if (centerTilePos.x > tileToCheckPos.x)
+            {
+                //Debug.Log(BSM.centerTile.gameObject.name + " is right of " + tileToCheck.gameObject.name);
+                return "left";
+            }
+
+            if (centerTilePos.x < tileToCheckPos.x)
+            {
+                //Debug.Log(BSM.centerTile.gameObject.name + " is left of " + tileToCheck.gameObject.name);
+                return "right";
+            }
+
+            if (centerTilePos.y > tileToCheckPos.y)
+            {
+                //Debug.Log(BSM.centerTile.gameObject.name + " is up of " + tileToCheck.gameObject.name);
+                return "down";
+            }
+
+            if (centerTilePos.y < tileToCheckPos.y)
+            {
+                //Debug.Log(BSM.centerTile.gameObject.name + " is down of " + tileToCheck.gameObject.name);
+                return "up";
+            }
+        }
+
+        return "null";
+    }
+
+    void UpdateShieldable(Tile tile)
+    {
+        RaycastHit2D[] tilesHit = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+        foreach (RaycastHit2D target in tilesHit)
+        {
+            if (target.collider.gameObject.tag == "Shieldable")
+            {
+                //Debug.Log("Setting " + tile.gameObject.name + " as shieldable");
+                tile.shieldable = true;
+            }
+        }
+    }
+
+    //-----------------------------------------
 
     /// <summary>
     /// Facilitates receiving damage from hero/enemy
@@ -975,113 +1494,21 @@ public class EnemyBehavior : EnemyMove
     }
 
     /// <summary>
-    /// Processes if enemy graphic should move to target and moves to them if needed.  If true, enemy moves to range. (Mage)  If false, enemy moves to target. (Warrior)
+    /// Processes if enemy graphic should move to target and moves to them if needed.  If true, enemy moves to range. (Mage)  If false, enemy moves to target. (Warrior) - disabled for now
     /// </summary>
-    /// <param name="moveToRange">If true, enemy moves to range. (Mage)  If false, enemy moves to target. (Warrior)</param>
-    protected void MoveEnemy(bool moveToRange)
+    protected void MoveEnemy()
     {
-        if (!moveToRange)
+        if (!foundPath)
         {
-            MoveToTarget();
-        } else
-        {
-            MoveToRange();
+            Debug.Log("calculating enemy move");
+            CalculateEnemyMove();
+            foundPath = true;
         }
+
+        Debug.Log("moving to target");
+        MoveToTarget();
 
         GetComponent<EnemyStateMachine>().startPosition = transform.position;
-    }
-
-    /// <summary>
-    /// Calculates the best target tile for moving the enemy using all possible target tiles, and returns the tile with the most targets that also includes the priority target 
-    /// </summary>
-    Tile GetBestMoveTile()
-    {
-        Tile tempTile = null;
-        List<Tile> moveTiles = new List<Tile>();
-        List<Tile> rangeTiles = new List<Tile>();
-        List<Tile> affectTiles = new List<Tile>();
-        List<GameObject> possibleTargets = new List<GameObject>();
-        int targetCount = 0;
-
-        RaycastHit2D[] moveHits = Physics2D.RaycastAll(transform.position, Vector3.back, 1);
-
-        bestMoveTile = null;
-
-        foreach (RaycastHit2D tile in moveHits) //sets parent tile
-        {
-            if (tile.collider.gameObject.tag == "Tile")
-            {
-                GameObject[] allTiles = GameObject.FindGameObjectsWithTag("Tile");
-                foreach (GameObject tileObj in allTiles)
-                {
-                    Tile t = tileObj.GetComponent<Tile>();
-                    if (t.pathable && !moveTiles.Contains(t))
-                    {
-                        moveTiles.Add(t); //all pathable tiles are added here
-                    }
-                }
-                //rangeTiles = pattern.pattern;
-                break;
-            }
-        }
-
-        foreach (Tile moveTile in moveTiles) //for all pathable tiles
-        {
-            rangeTiles.Clear();
-
-            RaycastHit2D[] rangeHits = Physics2D.RaycastAll(moveTile.transform.position, Vector3.zero, 1);
-
-            foreach (RaycastHit2D tile in rangeHits) //sets parent tile to the current moveTile
-            {
-                if (tile.collider.gameObject.tag == "Tile")
-                {
-                    Tile t = tile.collider.gameObject.GetComponent<Tile>();
-                    pattern.GetRangePattern(t, chosenAttack.rangeIndex);
-                    foreach (Tile rangeTile in pattern.pattern)
-                    {
-                        rangeTiles.Add(rangeTile);
-                    }
-                    //rangeTiles = pattern.pattern;
-                    break;
-                }
-            }
-
-            foreach (Tile t in rangeTiles) //for each range tile on the current move tile
-            {
-                RaycastHit2D[] rangeTilesToCheck = Physics2D.RaycastAll(t.transform.position, Vector3.zero, 1);
-                foreach (RaycastHit2D tileToCheck in rangeTilesToCheck)
-                {
-                    possibleTargets.Clear();
-                    if (tileToCheck.collider.gameObject.tag == "Tile")
-                    {
-                        Tile rangeTileToCheck = tileToCheck.collider.gameObject.GetComponent<Tile>();
-                        pattern.GetAffectPattern(rangeTileToCheck, chosenAttack.patternIndex);
-                        affectTiles = pattern.pattern;
-
-                        foreach (Tile targetTile in affectTiles)
-                        {
-                            RaycastHit2D[] affectHits = Physics2D.RaycastAll(targetTile.transform.position, Vector3.forward, 1);
-                            foreach (RaycastHit2D affectedTarget in affectHits)
-                            {
-                                if (affectedTarget.collider.gameObject.tag == target.tag)
-                                {
-                                    possibleTargets.Add(affectedTarget.collider.gameObject);
-                                }
-                            }
-                        }
-                        if (possibleTargets.Count > targetCount && possibleTargets.Contains(chosenTarget))
-                        {
-                            tempTile = t;
-                            targetCount = possibleTargets.Count;
-                        }
-                    }
-                }
-            }
-        }
-
-        bestMoveTile = tempTile;
-
-        return bestMoveTile;
     }
 
     /// <summary>
@@ -1089,19 +1516,20 @@ public class EnemyBehavior : EnemyMove
     /// </summary>
     protected void CalculateEnemyMove()
     {
-        /*if (chosenTarget != null)
+        if (bestMoveTile == null) //target not in range, need to move to closest tile to target
         {
-            actualTargetTile = GetTargetTile(chosenTarget);
-            target = chosenTarget;
-        }*/
+            CalculatePath(GetTargetTile(chosenTarget));
 
-        //actualTargetTile = GetTargetTile(target);
+            for (int i = 2; i < gameObject.GetComponent<EnemyStateMachine>().enemy.baseMoveRating; i++)
+            {
+                path.Pop();
+                Debug.Log(path.Peek());
+            }
+            bestMoveTile = path.Peek();
+            path.Clear();
+        }
 
-        FindSelectableTiles();
-        CalculatePath(GetBestMoveTile());
-        
-        //Debug.Log(actualTargetTile);
-        actualTargetTile.target = true;
+        CalculatePath(bestMoveTile);
     }
 
     /// <summary>
@@ -1144,13 +1572,7 @@ public class EnemyBehavior : EnemyMove
         }
 
         target = nearest;
-
-        if (!AttackInRangeOfTarget(target, chosenAttack)) //sets up enemy for moving if not in range
-        {
-            CalculateEnemyMove();
-        }
-
-        //CalculateEnemyMove();
+        
         foundTarget = true;
         return target;
     }
@@ -1188,12 +1610,6 @@ public class EnemyBehavior : EnemyMove
             target = highestThreatTarget;
         }
 
-        if (!AttackInRangeOfTarget(target, chosenAttack)) //sets up enemy for moving if not in range
-        {
-            CalculateEnemyMove();
-        }
-
-        //CalculateEnemyMove();
         foundTarget = true;
         actionTarget = target;
 
@@ -1248,11 +1664,6 @@ public class EnemyBehavior : EnemyMove
             }
         }
 
-        if (!AttackInRangeOfTarget(target, chosenAttack)) //sets up enemy for moving if not in range
-        {
-            CalculateEnemyMove();
-        }
-
         foundTarget = true;
         actionTarget = target;
         return target;
@@ -1283,23 +1694,12 @@ public class EnemyBehavior : EnemyMove
         {
             if (checkEffect.effectName == effectName)
             {
-                if (!AttackInRangeOfTarget(target, chosenAttack)) //sets up enemy for moving if not in range
-                {
-
-                    CalculateEnemyMove();
-                }
-
                 ifStatusExists = true;
                 foundTarget = true;
                 break;
             }
         }
         
-        if (!AttackInRangeOfTarget(target, chosenAttack)) //sets up enemy for moving if not in range
-        {
-            CalculateEnemyMove();
-        }
-
         foundTarget = true;
         actionTarget = target;
 

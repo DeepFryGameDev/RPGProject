@@ -20,9 +20,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public bool shieldable = false;
     public bool shielded = false;
-
-    public bool settingShieldedComplete = false;
-
+    
     public List<Tile> adjecencyList = new List<Tile>();
 
     //Needed BFS algorithm (Breadth First Search)
@@ -462,8 +460,6 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public IEnumerator GetShieldableTiles(Tile tile)
     {
-        settingShieldedComplete = false;
-
         //check each tile in each direction 1 tile - done
         //if tile is shieldable or shielded - done
         //get direction of that tile from center tile - done
@@ -477,6 +473,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         Tile tileToCheck = null;
 
         //Debug.Log(BSM.centerTile.name);
+        Debug.Log("checking for shieldable tiles from: " + BSM.centerTile.name + " to: " + tile.gameObject.name);
 
         //up
         RaycastHit2D[] upHits = Physics2D.RaycastAll(tile.transform.position, Vector3.up, 1);
@@ -599,8 +596,6 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                 }
             }
         }
-
-        settingShieldedComplete = true;
     }
 
     void SetShielded(GameObject tileObj)

@@ -58,6 +58,25 @@ public class EquipMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         }
     }
 
+    public void ShowEquipDetails()
+    {
+        if (gameObject.transform.Find("NewEquipNameText").GetComponent<Text>().text == "None")
+        {
+            equipDesc.text = "";
+            menu.ShowEquipmentStatUpdates(null);
+        } else
+        {
+            equipDesc.text = GetEquip(GetEquipName()).description;
+            menu.ShowEquipmentStatUpdates(GetEquip(GetEquipName()));
+        }
+    }
+
+    public void SetEquip()
+    {
+        menu.PlaySE(AM.equipSE);
+        menu.ChangeEquipment(GetEquip(GetEquipName()));
+    }
+
     public void OnPointerExit(PointerEventData eventData) //clears item description panel
     {
         equipDesc.text = "";

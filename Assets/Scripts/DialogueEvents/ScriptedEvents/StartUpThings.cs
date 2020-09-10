@@ -18,6 +18,10 @@ public class StartUpThings : BaseScriptedEvent
 
         AddHeroes();
 
+        AddItem(0, 10);
+        AddItem(1, 5);
+        AddItem(3); //key item
+
         AddEquipment(0);
         AddEquipment(1);
         AddEquipment(2);
@@ -26,6 +30,8 @@ public class StartUpThings : BaseScriptedEvent
         AddEquipment(5);
         AddEquipment(6);
         AddEquipment(7);
+
+        AddItem(2, 5);
 
         //DisableButtons(); //<-----Enable when menu is complete
     }
@@ -63,8 +69,8 @@ public class StartUpThings : BaseScriptedEvent
         }*/ //remove comments when not testing
 
         //for testing purposes
-        HeroDB.instance.heroes[0].spawnPoint = "21";
-        HeroDB.instance.heroes[1].spawnPoint = "32";
+        HeroDB.instance.heroes[0].spawnPoint = "11";
+        HeroDB.instance.heroes[1].spawnPoint = "22";
         HeroDB.instance.heroes[2].spawnPoint = "33";
         //------
     }

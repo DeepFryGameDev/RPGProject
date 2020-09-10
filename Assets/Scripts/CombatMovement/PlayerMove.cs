@@ -188,9 +188,18 @@ public class PlayerMove : BaseMove
                 if (checkIfSelectable.collider.gameObject.tag == "Hero")
                 {
                     t.selectable = false;
-                }
-                else
+                }  else
                 {
+                    t.selectable = true;
+                }
+
+                if (checkIfSelectable.collider.gameObject.tag == "Enemy" || checkIfSelectable.collider.gameObject.tag == "Shieldable")
+                {
+                    t.pathable = false;
+                    t.selectable = false;
+                } else
+                {
+                    t.pathable = true;
                     t.selectable = true;
                 }
             }

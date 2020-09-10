@@ -109,6 +109,7 @@ public class BaseMove : MonoBehaviour
         readyForMove = true;
 
         Tile next = tile;
+        //Debug.Log("Next: " + next.gameObject.name);
         while (next != null)
         {
             path.Push(next);
@@ -174,7 +175,7 @@ public class BaseMove : MonoBehaviour
         }
 
         list.Remove(lowest);
-
+        
         return lowest;
     }
 
@@ -236,12 +237,13 @@ public class BaseMove : MonoBehaviour
             }
             //Debug.Log("t: " + t.gameObject.name);
             //Debug.Log("target: " + target.gameObject.name);
-            if (t == target) //<---- t is never the target tile
+            if (t == target)
             {
                 //Debug.Log("if t == target: true");
+
                 actualTargetTile = FindEndTile(t);
                 //Debug.Log("actual target file: " + actualTargetTile.gameObject.name);
-                MoveToTile(actualTargetTile);
+                MoveToTile(target);
                 return;
             }
 
@@ -278,6 +280,7 @@ public class BaseMove : MonoBehaviour
                     {
                         openList.Add(tile);
                     }
+
                     //openList.Add(tile);
                 }
             }

@@ -19,7 +19,7 @@ public class GameMenu : MonoBehaviour
     public bool drawingGUI = false;
     public bool disableMenu = false;
     public bool disableMenuExit = false;
-    [HideInInspector]public bool menuCalled = false;
+    [HideInInspector] public bool menuCalled = false;
 
     public bool choosingHero = false;
 
@@ -112,13 +112,13 @@ public class GameMenu : MonoBehaviour
     public bool choosingHeroForMagicMenu = false;
 
     //for equip menu objects
-   Image EquipPanelHPProgressBar;
-   Image EquipPanelMPProgressBar;
-   GameObject NewEquipPanel;
-   Transform EquipListSpacer;
-   public string equipButtonClicked;
-   bool inEquipList;
-   [HideInInspector] public string equipMode;
+    Image EquipPanelHPProgressBar;
+    Image EquipPanelMPProgressBar;
+    GameObject NewEquipPanel;
+    Transform EquipListSpacer;
+    public string equipButtonClicked;
+    bool inEquipList;
+    [HideInInspector] public string equipMode;
 
     //for status menu objects
     Image StatusPanelHPProgressBar;
@@ -144,7 +144,7 @@ public class GameMenu : MonoBehaviour
     [HideInInspector] public Sprite gridBG;
     [HideInInspector] public bool gridChoosingTile;
     [HideInInspector] public BaseHero gridMenuHero;
-    [HideInInspector] public string gridTileChanging;    
+    [HideInInspector] public string gridTileChanging;
 
     //for party menu objects
     GameObject Hero1PartyPanel;
@@ -184,9 +184,9 @@ public class GameMenu : MonoBehaviour
     [HideInInspector] public bool QuestClicked;
 
     //for bestiary menu objects
-   GameObject BestiaryEntryButton;
-   Transform BestiaryEnemyListSpacer;
-   [HideInInspector] public bool BestiaryEntryClicked;
+    GameObject BestiaryEntryButton;
+    Transform BestiaryEnemyListSpacer;
+    [HideInInspector] public bool BestiaryEntryClicked;
 
     //for menu buttons
     Button ItemButton;
@@ -238,10 +238,13 @@ public class GameMenu : MonoBehaviour
     Animator Equip_equipStatsPanel;
     Animator Status_baseStatsPanel;
     Animator Status_passivePanel;
+    Animator Status_detailsPanel;
     Animator Status_statsPanel;
     Animator Status_equipPanel;
-    Animator Status_resistancesPanel;
-    Animator Status_skillsPanel;
+    Animator Status_elePanel;
+    Animator Status_statusPanel;
+    Animator Status_activesPanel;
+    Animator Status_magicPanel;
     Animator Talents_heroPanel;
     Animator Talents_talentsPanel;
     Animator Talents_talentDetailsPanel;
@@ -262,6 +265,12 @@ public class GameMenu : MonoBehaviour
     Animator Bestiary_enemyDescriptionPanel;
     Animator Bestiary_enemyDetailsPanel;
 
+
+    Transform cursor;
+    bool dpadPressed;
+    float cursorMenuX = 605.5f;
+    float cursorHeroSelectX = 135f;
+
     public enum MenuStates
     {
         MAIN,
@@ -277,8 +286,161 @@ public class GameMenu : MonoBehaviour
         IDLE
     }
     [ReadOnly] public MenuStates menuState; //for which menu is open
+    
+    public enum MainCursorStates
+    {
+        ITEM,
+        MAGIC,
+        EQUIP,
+        STATUS,
+        TALENTS,
+        PARTY,
+        GRID,
+        QUESTS,
+        BESTIARY,
+        HEROSELECT1,
+        HEROSELECT2,
+        HEROSELECT3,
+        HEROSELECT4,
+        HEROSELECT5,
+        IDLE
+    }
+    [ReadOnly] public MainCursorStates mainCursorState; //for where the cursor is at a given moment on the main menu
+
+    int tempScrollDiff = 0;
+
+    #region item menu cursor objects
+
+    public enum ItemMenuCursorStates
+    {
+        OPTIONUSE,
+        OPTIONKEYITEMS,
+        OPTIONARRANGE,
+        USEITEMS,
+        CHECKKEYITEMS,
+        ARRANGEITEMS,
+        IDLE
+    }
+    [ReadOnly] public ItemMenuCursorStates itemMenuCursorState;
+
+    public enum ItemHeroSelect
+    {
+        HERO1,
+        HERO2,
+        HERO3,
+        HERO4,
+        HERO5
+    }
+
+    int cursorOnItem = 0;
+    float itemListPosX = 520;
+    float itemListSpacerY = 25f;
+    float itemHeroChoosingPosX = 200f;
+    float itemHeroChoosingSpacerY = 50f;
+    float itemListScrollBy = 25f;
+    int cursorOnItemHero = 0;
+    GameObject itemSelected;
+    string itemMode;
+    int arrangeOption = 0;
+    float arrangeOptionPosX = 551f;
+    float arrangeOptionSpacerY = 21f;
+    int arrangeCustomizeItem = 0;
+
+
+    #endregion
+
+    #region magic menu cursor objects
+
+    public enum MagicMenuCursorStates
+    {
+        OPTIONWHITE,
+        OPTIONBLACK,
+        OPTIONSORC,
+        USEMAGIC,
+        IDLE
+    }
+    [ReadOnly] public MagicMenuCursorStates magicMenuCursorState;
+
+    public enum MagicHeroSelect
+    {
+        HERO1,
+        HERO2,
+        HERO3,
+        HERO4,
+        HERO5
+    }
+
+    int cursorOnMagic = 0;
+    float magicPosX = 164f;
+    float magicPosY = 574f;
+    float magicSpacerX = 177f;
+    float magicSpacerY = 42f;
+    float magicHeroX = 275f;
+    float magicHeroSpacerY = 56f;
+    int cursorOnMagicHero = 0;
+    bool magicChoosingHero;
+    MagicMouseEvents selectedMagic;
+    string chosenMagic = "White";
+
+    #endregion
+
+    #region equip menu cursor objects
+
+    public enum EquipMenuCursorStates
+    {
+        EQUIPSLOTS,
+        EQUIPOPTION,
+        REMOVEOPTION,
+        REMOVEALLOPTION,
+        EQUIPLIST,
+        IDLE
+    }
+    [ReadOnly] public EquipMenuCursorStates equipMenuCursorState;
+
+    int cursorOnEquipSlot = 0;
+    float equipRow1X = 148f;
+    float equipRow2X = 431f;
+    float equipSlotY = 623f;
+    float equipSlotSpacerY = 19f;
+
+    float equipListX = 523f;
+    float equipListSpacerY = 18.03f;
+    int cursorOnEquipList = 0;
+    float equipListScrollBy = 18f;
+
+    EquipMouseEvents equipListItem;
+
+    #endregion
+
+    #region status menu cursor objects
+
+    public enum StatusMenuCursorStates
+    {
+        STATS,
+        EQUIPMENT,
+        ELEMENTS,
+        RESISTANCES,
+        SKILLS,
+        IDLE
+    }
+    [ReadOnly] public StatusMenuCursorStates statusMenuCursorState;
+
+    int cursorOnStat = 0;
+    float statColumn1Y = 0f;
+    float statColumn2Y = 0f;
+    int cursorOnEquip = 0;
+    float equipColumn1Y = 0f;
+    float equipColumn2Y = 0f;
+
+    float eleColumn1Y = 0f;
+    float eleColumn2Y = 0f;
+    float resColumn1Y = 0f;
+    float resColumn2Y = 0f;
+
+    #endregion
 
     bool buttonPressed = false;
+    bool confirmPressed = false;
 
     GraphicRaycaster raycaster;
     [ReadOnly] public BaseHero heroToCheck;
@@ -295,12 +457,15 @@ public class GameMenu : MonoBehaviour
         menuCameraPosition = new Vector3(419.3f, 568.9f, -1);
         menuCameraSize = 168.4568f;
         currentCameraSize = gameCamera.orthographicSize;
-        
+
         //-----The below until end of Start are all static and should not be changed-----
 
         player = GameObject.Find("Player");
 
         heroToCheck = null;
+
+        mainCursorState = MainCursorStates.IDLE;
+        cursor = GameObject.Find("GameManager/Menus/Cursor").transform;
 
         menuAudioSource = GameObject.Find("GameManager/Menus/MenuSounds").GetComponent<AudioSource>();
         animAudioSource = menuAudioSource = GameObject.Find("GameManager/Menus/AnimationSounds").GetComponent<AudioSource>();
@@ -481,10 +646,13 @@ public class GameMenu : MonoBehaviour
         Equip_equipStatsPanel = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipStatsPanel").GetComponent<Animator>();
         Status_baseStatsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel").GetComponent<Animator>();
         Status_passivePanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/PassivePanel").GetComponent<Animator>();
+        Status_detailsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/DetailsPanel").GetComponent<Animator>();
         Status_statsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatsPanel").GetComponent<Animator>();
         Status_equipPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel").GetComponent<Animator>();
-        Status_resistancesPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ResistancesPanel").GetComponent<Animator>();
-        Status_skillsPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/SkillsPanel").GetComponent<Animator>();
+        Status_elePanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel").GetComponent<Animator>();
+        Status_statusPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel").GetComponent<Animator>();
+        Status_activesPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ActiveEffectsPanel").GetComponent<Animator>();
+        Status_magicPanel = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/MagicPanel").GetComponent<Animator>();
         Talents_heroPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/HeroPanel").GetComponent<Animator>();
         Talents_talentsPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel").GetComponent<Animator>();
         Talents_talentDetailsPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel").GetComponent<Animator>();
@@ -539,6 +707,11 @@ public class GameMenu : MonoBehaviour
         }
 
         DisplayTime();
+
+        if (drawingGUI)
+        {
+            UpdateCursor();
+        }
     }
 
     private void OnGUI() //Actually draws the menu, and facilitates cancelling from various menus
@@ -551,7 +724,7 @@ public class GameMenu : MonoBehaviour
 
             //ScreenshotBG();
             //StartCoroutine(ScreenShotCoroutine());
-            
+
             gameCamera.transform.parent = null;
             gameCamera.transform.position = menuCameraPosition;
             gameCamera.orthographicSize = menuCameraSize;
@@ -572,7 +745,7 @@ public class GameMenu : MonoBehaviour
             StartCoroutine(HideItemMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.MAGIC && !buttonPressed && !choosingHeroForMagicMenu) //if cancel is pressed on magic menu
+        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.MAGIC && !buttonPressed && !choosingHeroForMagicMenu && !magicChoosingHero && magicMenuCursorState != MagicMenuCursorStates.USEMAGIC) //if cancel is pressed on magic menu
         {
             StartCoroutine(HideMagicMenu());
         }
@@ -655,6 +828,1982 @@ public class GameMenu : MonoBehaviour
         CheckCancelPressed(); //makes sure cancel is only pressed once
     }
 
+    #region Cursor Functions
+
+    void UpdateCursor()
+    {
+        if (mainCursorState == MainCursorStates.ITEM)
+        {
+            cursor.position = new Vector3(cursorMenuX, 725f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.MAGIC)
+        {
+            cursor.position = new Vector3(cursorMenuX, 700f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.EQUIP)
+        {
+            cursor.position = new Vector3(cursorMenuX, 675f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.STATUS)
+        {
+            cursor.position = new Vector3(cursorMenuX, 650f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.TALENTS)
+        {
+            cursor.position = new Vector3(cursorMenuX, 628f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.PARTY)
+        {
+            cursor.position = new Vector3(cursorMenuX, 603f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.GRID)
+        {
+            cursor.position = new Vector3(cursorMenuX, 579.6f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.QUESTS)
+        {
+            cursor.position = new Vector3(cursorMenuX, 555f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.BESTIARY)
+        {
+            cursor.position = new Vector3(cursorMenuX, 533f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.HEROSELECT1)
+        {
+            cursor.position = new Vector3(cursorHeroSelectX, 697f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.HEROSELECT2)
+        {
+            cursor.position = new Vector3(cursorHeroSelectX, 633f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.HEROSELECT3)
+        {
+            cursor.position = new Vector3(cursorHeroSelectX, 569f, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.HEROSELECT4)
+        {
+            cursor.position = new Vector3(cursorHeroSelectX, 505, 0);
+        }
+
+        if (mainCursorState == MainCursorStates.HEROSELECT5)
+        {
+            cursor.position = new Vector3(cursorHeroSelectX, 441f, 0);
+        }
+
+        UpdateCursorOnInput();
+
+        if (menuState == MenuStates.ITEM)
+            UpdateItemCursor();
+
+        if (menuState == MenuStates.MAGIC)
+            UpdateMagicCursor();
+
+        if (menuState == MenuStates.EQUIP)
+            UpdateEquipCursor();
+
+        if (menuState == MenuStates.STATUS)
+            UpdateStatusCursor();
+
+        //CheckStates(); //comment out if dont need to test - this keeps outputting where each state is at any given time
+
+        //----------leave at bottom
+        if (Input.GetButtonUp("Confirm"))
+        {
+            confirmPressed = false;
+        }
+
+        if (Input.GetAxisRaw("DpadVertical") == 0 && Input.GetAxisRaw("DpadHorizontal") == 0)
+        {
+            dpadPressed = false;
+        }
+        else
+        {
+            //Debug.Log("Dpad is pressed: " + Input.GetAxisRaw("DpadVertical") + "," + Input.GetAxisRaw("DpadHorizontal"));
+        }
+    }
+
+    void UpdateCursorOnInput()
+    {
+        if (!dpadPressed && (int)mainCursorState == 0)
+        {
+            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+            {
+                mainCursorState = MainCursorStates.BESTIARY;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+
+            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+            {
+                mainCursorState += 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+        } else if (!dpadPressed && (int)mainCursorState == 8)
+        {
+            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+            {
+                mainCursorState -= 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+
+            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+            {
+                mainCursorState = MainCursorStates.ITEM;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+        } else if (!dpadPressed && (int)mainCursorState >= 0 && (int)mainCursorState <= 8)
+        {
+            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+            {
+                mainCursorState -= 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+
+            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+            {
+                mainCursorState += 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+        } else if (!dpadPressed && (int)mainCursorState == 9 && GameManager.instance.activeHeroes.Count() > 1)
+        {
+            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+            {
+                mainCursorState = mainCursorState + (GameManager.instance.activeHeroes.Count() - 1);
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+
+            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+            {
+                mainCursorState += 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+        } else if (!dpadPressed && (int)mainCursorState > 9 && (int)mainCursorState < 13 && GameManager.instance.activeHeroes.Count() > 1)
+        {
+            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+            {
+                mainCursorState -= 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+
+            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+            {
+                if (((int)mainCursorState - 8) != GameManager.instance.activeHeroes.Count())
+                {
+                    mainCursorState += 1;
+                } else
+                {
+                    mainCursorState = MainCursorStates.HEROSELECT1;
+                }
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+            
+        } else if (!dpadPressed && (int)mainCursorState == 13)
+        {
+            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+            {
+                mainCursorState -= 1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+
+            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+            {
+                mainCursorState = MainCursorStates.HEROSELECT1;
+                dpadPressed = true;
+                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+            }
+        }
+
+        if (Input.GetButtonDown("Confirm") && (int)mainCursorState >= 0 && (int)mainCursorState <= 8 && !confirmPressed)
+        {
+            confirmPressed = true;
+            ProcessMenuNavigation((int)mainCursorState);
+        }
+
+        if (Input.GetButtonDown("Confirm") && (int)mainCursorState >= 9 && (int)mainCursorState <= 13 && !confirmPressed)
+        {
+            confirmPressed = true;
+            heroToCheck = GameManager.instance.activeHeroes[(int)mainCursorState - 9];
+            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+        }
+        
+    }
+
+    void ProcessMenuNavigation(int option)
+    {
+        //Debug.Log("option pressed: " + option);
+
+        //0 - Item
+        if (option == 0)
+        {
+            ShowItemMenu();
+            itemCustomizeModeOn = false;
+        }
+
+        //1 - Magic - Hero select
+        if (option == 1)
+        {
+            ShowMagicMenu();
+        }
+
+        //2 - Equip - Hero select
+        if (option == 2)
+        {
+            ShowEquipMenu();
+        }
+
+        //3 - Status - Hero select
+        if (option == 3)
+        {
+            ShowStatusMenu();
+        }
+
+        //4 - Talents - Hero select
+        if (option == 4)
+        {
+            ShowTalentsMenu();
+        }
+
+        //5 - Party
+        if (option == 5)
+        {
+            ShowPartyMenu();
+        }
+
+        //6 - Grid
+        if (option == 6)
+        {
+            ShowGridMenu();
+        }
+
+        //7 - Quests
+        if (option == 7)
+        {
+            ShowQuestMenu();
+        }
+
+        //8 - Bestiary
+        if (option == 8)
+        {
+            ShowBestiaryMenu();
+        }
+    }
+
+    void CheckStates()
+    {
+        Debug.Log("itemMenuCursorState: " + (int)itemMenuCursorState + " - " + itemMenuCursorState);
+        Debug.Log("mainCursorState: " + (int)mainCursorState + " - " + mainCursorState);
+        Debug.Log("menuState: " + (int)menuState + " - " + menuState);
+        Debug.Log("magicMenuCursorState: " + (int)magicMenuCursorState + " - " + magicMenuCursorState);
+    }
+
+    void UpdateItemCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && itemMenuCursorState != ItemMenuCursorStates.IDLE)
+        {
+            if (itemChoosingHero) //when choosing hero
+            {
+                if (!dpadPressed && cursorOnItemHero == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItemHero = cursorOnItemHero + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItemHero = GameManager.instance.activeHeroes.Count - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                } else if (!dpadPressed && cursorOnItemHero > 0 && cursorOnItemHero < (GameManager.instance.activeHeroes.Count - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItemHero = cursorOnItemHero - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItemHero = cursorOnItemHero + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (!dpadPressed && cursorOnItemHero == (GameManager.instance.activeHeroes.Count - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItemHero = cursorOnItemHero - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItemHero = 0;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    itemSelected.GetComponent<ItemMouseEvents>().hero = GameManager.instance.activeHeroes[cursorOnItemHero];
+                    Debug.Log("using on " + GameManager.instance.activeHeroes[cursorOnItemHero].name);
+                }
+
+                if (cursorOnItemHero == 0)
+                {
+                    cursor.position = new Vector3(itemHeroChoosingPosX, 635f, 0);
+                }
+                else
+                {
+                    cursor.position = new Vector3(itemHeroChoosingPosX, (635f - (itemHeroChoosingSpacerY * cursorOnItemHero)), 0);
+                }
+
+            }
+
+            if (itemMenuCursorState == ItemMenuCursorStates.USEITEMS && !itemChoosingHero) //When choosing item 
+            {
+                int totalItemsInList = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.childCount;
+                int scrollDiff = totalItemsInList - 10;
+
+                if (totalItemsInList <= 10)
+                {
+                    tempScrollDiff = 0;
+                }
+
+                RectTransform spacerScroll = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").GetComponent<RectTransform>();
+
+                //Debug.Log(cursorOnItem);
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    itemSelected.GetComponent<ItemMouseEvents>().hero = null;
+                    UseItem();
+                    if (itemChoosingHero)
+                    {
+                        cursor.position = new Vector3(135f, 637f, 0);
+                    }
+                }
+
+                if (!dpadPressed && cursorOnItem == 0 && tempScrollDiff == 0)
+                {
+                    if (totalItemsInList > 1)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            cursorOnItem = cursorOnItem + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONUSE;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 0 && tempScrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItem = cursorOnItem + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (itemListScrollBy * (tempScrollDiff - 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem > 0 && cursorOnItem < 9)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = cursorOnItem - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItem = cursorOnItem + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff == 0 && scrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = cursorOnItem - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, itemListScrollBy, 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff == 0 && scrollDiff == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = cursorOnItem - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff > 0 && (cursorOnItem + tempScrollDiff) < (totalItemsInList - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = 8;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (itemListScrollBy * (tempScrollDiff + 1)), 0.0f); //and use tempScrollDiff - 1 to go up
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff > 0 && (cursorOnItem + tempScrollDiff) == (totalItemsInList - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = 8;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (totalItemsInList != 0)
+                {
+                    if (cursorOnItem == totalItemsInList)
+                    {
+                        cursorOnItem = totalItemsInList - 1;
+                    }
+
+                    if (cursorOnItem == 0 && tempScrollDiff == 0)
+                    {
+                        cursor.position = new Vector3(itemListPosX, 645f, 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(0).gameObject;
+                    }
+                    else if (cursorOnItem == 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(itemListPosX, 645f, 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(tempScrollDiff).gameObject;
+                    }
+                    else if (cursorOnItem > 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * cursorOnItem)), 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(cursorOnItem + tempScrollDiff).gameObject;
+                    }
+                    else
+                    {
+                        cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * cursorOnItem)), 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(cursorOnItem).gameObject;
+                    }
+                    if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "equip")
+                    {
+                        itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetEquipment(itemSelected.GetComponent<ItemMouseEvents>().GetEquipID()).description;
+                    } else if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "item")
+                    {
+                        itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).description;
+                    }
+                }
+            }
+
+            if (itemMenuCursorState == ItemMenuCursorStates.CHECKKEYITEMS) //interact with key items
+            {
+                int totalItemsInList = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.childCount;
+                int scrollDiff = totalItemsInList - 10;
+
+                if (totalItemsInList <= 10)
+                {
+                    tempScrollDiff = 0;
+                }
+
+                RectTransform spacerScroll = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").GetComponent<RectTransform>();
+                
+                if (!dpadPressed && cursorOnItem == 0 && tempScrollDiff == 0)
+                {
+                    if (totalItemsInList > 1)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            cursorOnItem = cursorOnItem + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONKEYITEMS;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 0 && tempScrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItem = cursorOnItem + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (itemListScrollBy * (tempScrollDiff - 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem > 0 && cursorOnItem < 9)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = cursorOnItem - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnItem = cursorOnItem + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff == 0 && scrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = cursorOnItem - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, itemListScrollBy, 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff == 0 && scrollDiff == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = cursorOnItem - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff > 0 && (cursorOnItem + tempScrollDiff) < (totalItemsInList - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = 8;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (itemListScrollBy * (tempScrollDiff + 1)), 0.0f); //and use tempScrollDiff - 1 to go up
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnItem == 9 && tempScrollDiff > 0 && (cursorOnItem + tempScrollDiff) == (totalItemsInList - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnItem = 8;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (totalItemsInList != 0)
+                {
+                    if (cursorOnItem == totalItemsInList)
+                    {
+                        cursorOnItem = totalItemsInList - 1;
+                    }
+
+                    if (cursorOnItem == 0 && tempScrollDiff == 0)
+                    {
+                        cursor.position = new Vector3(itemListPosX, 645f, 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(0).gameObject;
+                    }
+                    else if (cursorOnItem == 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(itemListPosX, 645f, 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(tempScrollDiff).gameObject;
+                    }
+                    else if (cursorOnItem > 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * cursorOnItem)), 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(cursorOnItem + tempScrollDiff).gameObject;
+                    }
+                    else
+                    {
+                        cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * cursorOnItem)), 0);
+                        itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(cursorOnItem).gameObject;
+                    }
+                    if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "equip")
+                    {
+                        itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetEquipment(itemSelected.GetComponent<ItemMouseEvents>().GetEquipID()).description;
+                    }
+                    else if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "item")
+                    {
+                        itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).description;
+                    }
+                }
+            }
+
+            if (itemMenuCursorState == ItemMenuCursorStates.ARRANGEITEMS) //interact with items to be arranged
+            {
+                if (!dpadPressed)
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed && arrangeOption == -1)
+                    {
+                        arrangeOption = 0;
+                        ShowArrangeMenu();
+                        confirmPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.ARRANGEITEMS;
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        dpadPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONKEYITEMS;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        if (GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ArrangeOptionsPanel").GetComponent<CanvasGroup>().alpha == 1)
+                        {
+                            StartCoroutine(HideArrangeMenu());
+                        }
+                    }
+
+                    if (arrangeOption == -1 && Input.GetAxisRaw("DpadVertical") == -1) //pressing down on the arrange button
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        if (itemMode == "Use")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.USEITEMS;
+                        } else if (itemMode == "KeyItems")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.CHECKKEYITEMS;
+                        }
+                    }
+
+                    if (arrangeOption == 0)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            dpadPressed = true;
+                            arrangeOption++;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    } else if (arrangeOption > 0 && arrangeOption < 7)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            dpadPressed = true;
+                            arrangeOption++;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            dpadPressed = true;
+                            arrangeOption--;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    } else if (arrangeOption == 7)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            dpadPressed = true;
+                            arrangeOption--;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                }
+
+                if (arrangeOption == 0 || arrangeOption == -1)
+                {
+                    cursor.position = new Vector3(567f, 721f, 0); //arrange option button
+                } else if (arrangeOption > 0)
+                {
+                    cursor.position = new Vector3(arrangeOptionPosX, 694f - (arrangeOptionSpacerY * (arrangeOption - 1)), 0);
+                }
+
+                if (arrangeOption == 0) //arrange option button
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        arrangeOption = -1;
+                        StartCoroutine(HideArrangeMenu());
+                        confirmPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (arrangeOption == 1) //customize
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Customize");
+                        confirmPressed = true;
+                        arrangeCustomizeItem = 0;
+                        arrangeOption = -2;
+                    }
+                } else if (arrangeOption == 2) //field
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Field");
+                        confirmPressed = true;
+                        arrangeOption = -1;
+                    }
+                } else if (arrangeOption == 3) //battle
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Battle");
+                        confirmPressed = true;
+                        arrangeOption = -1;
+                    }
+                } else if (arrangeOption == 4) //type
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Type");
+                        confirmPressed = true;
+                        arrangeOption = -1;
+                    }
+                } else if (arrangeOption == 5) //name
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Name");
+                        confirmPressed = true;
+                        arrangeOption = -1;
+                    }
+                } else if (arrangeOption == 6) //most
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Most");
+                        confirmPressed = true;
+                        arrangeOption = -1;
+                    }
+                } else if (arrangeOption == 7) //least
+                {
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        ItemArrange("Least");
+                        confirmPressed = true;
+                        arrangeOption = -1;
+                    }
+                }
+
+                if (arrangeOption == -2) //customizing arrangement
+                {
+                    RectTransform spacerScroll = null;
+                    int totalItemsInList = 0;
+
+                    if (itemMode == "Use")
+                    {
+                        totalItemsInList = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.childCount;
+                         spacerScroll = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").GetComponent<RectTransform>();
+                    } else if (itemMode == "KeyItems")
+                    {
+                        totalItemsInList = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.childCount;
+                        spacerScroll = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").GetComponent<RectTransform>();
+                    }
+
+                    int scrollDiff = totalItemsInList - 10;
+
+                    if (totalItemsInList <= 10)
+                    {
+                        tempScrollDiff = 0;
+                    }
+                                       
+                    //Debug.Log(cursorOnItem);
+                    
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        confirmPressed = true;
+                        UseItem();
+                    }
+
+                    if (!dpadPressed && arrangeCustomizeItem == 0 && tempScrollDiff == 0)
+                    {
+                        if (totalItemsInList > 1)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                arrangeCustomizeItem = arrangeCustomizeItem + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.OPTIONARRANGE;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (!dpadPressed && arrangeCustomizeItem == 0 && tempScrollDiff > 0)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            arrangeCustomizeItem = arrangeCustomizeItem + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            spacerScroll.anchoredPosition = new Vector3(0.0f, (itemListScrollBy * (tempScrollDiff - 1)), 0.0f);
+
+                            tempScrollDiff = tempScrollDiff - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (!dpadPressed && arrangeCustomizeItem > 0 && arrangeCustomizeItem < 9)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            arrangeCustomizeItem = arrangeCustomizeItem - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            arrangeCustomizeItem = arrangeCustomizeItem + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (!dpadPressed && arrangeCustomizeItem == 9 && tempScrollDiff == 0 && scrollDiff > 0)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            arrangeCustomizeItem = arrangeCustomizeItem - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            spacerScroll.anchoredPosition = new Vector3(0.0f, itemListScrollBy, 0.0f);
+
+                            tempScrollDiff = tempScrollDiff + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (!dpadPressed && arrangeCustomizeItem == 9 && tempScrollDiff == 0 && scrollDiff == 0)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            arrangeCustomizeItem = arrangeCustomizeItem - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (!dpadPressed && arrangeCustomizeItem == 9 && tempScrollDiff > 0 && (arrangeCustomizeItem + tempScrollDiff) < (totalItemsInList - 1))
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            arrangeCustomizeItem = 8;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            spacerScroll.anchoredPosition = new Vector3(0.0f, (itemListScrollBy * (tempScrollDiff + 1)), 0.0f); //and use tempScrollDiff - 1 to go up
+
+                            tempScrollDiff = tempScrollDiff + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (!dpadPressed && arrangeCustomizeItem == 9 && tempScrollDiff > 0 && (arrangeCustomizeItem + tempScrollDiff) == (totalItemsInList - 1))
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            arrangeCustomizeItem = 8;
+
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+
+                    if (itemMode == "Use")
+                    {
+                        if (totalItemsInList != 0)
+                        {
+                            if (arrangeCustomizeItem == totalItemsInList)
+                            {
+                                arrangeCustomizeItem = totalItemsInList - 1;
+                            }
+
+                            if (arrangeCustomizeItem == 0 && tempScrollDiff == 0)
+                            {
+                                cursor.position = new Vector3(itemListPosX, 645f, 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(0).gameObject;
+                                Debug.Log("1) " + itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).name);
+                            }
+                            else if (arrangeCustomizeItem == 0 && tempScrollDiff > 0)
+                            {
+                                cursor.position = new Vector3(itemListPosX, 645f, 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(tempScrollDiff).gameObject;
+                                Debug.Log("2) " + itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).name);
+                            }
+                            else if (arrangeCustomizeItem > 0 && tempScrollDiff > 0)
+                            {
+                                cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * arrangeCustomizeItem)), 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(arrangeCustomizeItem + tempScrollDiff).gameObject;
+                                Debug.Log("3) " + itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).name);
+                            }
+                            else
+                            {
+                                cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * arrangeCustomizeItem)), 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(arrangeCustomizeItem).gameObject;
+                                Debug.Log("4) " + itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).name); ;
+                            }
+                            if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "equip")
+                            {
+                                itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetEquipment(itemSelected.GetComponent<ItemMouseEvents>().GetEquipID()).description;
+                            }
+                            else if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "item")
+                            {
+                                itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).description;
+                            }
+                        }
+                    } else if (itemMode == "KeyItems")
+                    {
+                        if (totalItemsInList != 0)
+                        {
+                            if (arrangeCustomizeItem == totalItemsInList)
+                            {
+                                arrangeCustomizeItem = totalItemsInList - 1;
+                            }
+
+                            if (arrangeCustomizeItem == 0 && tempScrollDiff == 0)
+                            {
+                                cursor.position = new Vector3(itemListPosX, 645f, 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(0).gameObject;
+                            }
+                            else if (arrangeCustomizeItem == 0 && tempScrollDiff > 0)
+                            {
+                                cursor.position = new Vector3(itemListPosX, 645f, 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(tempScrollDiff).gameObject;
+                            }
+                            else if (arrangeCustomizeItem > 0 && tempScrollDiff > 0)
+                            {
+                                cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * arrangeCustomizeItem)), 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(arrangeCustomizeItem + tempScrollDiff).gameObject;
+                            }
+                            else
+                            {
+                                cursor.position = new Vector3(itemListPosX, (645f - (itemListSpacerY * arrangeCustomizeItem)), 0);
+                                itemSelected = GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/KeyItemListPanel/ItemScroller/ItemListSpacer").transform.GetChild(arrangeCustomizeItem).gameObject;
+                            }
+                            if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "equip")
+                            {
+                                itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetEquipment(itemSelected.GetComponent<ItemMouseEvents>().GetEquipID()).description;
+                            }
+                            else if (itemSelected.GetComponent<ItemMouseEvents>().GetItemType() == "item")
+                            {
+                                itemSelected.GetComponent<ItemMouseEvents>().itemDesc.text = itemSelected.GetComponent<ItemMouseEvents>().GetItem(itemSelected.GetComponent<ItemMouseEvents>().GetItemID()).description;
+                            }
+                        }
+                    }
+                    
+
+                }
+
+                if (Input.GetButtonDown("Cancel"))
+                {
+                    itemMenuCursorState = ItemMenuCursorStates.OPTIONARRANGE;
+                }
+            }
+
+            if (itemMenuCursorState == ItemMenuCursorStates.OPTIONUSE)
+            {
+                cursor.position = new Vector3(197f, 721f, 0);
+
+                GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>().text = "List available items";
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        
+                        if (itemMode == "Use")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.USEITEMS;
+                        } else if (itemMode == "KeyItems")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.CHECKKEYITEMS;
+                        }
+                    }
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+
+                        confirmPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.USEITEMS;
+                        ShowUseItemMenu();
+                        itemMode = "Use";
+                        itemCustomizeModeOn = false;
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        dpadPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONKEYITEMS;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+            }
+
+            if (itemMenuCursorState == ItemMenuCursorStates.OPTIONKEYITEMS)
+            {
+                cursor.position = new Vector3(360f, 721f, 0);
+
+                GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>().text = "List key items";
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        if (itemMode == "Use")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.USEITEMS;
+                        }
+                        else if (itemMode == "KeyItems")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.CHECKKEYITEMS;
+                        }
+                    }
+
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        confirmPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.CHECKKEYITEMS;
+                        cursorOnItem = 0;
+                        ShowKeyItemMenu();
+                        itemMode = "KeyItems";
+                        itemCustomizeModeOn = false;
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        arrangeOption = -1;
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONARRANGE;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        dpadPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONUSE;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+            }
+
+            if (itemMenuCursorState == ItemMenuCursorStates.OPTIONARRANGE)
+            {
+                cursor.position = new Vector3(567f, 721f, 0);
+
+                GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemDescriptionPanel/ItemDescriptionText").GetComponent<Text>().text = "Organize items";
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        if (itemMode == "Use")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.USEITEMS;
+                        }
+                        else if (itemMode == "KeyItems")
+                        {
+                            itemMenuCursorState = ItemMenuCursorStates.CHECKKEYITEMS;
+                        }
+                    }
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        arrangeOption = 0;
+                        ShowArrangeMenu();
+                        confirmPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.ARRANGEITEMS;
+                        itemCustomizeModeOn = false;
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        dpadPressed = true;
+                        itemMenuCursorState = ItemMenuCursorStates.OPTIONKEYITEMS;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+            }
+        }
+    }
+
+    void UseItem()
+    {
+        itemSelected.GetComponent<ItemMouseEvents>().UseItem();
+    }
+
+    void UpdateMagicCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && magicMenuCursorState != MagicMenuCursorStates.IDLE)
+        {
+            if (magicChoosingHero)
+            {
+                if (!dpadPressed && cursorOnMagicHero == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnMagicHero = cursorOnMagicHero + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnMagicHero = GameManager.instance.activeHeroes.Count - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnMagicHero > 0 && cursorOnMagicHero < (GameManager.instance.activeHeroes.Count - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnMagicHero = cursorOnMagicHero - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnMagicHero = cursorOnMagicHero + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnMagicHero == (GameManager.instance.activeHeroes.Count - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnMagicHero = cursorOnMagicHero - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnMagicHero = 0;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    selectedMagic.heroToCastOn = GameManager.instance.activeHeroes[cursorOnMagicHero];
+                    Debug.Log("casting " + selectedMagic.GetMagic(selectedMagic.GetMagicName()).name + " on " + GameManager.instance.activeHeroes[cursorOnMagicHero].name);
+                    magicChoosingHero = false;
+                    magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+                }
+
+                if (Input.GetButtonDown("Cancel"))
+                {
+                    buttonPressed = true;
+                    Debug.Log("cancel pressed");
+                    magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+                    magicChoosingHero = false;
+                }
+
+                if (cursorOnMagicHero == 0)
+                {
+                    cursor.position = new Vector3(magicHeroX, 683f, 0);
+                }
+                else
+                {
+                    cursor.position = new Vector3(magicHeroX, (683f - (magicHeroSpacerY * cursorOnMagicHero)), 0);
+                }
+            }
+
+            if (magicMenuCursorState == MagicMenuCursorStates.USEMAGIC && !magicChoosingHero)
+            {
+                
+                GridLayoutGroup glg;
+                int magicCount;
+
+                int row = Mathf.FloorToInt(cursorOnMagic / 3);
+                int column = (cursorOnMagic - (row * 3));
+
+                string magicMode = "";
+
+                if (GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/WhiteMagicListPanel").GetComponent<CanvasGroup>().alpha == 1)
+                {
+                    magicMode = "White";
+                } else if (GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/BlackMagicListPanel").GetComponent<CanvasGroup>().alpha == 1)
+                {
+                    magicMode = "Black";
+                } else if (GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/SorceryMagicListPanel").GetComponent<CanvasGroup>().alpha == 1)
+                {
+                    magicMode = "Sorcery";
+                }
+
+                glg = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/" + magicMode + "MagicListPanel/" + magicMode + "MagicScroller/" + magicMode + "MagicListSpacer").GetComponent<GridLayoutGroup>();
+                magicCount = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/" + magicMode + "MagicListPanel/" + magicMode + "MagicScroller/" + magicMode + "MagicListSpacer").transform.childCount;
+
+                //need to get max column and row count
+                int maxColumn = magicCount % 3; //if = 0, max column has been hit
+                if (maxColumn == 0)
+                    maxColumn = 3;
+                maxColumn = maxColumn - 1;
+
+                int maxRow = 0;
+
+                GetMaxRow(glg, out maxRow);
+
+                //note:
+                //above variables all start with 0 - ie 0 is first row, 0 is first column
+                
+                //Debug.Log("-----before-----");
+                //Debug.Log("Row: " + row + ", Column: " + column);
+                //Debug.Log("cursorOnMagic: " + cursorOnMagic);
+                //Debug.Log("magicPosX: " + magicPosX + ", magicPosY: " + magicPosY);
+                //Debug.Log(cursor.position);
+                //Debug.Log("----------------");
+
+                if (magicCount == 0)
+                {
+                    if (chosenMagic == "White")
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONWHITE;
+                    } else if (chosenMagic == "Black")
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONBLACK;
+                    } else if (chosenMagic == "Sorcery")
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONSORC;
+                    }
+                }
+
+                if (Input.GetButtonDown("Cancel"))
+                {
+                    buttonPressed = true;
+                    if (chosenMagic == "White")
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONWHITE;
+                    }
+                    else if (chosenMagic == "Black")
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONBLACK;
+                    }
+                    else if (chosenMagic == "Sorcery")
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONSORC;
+                    }
+                }
+
+
+                if (!dpadPressed && magicCount > 1)
+                {
+                    if (row != 0)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            row = row - 1;
+                            cursorOnMagic = cursorOnMagic - 3;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            //Debug.Log("row: " + row);
+                        }
+                    }
+
+                    if (row != maxRow && row != (maxRow - 1))
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            row = row + 1;
+                            cursorOnMagic = cursorOnMagic + 3;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            //Debug.Log("row: " + row);
+                        }
+                    } else if (row == (maxRow - 1))
+                    {
+                        int tempCursor = cursorOnMagic + 4; //keeps cursor from moving down if there is no magic available in that space
+
+                        if (Input.GetAxisRaw("DpadVertical") == -1 && tempCursor <= magicCount) //down
+                        {
+                            row = row + 1;
+                            cursorOnMagic = cursorOnMagic + 3;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            //Debug.Log("row: " + row);
+                        }
+                    }
+
+                    if (column != 0)
+                    {
+                        if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                        {
+                            column = column - 1;
+                            cursorOnMagic = cursorOnMagic - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            //Debug.Log("column: " + column);
+                        }
+                    }
+
+                    if ((row == maxRow && column != maxColumn) || (row != maxRow && maxRow > 0 && column < 2))
+                    {
+                        if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                        {
+                            column = column + 1;
+                            cursorOnMagic = cursorOnMagic + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            //Debug.Log("column: " + column);
+                        }
+                    }
+                }
+
+                if (!dpadPressed && magicCount == 1)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONWHITE;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        //Debug.Log("row: " + row);
+                    }
+                }
+
+                if (magicCount > 0)
+                {
+                    selectedMagic = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/" + magicMode + "MagicListPanel/" + magicMode + "MagicScroller/" + magicMode + "MagicListSpacer").
+                        transform.GetChild(cursorOnMagic).GetComponent<MagicMouseEvents>();
+
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        confirmPressed = true;
+
+                        Debug.Log("confirmed pressed on spell: " + selectedMagic.GetMagic(selectedMagic.GetMagicName()).name);
+
+                        if (selectedMagic.GetMagic(selectedMagic.GetMagicName()).usableInMenu && selectedMagic.GetMagic(selectedMagic.GetMagicName()).enoughMP)
+                        {
+                            if (selectedMagic.GetMagic(selectedMagic.GetMagicName()).useState == BaseAttack.UseStates.HERO)
+                            {
+                                selectedMagic.magicUsed = selectedMagic.GetMagic(selectedMagic.GetMagicName());
+                                selectedMagic.processMagic = StartCoroutine(selectedMagic.ProcessMagic());
+
+                                selectedMagic.heroToCastOn = null;
+                                magicChoosingHero = true;
+                            }
+                        }
+                        else
+                        {
+                            PlaySE(AudioManager.instance.cantActionSE);
+                        }
+                    }
+
+                    selectedMagic.magicDesc.text = selectedMagic.GetMagic(selectedMagic.GetMagicName()).description;
+                    selectedMagic.cooldownText.text = selectedMagic.GetMagic(selectedMagic.GetMagicName()).cooldown.ToString();
+                    selectedMagic.MPCostText.text = selectedMagic.GetMagic(selectedMagic.GetMagicName()).MPCost.ToString();
+
+                    cursor.position = new Vector3((magicPosX + (column * magicSpacerX)), (magicPosY - (row * magicSpacerY)), cursor.position.z); //set x,y
+                }                               
+            }
+
+            if (magicMenuCursorState == MagicMenuCursorStates.OPTIONWHITE && !magicChoosingHero)
+            {
+                cursor.position = new Vector3(603f, 714f, 0); //set x,y
+
+                chosenMagic = "White";
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONBLACK;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        //Debug.Log("row: " + row);
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    cursorOnMagic = 0;
+                    ShowWhiteMagicListPanel();
+                    magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+                }
+            }
+
+            if (magicMenuCursorState == MagicMenuCursorStates.OPTIONBLACK && !magicChoosingHero)
+            {
+                cursor.position = new Vector3(603f, 692f, 0); //set x,y
+
+                chosenMagic = "Black";
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONSORC;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        //Debug.Log("row: " + row);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONWHITE;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        //Debug.Log("row: " + row);
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    cursorOnMagic = 0;
+                    ShowBlackMagicListPanel();
+                    magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+                }
+            }
+
+            if (magicMenuCursorState == MagicMenuCursorStates.OPTIONSORC && !magicChoosingHero)
+            {
+                cursor.position = new Vector3(603f, 670f, 0); //set x,y
+
+                chosenMagic = "Sorcery";
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnMagic = 0;
+                        magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        //Debug.Log("row: " + row);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        magicMenuCursorState = MagicMenuCursorStates.OPTIONBLACK;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        //Debug.Log("row: " + row);
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    cursorOnMagic = 0;
+                    ShowSorceryMagicListPanel();
+                    magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+                }
+            }
+        }
+    }
+
+    void GetMaxRow(GridLayoutGroup glg, out int row)
+    {
+        row = 0;
+
+        if (glg.transform.childCount == 0)
+            return;
+
+        //Column and row are now 1
+        row = 1;
+
+        //Get the first child GameObject of the GridLayoutGroup
+        RectTransform firstChildObj = glg.transform.
+            GetChild(0).GetComponent<RectTransform>();
+
+        Vector2 firstChildPos = firstChildObj.anchoredPosition;
+
+        //Loop through the rest of the child object
+        for (int i = 1; i < glg.transform.childCount; i++)
+        {
+            //Get the next child
+            RectTransform currentChildObj = glg.transform.
+           GetChild(i).GetComponent<RectTransform>();
+
+            Vector2 currentChildPos = currentChildObj.anchoredPosition;
+
+            //if first child.x == otherchild.x, it is a column, ele it's a row
+            if (firstChildPos.x == currentChildPos.x)
+            {
+                row++;
+            }
+        }
+
+        row = row - 1;
+    }
+
+    void UpdateEquipCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && equipMenuCursorState != EquipMenuCursorStates.IDLE)
+        {
+            if (equipMenuCursorState == EquipMenuCursorStates.EQUIPSLOTS)
+            {
+                if (!dpadPressed && (cursorOnEquipSlot == 0 || cursorOnEquipSlot == 4))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEquipSlot = cursorOnEquipSlot + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        equipMenuCursorState = EquipMenuCursorStates.EQUIPOPTION;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnEquipSlot == 3 || cursorOnEquipSlot == 7)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquipSlot = cursorOnEquipSlot - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && (cursorOnEquipSlot < 3 || cursorOnEquipSlot > 4) && cursorOnEquipSlot < 7 && cursorOnEquipSlot != 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEquipSlot = cursorOnEquipSlot + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquipSlot = cursorOnEquipSlot - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (!dpadPressed && cursorOnEquipSlot >= 0 && cursorOnEquipSlot <= 3)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnEquipSlot = cursorOnEquipSlot + 4;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (!dpadPressed && cursorOnEquipSlot >= 4 && cursorOnEquipSlot <= 7)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnEquipSlot = cursorOnEquipSlot - 4;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (cursorOnEquipSlot >= 0 && cursorOnEquipSlot <= 3)
+                {
+                    cursor.position = new Vector3(equipRow1X, equipSlotY - (cursorOnEquipSlot * equipSlotSpacerY), 0.0f);
+                } else if (cursorOnEquipSlot >= 4 && cursorOnEquipSlot <= 7)
+                {
+                    cursor.position = new Vector3(equipRow2X, equipSlotY - ((cursorOnEquipSlot - 4) * equipSlotSpacerY), 0.0f);
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    if (cursorOnEquipSlot == 0)
+                    {
+                        equipButtonClicked = "RightHandButton";
+                    } else if (cursorOnEquipSlot == 1)
+                    {
+                        equipButtonClicked = "HeadButton";
+                    } else if (cursorOnEquipSlot == 2)
+                    {
+                        equipButtonClicked = "ChestButton";
+                    } else if (cursorOnEquipSlot == 3)
+                    {
+                        equipButtonClicked = "FeetButton";
+                    } else if (cursorOnEquipSlot == 4)
+                    {
+                        equipButtonClicked = "LeftHandButton";
+                    } else if (cursorOnEquipSlot == 5)
+                    {
+                        equipButtonClicked = "WristsButton";
+                    } else if (cursorOnEquipSlot == 6)
+                    {
+                        equipButtonClicked = "LegsButton";
+                    } else if (cursorOnEquipSlot == 7)
+                    {
+                        equipButtonClicked = "RelicButton";
+                    }
+
+                    if (equipMode == "Equip")
+                    {
+                        cursorOnEquipList = 0;
+                        ListEquipment();
+                        equipMenuCursorState = EquipMenuCursorStates.EQUIPLIST;
+                    }
+                    else if (equipMode == "Remove")
+                    {
+                        ListEquipment();
+                    }                    
+                }
+
+            }
+
+            if (equipMenuCursorState == EquipMenuCursorStates.EQUIPLIST)
+            {
+                int equipListCount = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform.childCount;
+
+                int scrollDiff = equipListCount - 7;
+
+                if (equipListCount <= 7)
+                {
+                    tempScrollDiff = 0;
+                }
+
+                //Debug.Log("scrollDiff: " + scrollDiff + ", tempScrollDiff: " + tempScrollDiff + ", equipListCount: " + equipListCount +", cursorOnEquipList: " + cursorOnEquipList);
+
+                RectTransform spacerScroll = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").GetComponent<RectTransform>();
+
+                if (!dpadPressed && cursorOnEquipList == 0 && equipListCount > 1 && tempScrollDiff == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEquipList = cursorOnEquipList + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnEquipList == 0 && equipListCount > 1 && tempScrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEquipList = cursorOnEquipList + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (equipListScrollBy * (tempScrollDiff - 1)), 0.0f);
+                        tempScrollDiff = tempScrollDiff - 1;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                }
+                else if (!dpadPressed && cursorOnEquipList > 0 && cursorOnEquipList < 6 && equipListCount > 1)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEquipList = cursorOnEquipList + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquipList = cursorOnEquipList - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnEquipList == 6 && tempScrollDiff == 0 && scrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquipList = cursorOnEquipList - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, equipListScrollBy, 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnEquipList == 6 && tempScrollDiff > 0 && (cursorOnEquipList + tempScrollDiff) < (equipListCount - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquipList = 5;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (equipListScrollBy * (tempScrollDiff + 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (!dpadPressed && cursorOnEquipList == 6 && tempScrollDiff > 0 && (cursorOnEquipList + tempScrollDiff) == (equipListCount - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquipList = 5;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                cursor.position = new Vector3(equipListX, 529.35f - (cursorOnEquipList * equipListSpacerY), 0.0f);
+
+                if (equipListCount != 0)
+                {
+                    if (cursorOnEquipList == equipListCount)
+                    {
+                        cursorOnEquipList = equipListCount - 1;
+                    }
+
+                    if (cursorOnEquipList == 0 && tempScrollDiff >= 0)
+                    {
+                        cursor.position = new Vector3(equipListX, 529.35f, 0);
+                    }
+                    else if (cursorOnEquipList > 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(equipListX, 529.35f - (cursorOnEquipList * equipListSpacerY), 0);
+                    }
+                    else
+                    {
+                        cursor.position = new Vector3(equipListX, 529.35f - (cursorOnEquipList * equipListSpacerY), 0);
+                    }
+
+                }
+
+                equipListItem = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform.GetChild(cursorOnEquipList).GetComponent<EquipMouseEvents>();
+                if (equipListItem.transform.GetChild(0).GetComponent<Text>().text != "None")
+                {
+                    equipListItem.ShowEquipDetails();
+                } else
+                {
+                    GameObject.Find("EquipMenuCanvas/EquipMenuPanel/EquipDescriptionPanel/EquipDescriptionText").GetComponent<Text>().text = "";
+                    ShowEquipmentStatUpdates(null);
+                }
+                
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    if (cursorOnEquipList != 0)
+                    {
+                        equipListItem.SetEquip();
+                    } else
+                    {
+                        ChangeEquipment(null);
+                    }
+
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }                
+            }
+
+            if (equipMenuCursorState == EquipMenuCursorStates.EQUIPOPTION)
+            {
+                cursor.position = new Vector3(477f, 705f, 0);
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    ChangeEquipMode("Equip");
+
+                    cursorOnEquipSlot = 0;
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }
+                if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed) //down
+                {
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }
+                if (Input.GetAxisRaw("DpadHorizontal") == 1 && !dpadPressed) //right
+                {
+                    equipMenuCursorState = EquipMenuCursorStates.REMOVEOPTION;
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                }
+            }
+
+            if (equipMenuCursorState == EquipMenuCursorStates.REMOVEOPTION)
+            {
+                cursor.position = new Vector3(540f, 705f, 0);
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    ChangeEquipMode("Remove");
+
+                    cursorOnEquipSlot = 0;
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }
+                if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed) //down
+                {
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }
+                if (Input.GetAxisRaw("DpadHorizontal") == 1 && !dpadPressed) //right
+                {
+                    equipMenuCursorState = EquipMenuCursorStates.REMOVEALLOPTION;
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                }
+                if (Input.GetAxisRaw("DpadHorizontal") == -1 && !dpadPressed) //left
+                {
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPOPTION;
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                }
+            }
+
+            if (equipMenuCursorState == EquipMenuCursorStates.REMOVEALLOPTION)
+            {
+                cursor.position = new Vector3(613f, 705f, 0);
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    RemoveAllEquipment();
+                }
+                if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed) //down
+                {
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }
+                if (Input.GetAxisRaw("DpadHorizontal") == -1 && !dpadPressed) //left
+                {
+                    equipMenuCursorState = EquipMenuCursorStates.REMOVEOPTION;
+                    dpadPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                }
+            }
+        }
+
+    }
+
+    void UpdateStatusCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && statusMenuCursorState != StatusMenuCursorStates.IDLE)
+        {
+
+        }
+    }
+
+    #endregion
+
     #region Main Menu
 
     /// <summary>
@@ -671,6 +2820,10 @@ public class GameMenu : MonoBehaviour
         DisplayLocation();
         DisplayGold();
         heroToCheck = null;
+
+        mainCursorState = MainCursorStates.ITEM;
+        
+        itemMenuCursorState = ItemMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -711,6 +2864,7 @@ public class GameMenu : MonoBehaviour
         PauseBackground(false);
         menuCalled = false;
         menuState = MenuStates.IDLE;
+        mainCursorState = MainCursorStates.IDLE;
     }
 
     /// <summary>
@@ -728,7 +2882,7 @@ public class GameMenu : MonoBehaviour
             GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("LevelText").GetComponent<Text>().text = GameManager.instance.activeHeroes[i].currentLevel.ToString(); //Level text
             GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("HPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curHP + " / " + GameManager.instance.activeHeroes[i].finalMaxHP); //HP text
             GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("MPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].curMP + " / " + GameManager.instance.activeHeroes[i].finalMaxMP); //MP text
-            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + HeroDB.instance.levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel -1)]); //Exp text
+            GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("EXPText").GetComponent<Text>().text = (GameManager.instance.activeHeroes[i].currentExp + " / " + HeroDB.instance.levelEXPThresholds[(GameManager.instance.activeHeroes[i].currentLevel - 1)]); //Exp text
             DrawHeroSpawnPoint(GameManager.instance.activeHeroes[i], GameObject.Find("MainMenuCanvas/MainMenuPanel/HeroInfoPanel").transform.GetChild(i).Find("GridPanel").gameObject);
         }
     }
@@ -950,7 +3104,7 @@ public class GameMenu : MonoBehaviour
             GameObject.Find("GameManager/Menus/MainMenuCanvas/MainMenuPanel/TimeGoldPanel").transform.Find("TimeText").GetComponent<Text>().text = hours + ":" + minutes + ":" + seconds;
         }
     }
-    
+
     #endregion
 
     #region Item Menu
@@ -966,6 +3120,12 @@ public class GameMenu : MonoBehaviour
         }
 
         StartCoroutine(DrawItemMenu());
+
+        mainCursorState = MainCursorStates.IDLE;
+        itemMenuCursorState = ItemMenuCursorStates.USEITEMS;
+        cursorOnItem = 0;
+        cursorOnItemHero = 0;
+        itemMode = "Use";
     }
 
     /// <summary>
@@ -1013,8 +3173,10 @@ public class GameMenu : MonoBehaviour
         menuState = MenuStates.MAIN;
         heroToCheck = null;
         itemCustomizeModeOn = false;
-        
+
         ShowMainMenu();
+        
+        mainCursorState = MainCursorStates.ITEM;
     }
 
     /// <summary>
@@ -1063,13 +3225,19 @@ public class GameMenu : MonoBehaviour
 
             if (item.type == Item.Types.KEYITEM)
             {
-                NewItemPanel = Instantiate(PrefabManager.Instance.keyItemPrefab);
+
+                for (int i = 0; i < Inventory.instance.items.Count; i++)
+                {
+                    if (Inventory.instance.items[i] == item)
+                    {
+                        itemCount++;
+                    }
+                }
+
+                NewItemPanel = Instantiate(PrefabManager.Instance.itemPrefab);
                 NewItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
                 NewItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
-                if (!item.usableInMenu)
-                {
-
-                }
+                NewItemPanel.transform.GetChild(2).GetComponent<Text>().text = itemCount.ToString();
                 NewItemPanel.transform.SetParent(KeyItemListSpacer, false);
                 itemsAccountedFor.Add(item);
             }
@@ -1243,6 +3411,7 @@ public class GameMenu : MonoBehaviour
 
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/UseButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
     }
 
     /// <summary>
@@ -1262,6 +3431,7 @@ public class GameMenu : MonoBehaviour
 
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/UseButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
         GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+        GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
     }
 
     /// <summary>
@@ -1314,6 +3484,9 @@ public class GameMenu : MonoBehaviour
         {
             itemCustomizeModeOn = true;
             GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/ArrangeButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+            GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/UseButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+            GameObject.Find("GameManager/Menus/ItemMenuCanvas/ItemMenuPanel/ItemOptionsPanel/KeyItemsButton").GetComponentInChildren<Text>().fontStyle = FontStyle.Normal;
+
             PlaySE(AudioManager.instance.confirmSE);
         } else
         {
@@ -1322,6 +3495,7 @@ public class GameMenu : MonoBehaviour
         }
 
         StartCoroutine(HideArrangeMenu());
+        arrangeOption = -1;
     }
 
     /// <summary>
@@ -1643,7 +3817,7 @@ public class GameMenu : MonoBehaviour
 
                 //add the highest item
                 for (int i = 0; i < lowestCount; i++)
-                { 
+                {
                     if (lowestCountItem is Equipment)
                     {
                         sortedEquips.Add(lowestCountItem);
@@ -1651,7 +3825,7 @@ public class GameMenu : MonoBehaviour
                     {
                         sortedItems.Add(lowestCountItem);
                     }
-                    
+
                 }
 
                 itemsAccountedFor.Add(lowestCountItem);
@@ -1700,6 +3874,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowMagicMenu()
     {
+        mainCursorState = MainCursorStates.HEROSELECT1;
+
         if (menuToDraw != null)
         {
             StopCoroutine(menuToDraw);
@@ -1707,7 +3883,6 @@ public class GameMenu : MonoBehaviour
 
         PlaySE(AudioManager.instance.confirmSE);
 
-        Debug.Log("Magic button clicked - choose a hero");
         menuToDraw = StartCoroutine(ChooseHeroForMagicMenu());
     }
 
@@ -1716,6 +3891,7 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator ChooseHeroForMagicMenu()
     {
+
         choosingHero = true;
         BoldButton(MagicButton);
         while (heroToCheck == null)
@@ -1734,7 +3910,7 @@ public class GameMenu : MonoBehaviour
     IEnumerator DrawMagicMenu()
     {
         yield return (AnimateMainMenu());
-        
+
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(MagicMenuCanvas);
         DisplayCanvas(WhiteMagicListPanel);
@@ -1750,6 +3926,10 @@ public class GameMenu : MonoBehaviour
         DrawMagicMenuStats();
         DrawMagicListPanels();
         menuState = MenuStates.MAGIC;
+
+        mainCursorState = MainCursorStates.IDLE;
+        magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
+        cursorOnMagic = 0;
 
         yield return (AnimateMagicMenu());
     }
@@ -1771,6 +3951,7 @@ public class GameMenu : MonoBehaviour
         heroToCheck = null;
 
         ShowMainMenu();
+        mainCursorState = MainCursorStates.MAGIC;
     }
 
     /// <summary>
@@ -1833,7 +4014,7 @@ public class GameMenu : MonoBehaviour
     /// Public method to display white magic panel after clicking 'Black Magic' button in gui
     /// </summary>
     public void ShowBlackMagicListPanel()
-    { 
+    {
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/WhiteMagicButton/WhiteMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/BlackMagicButton/BlackMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Bold;
         GameObject.Find("MagicMenuCanvas/MagicMenuPanel/MagicOptionsPanel/SorceryMagicButton/SorceryMagicButtonText").GetComponent<Text>().fontStyle = FontStyle.Normal;
@@ -1902,7 +4083,7 @@ public class GameMenu : MonoBehaviour
     {
         yield return AnimateMagicHeroSelectPanel();
         PlaySE(AudioManager.instance.backSE);
-        
+
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero1SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero2SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
         GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/HeroSelectMagicPanel/Hero3SelectMagicPanel").GetComponent<MagicMenuMouseEvents>().HideBorder();
@@ -1913,7 +4094,7 @@ public class GameMenu : MonoBehaviour
 
         choosingHeroForMagicMenu = false;
     }
-    
+
     #endregion
 
     #region Equip Menu
@@ -1923,6 +4104,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowEquipMenu()
     {
+        mainCursorState = MainCursorStates.HEROSELECT1;
+
         if (menuToDraw != null)
         {
             StopCoroutine(menuToDraw);
@@ -1971,6 +4154,10 @@ public class GameMenu : MonoBehaviour
         DrawEquipMenuStats();
         DrawCurrentEquipment();
         menuState = MenuStates.EQUIP;
+
+        mainCursorState = MainCursorStates.IDLE;
+        equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+        cursorOnEquipSlot = 0;
 
         yield return AnimateEquipMenu();
     }
@@ -2082,9 +4269,9 @@ public class GameMenu : MonoBehaviour
             GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotText").GetComponent<Text>().text = heroToCheck.equipment[5].name;
             GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[5].icon;
 
-            Color temp = GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
-            GameObject.Find(baseEquipPath + "FeetSlot/FeetButton/FeetSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color = temp;
         }
         if (heroToCheck.equipment[6] == null)
         {
@@ -2138,7 +4325,7 @@ public class GameMenu : MonoBehaviour
 
         EquipPanelHPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesHP(heroToCheck), 0, 1), EquipPanelHPProgressBar.transform.localScale.y);
         EquipPanelMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(heroToCheck), 0, 1), EquipPanelMPProgressBar.transform.localScale.y);
-        
+
         //For EquipStatsPanel
         //STR-SPI
         GameObject.Find("EquipStatsPanel/BaseStrengthText").GetComponent<Text>().text = heroToCheck.finalStrength.ToString();
@@ -2227,6 +4414,7 @@ public class GameMenu : MonoBehaviour
         heroToCheck = null;
 
         ShowMainMenu();
+        mainCursorState = MainCursorStates.EQUIP;
     }
 
     /// <summary>
@@ -2234,9 +4422,6 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ListEquipment()
     {
-        string buttonName = EventSystem.current.currentSelectedGameObject.name;
-        equipButtonClicked = buttonName;
-
         if (equipMode == "Equip")
         {
             PlaySE(AudioManager.instance.confirmSE);
@@ -2267,7 +4452,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "HeadButton")
+            if (equipButtonClicked == "HeadButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2295,7 +4480,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "WristsButton")
+            if (equipButtonClicked == "WristsButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2323,7 +4508,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "ChestButton")
+            if (equipButtonClicked == "ChestButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2351,7 +4536,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "LegsButton")
+            if (equipButtonClicked == "LegsButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2379,7 +4564,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "FeetButton")
+            if (equipButtonClicked == "FeetButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2407,7 +4592,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "RelicButton")
+            if (equipButtonClicked == "RelicButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2435,7 +4620,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "RightHandButton")
+            if (equipButtonClicked == "RightHandButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2463,7 +4648,7 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (buttonName == "LeftHandButton")
+            if (equipButtonClicked == "LeftHandButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
@@ -2594,7 +4779,7 @@ public class GameMenu : MonoBehaviour
             heroToCheck.UpdateStatsFromTalents();
 
             DrawEquipMenuStats();
-            
+
             UpdateEquipmentArrowsToNeutral();
 
             AudioManager.instance.PlaySE(AudioManager.instance.equipSE);
@@ -2614,7 +4799,7 @@ public class GameMenu : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        
+
         heroToCheck.Unequip(0);
 
         GameObject.Find(equipMenuBase + "HeadSlot/HeadButton/HeadSlotText").GetComponent<Text>().text = "";
@@ -2686,7 +4871,7 @@ public class GameMenu : MonoBehaviour
         temp = GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
         temp.a = 0f;
         GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
-        
+
         heroToCheck.GetCurrentStatsFromEquipment();
         heroToCheck.UpdateStatsFromTalents();
 
@@ -2937,20 +5122,20 @@ public class GameMenu : MonoBehaviour
         ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
-        
+
         ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
-        
+
         ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
-        
+
         ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
-        
+
         ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
         ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
@@ -3170,7 +5355,7 @@ public class GameMenu : MonoBehaviour
         newEquip.block = toEquip.block;
 
         return newEquip;
-}
+    }
 
     /// <summary>
     /// Public method to show potential stat changes with equipment chosen compared to temporary hero (copied from chosen hero) 
@@ -3184,14 +5369,14 @@ public class GameMenu : MonoBehaviour
 
         BaseHero tempHero = new BaseHero();
         tempHero = TempHeroForEquip();
-        
+
         if (toEquip != null) //showing stats for valid equipment
         {
             //Debug.Log(toEquip.name);
             int slotIndex = (int)toEquip.equipmentSlot;
             Equipment tempEquip = TempEquip(toEquip);
             tempHero.equipment[slotIndex] = tempEquip;
-            
+
         } else //showing stats for unequipping
         {
             //get item currently equipped in this slot
@@ -3204,288 +5389,288 @@ public class GameMenu : MonoBehaviour
         tempHero.UpdateStats();
 
         GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = tempHero.finalStrength.ToString();
-            if (tempHero.finalStrength > heroToCheck.finalStrength)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Up");
-            }
-            else if (tempHero.finalStrength < heroToCheck.finalStrength)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Down");
-            }
-            else if (tempHero.finalStrength == heroToCheck.finalStrength)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
-            }
+        if (tempHero.finalStrength > heroToCheck.finalStrength)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Up");
+        }
+        else if (tempHero.finalStrength < heroToCheck.finalStrength)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Down");
+        }
+        else if (tempHero.finalStrength == heroToCheck.finalStrength)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StrengthArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = tempHero.finalStamina.ToString();
-            
-            if (tempHero.finalStamina > heroToCheck.finalStamina)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Up");
-            }
-            else if (tempHero.finalStamina < heroToCheck.finalStamina)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Down");
-            }
-            else if (tempHero.finalStamina == heroToCheck.finalStamina)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewStaminaText").GetComponent<Text>().text = tempHero.finalStamina.ToString();
 
-            GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = tempHero.finalAgility.ToString();
-            if (tempHero.finalAgility > heroToCheck.finalAgility)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Up");
-            }
-            if (tempHero.finalAgility < heroToCheck.finalAgility)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Down");
-            }
-            else if (tempHero.finalAgility == heroToCheck.finalAgility)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
-            }
+        if (tempHero.finalStamina > heroToCheck.finalStamina)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Up");
+        }
+        else if (tempHero.finalStamina < heroToCheck.finalStamina)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Down");
+        }
+        else if (tempHero.finalStamina == heroToCheck.finalStamina)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/StaminaArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = tempHero.finalDexterity.ToString();
-            if (tempHero.finalDexterity > heroToCheck.finalDexterity)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Up");
-            }
-            else if (tempHero.finalDexterity < heroToCheck.finalDexterity)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Down");
-            }
-            else if (tempHero.finalDexterity == heroToCheck.finalDexterity)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewAgilityText").GetComponent<Text>().text = tempHero.finalAgility.ToString();
+        if (tempHero.finalAgility > heroToCheck.finalAgility)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Up");
+        }
+        if (tempHero.finalAgility < heroToCheck.finalAgility)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Down");
+        }
+        else if (tempHero.finalAgility == heroToCheck.finalAgility)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AgilityArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = tempHero.finalIntelligence.ToString();
-            if (tempHero.finalIntelligence > heroToCheck.finalIntelligence)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Up");
-            }
-            else if (tempHero.finalIntelligence < heroToCheck.finalIntelligence)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Down");
-            }
-            else if (tempHero.finalIntelligence == heroToCheck.finalIntelligence)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewDexterityText").GetComponent<Text>().text = tempHero.finalDexterity.ToString();
+        if (tempHero.finalDexterity > heroToCheck.finalDexterity)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Up");
+        }
+        else if (tempHero.finalDexterity < heroToCheck.finalDexterity)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Down");
+        }
+        else if (tempHero.finalDexterity == heroToCheck.finalDexterity)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DexterityArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = tempHero.finalSpirit.ToString();
-            if (tempHero.finalSpirit > heroToCheck.finalSpirit)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Up");
-            }
-            else if (tempHero.finalSpirit < heroToCheck.finalSpirit)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Down");
-            }
-            else if (tempHero.finalSpirit == heroToCheck.finalSpirit)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewIntelligenceText").GetComponent<Text>().text = tempHero.finalIntelligence.ToString();
+        if (tempHero.finalIntelligence > heroToCheck.finalIntelligence)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Up");
+        }
+        else if (tempHero.finalIntelligence < heroToCheck.finalIntelligence)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Down");
+        }
+        else if (tempHero.finalIntelligence == heroToCheck.finalIntelligence)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/IntelligenceArrow"), "Neutral");
+        }
 
-
-            GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = tempHero.finalMaxHP.ToString();
-            if (tempHero.finalMaxHP > heroToCheck.finalMaxHP)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Up");
-            }
-            else if (tempHero.finalMaxHP < heroToCheck.finalMaxHP)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Down");
-            }
-            else if (tempHero.finalMaxHP == heroToCheck.finalMaxHP)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
-            }
-
-            GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = tempHero.finalMaxMP.ToString();
-            if (tempHero.finalMaxMP > heroToCheck.finalMaxMP)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Up");
-            }
-            else if (tempHero.finalMaxMP < heroToCheck.finalMaxMP)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Down");
-            }
-            else if (tempHero.finalMaxMP == heroToCheck.finalMaxMP)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewSpiritText").GetComponent<Text>().text = tempHero.finalSpirit.ToString();
+        if (tempHero.finalSpirit > heroToCheck.finalSpirit)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Up");
+        }
+        else if (tempHero.finalSpirit < heroToCheck.finalSpirit)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Down");
+        }
+        else if (tempHero.finalSpirit == heroToCheck.finalSpirit)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/SpiritArrow"), "Neutral");
+        }
 
 
-            GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = tempHero.finalATK.ToString();
-            if (tempHero.finalATK > heroToCheck.finalATK)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Up");
-            }
-            else if (tempHero.finalATK < heroToCheck.finalATK)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Down");
-            }
-            else if (tempHero.finalATK == heroToCheck.finalATK)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewHPText").GetComponent<Text>().text = tempHero.finalMaxHP.ToString();
+        if (tempHero.finalMaxHP > heroToCheck.finalMaxHP)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Up");
+        }
+        else if (tempHero.finalMaxHP < heroToCheck.finalMaxHP)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Down");
+        }
+        else if (tempHero.finalMaxHP == heroToCheck.finalMaxHP)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HPArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = tempHero.finalMATK.ToString();
-            if (tempHero.finalMATK > heroToCheck.finalMATK)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Up");
-            }
-            else if (tempHero.finalMATK < heroToCheck.finalMATK)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Down");
-            }
-            else if (tempHero.finalMATK == heroToCheck.finalMATK)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
-            }
-
-            GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = tempHero.finalDEF.ToString();
-            if (tempHero.finalDEF > heroToCheck.finalDEF)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Up");
-            }
-            else if (tempHero.finalDEF < heroToCheck.finalDEF)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Down");
-            }
-            else if (tempHero.finalDEF == heroToCheck.finalDEF)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
-            }
-
-            GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = tempHero.finalMDEF.ToString();
-            if (tempHero.finalMDEF > heroToCheck.finalMDEF)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Up");
-            }
-            else if (tempHero.finalMDEF < heroToCheck.finalMDEF)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Down");
-            }
-            else if (tempHero.finalMDEF == heroToCheck.finalMDEF)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewMPText").GetComponent<Text>().text = tempHero.finalMaxMP.ToString();
+        if (tempHero.finalMaxMP > heroToCheck.finalMaxMP)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Up");
+        }
+        else if (tempHero.finalMaxMP < heroToCheck.finalMaxMP)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Down");
+        }
+        else if (tempHero.finalMaxMP == heroToCheck.finalMaxMP)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPArrow"), "Neutral");
+        }
 
 
-            GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = tempHero.finalHitRating.ToString();
-            if (tempHero.finalHitRating > heroToCheck.finalHitRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Up");
-            }
-            else if (tempHero.finalHitRating < heroToCheck.finalHitRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Down");
-            }
-            else if (tempHero.finalHitRating == heroToCheck.finalHitRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewAttackText").GetComponent<Text>().text = tempHero.finalATK.ToString();
+        if (tempHero.finalATK > heroToCheck.finalATK)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Up");
+        }
+        else if (tempHero.finalATK < heroToCheck.finalATK)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Down");
+        }
+        else if (tempHero.finalATK == heroToCheck.finalATK)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/AttackArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = tempHero.finalCritRating.ToString();
-            if (tempHero.finalCritRating > heroToCheck.finalCritRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Up");
-            }
-            else if (tempHero.finalCritRating < heroToCheck.finalCritRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Down");
-            }
-            else if (tempHero.finalCritRating == heroToCheck.finalCritRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewMagicAttackText").GetComponent<Text>().text = tempHero.finalMATK.ToString();
+        if (tempHero.finalMATK > heroToCheck.finalMATK)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Up");
+        }
+        else if (tempHero.finalMATK < heroToCheck.finalMATK)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Down");
+        }
+        else if (tempHero.finalMATK == heroToCheck.finalMATK)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicAttackArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = tempHero.finalMoveRating.ToString();
-            if (tempHero.finalMoveRating > heroToCheck.finalMoveRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Up");
-            }
-            else if (tempHero.finalMoveRating < heroToCheck.finalMoveRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Down");
-            }
-            else if (tempHero.finalMoveRating == heroToCheck.finalMoveRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewDefenseText").GetComponent<Text>().text = tempHero.finalDEF.ToString();
+        if (tempHero.finalDEF > heroToCheck.finalDEF)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Up");
+        }
+        else if (tempHero.finalDEF < heroToCheck.finalDEF)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Down");
+        }
+        else if (tempHero.finalDEF == heroToCheck.finalDEF)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DefenseArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = tempHero.finalRegenRating.ToString();
-            if (tempHero.finalRegenRating > heroToCheck.finalRegenRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Up");
-            }
-            else if (tempHero.finalRegenRating < heroToCheck.finalRegenRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Down");
-            }
-            else if (tempHero.finalRegenRating == heroToCheck.finalRegenRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewMagicDefenseText").GetComponent<Text>().text = tempHero.finalMDEF.ToString();
+        if (tempHero.finalMDEF > heroToCheck.finalMDEF)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Up");
+        }
+        else if (tempHero.finalMDEF < heroToCheck.finalMDEF)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Down");
+        }
+        else if (tempHero.finalMDEF == heroToCheck.finalMDEF)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MagicDefenseArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = tempHero.finalDodgeRating.ToString();
-            if (tempHero.finalDodgeRating > heroToCheck.finalDodgeRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Up");
-            }
-            else if (tempHero.finalDodgeRating < heroToCheck.finalDodgeRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Down");
-            }
-            else if (tempHero.finalDodgeRating == heroToCheck.finalDodgeRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
-            }
 
-            GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = tempHero.finalBlockRating.ToString();
-            if (tempHero.finalBlockRating > heroToCheck.finalBlockRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Up");
-            }
-            else if (tempHero.finalBlockRating < heroToCheck.finalBlockRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Down");
-            }
-            else if (tempHero.finalBlockRating == heroToCheck.finalBlockRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewHitText").GetComponent<Text>().text = tempHero.finalHitRating.ToString();
+        if (tempHero.finalHitRating > heroToCheck.finalHitRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Up");
+        }
+        else if (tempHero.finalHitRating < heroToCheck.finalHitRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Down");
+        }
+        else if (tempHero.finalHitRating == heroToCheck.finalHitRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/HitArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = tempHero.finalParryRating.ToString();
-            if (tempHero.finalParryRating > heroToCheck.finalParryRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Up");
-            }
-            else if (tempHero.finalParryRating < heroToCheck.finalParryRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Down");
-            }
-            else if (tempHero.finalParryRating == heroToCheck.finalParryRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewCritText").GetComponent<Text>().text = tempHero.finalCritRating.ToString();
+        if (tempHero.finalCritRating > heroToCheck.finalCritRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Up");
+        }
+        else if (tempHero.finalCritRating < heroToCheck.finalCritRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Down");
+        }
+        else if (tempHero.finalCritRating == heroToCheck.finalCritRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/CritArrow"), "Neutral");
+        }
 
-            GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = tempHero.finalThreatRating.ToString();
-            if (tempHero.finalThreatRating > heroToCheck.finalThreatRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Up");
-            }
-            else if (tempHero.finalThreatRating < heroToCheck.finalThreatRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Down");
-            }
-            else if (tempHero.finalThreatRating == heroToCheck.finalThreatRating)
-            {
-                ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
-            }
+        GameObject.Find("EquipStatsPanel/NewMoveText").GetComponent<Text>().text = tempHero.finalMoveRating.ToString();
+        if (tempHero.finalMoveRating > heroToCheck.finalMoveRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Up");
+        }
+        else if (tempHero.finalMoveRating < heroToCheck.finalMoveRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Down");
+        }
+        else if (tempHero.finalMoveRating == heroToCheck.finalMoveRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MoveArrow"), "Neutral");
+        }
+
+        GameObject.Find("EquipStatsPanel/NewMPRegenText").GetComponent<Text>().text = tempHero.finalRegenRating.ToString();
+        if (tempHero.finalRegenRating > heroToCheck.finalRegenRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Up");
+        }
+        else if (tempHero.finalRegenRating < heroToCheck.finalRegenRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Down");
+        }
+        else if (tempHero.finalRegenRating == heroToCheck.finalRegenRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/MPRegenArrow"), "Neutral");
+        }
+
+        GameObject.Find("EquipStatsPanel/NewDodgeText").GetComponent<Text>().text = tempHero.finalDodgeRating.ToString();
+        if (tempHero.finalDodgeRating > heroToCheck.finalDodgeRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Up");
+        }
+        else if (tempHero.finalDodgeRating < heroToCheck.finalDodgeRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Down");
+        }
+        else if (tempHero.finalDodgeRating == heroToCheck.finalDodgeRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/DodgeArrow"), "Neutral");
+        }
+
+        GameObject.Find("EquipStatsPanel/NewBlockText").GetComponent<Text>().text = tempHero.finalBlockRating.ToString();
+        if (tempHero.finalBlockRating > heroToCheck.finalBlockRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Up");
+        }
+        else if (tempHero.finalBlockRating < heroToCheck.finalBlockRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Down");
+        }
+        else if (tempHero.finalBlockRating == heroToCheck.finalBlockRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/BlockArrow"), "Neutral");
+        }
+
+        GameObject.Find("EquipStatsPanel/NewParryText").GetComponent<Text>().text = tempHero.finalParryRating.ToString();
+        if (tempHero.finalParryRating > heroToCheck.finalParryRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Up");
+        }
+        else if (tempHero.finalParryRating < heroToCheck.finalParryRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Down");
+        }
+        else if (tempHero.finalParryRating == heroToCheck.finalParryRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ParryArrow"), "Neutral");
+        }
+
+        GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = tempHero.finalThreatRating.ToString();
+        if (tempHero.finalThreatRating > heroToCheck.finalThreatRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Up");
+        }
+        else if (tempHero.finalThreatRating < heroToCheck.finalThreatRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Down");
+        }
+        else if (tempHero.finalThreatRating == heroToCheck.finalThreatRating)
+        {
+            ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
+        }
     }
 
     /// <summary>
@@ -3495,7 +5680,7 @@ public class GameMenu : MonoBehaviour
     {
         //heroToCheck.GetCurrentStatsFromEquipment();
         //heroToCheck.UpdateStatsFromTalents();
-        
+
         if (heroToCheck != null)
         {
             GameObject.Find("EquipStatsPanel/NewStrengthText").GetComponent<Text>().text = heroToCheck.finalStrength.ToString();
@@ -3543,7 +5728,7 @@ public class GameMenu : MonoBehaviour
             GameObject.Find("EquipStatsPanel/NewThreatText").GetComponent<Text>().text = heroToCheck.finalThreatRating.ToString();
             ChangeArrow(GameObject.Find("EquipStatsPanel/ThreatArrow"), "Neutral");
         }
-        
+
     }
 
     /// <summary>
@@ -3595,6 +5780,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowStatusMenu()
     {
+        mainCursorState = MainCursorStates.HEROSELECT1;
+
         if (menuToDraw != null)
         {
             StopCoroutine(menuToDraw);
@@ -3636,6 +5823,11 @@ public class GameMenu : MonoBehaviour
         menuState = MenuStates.STATUS;
         DrawStatusMenuBaseStats();
         DrawStatusMenuStats();
+        DrawStatusMenuEquipment();
+
+        mainCursorState = MainCursorStates.IDLE;
+        statusMenuCursorState = StatusMenuCursorStates.STATS;
+        cursorOnEquipSlot = 0;
 
         yield return (AnimateStatusMenu());
     }
@@ -3653,6 +5845,8 @@ public class GameMenu : MonoBehaviour
         heroToCheck = null;
 
         ShowMainMenu();
+
+        mainCursorState = MainCursorStates.STATUS;
     }
 
     /// <summary>
@@ -3700,6 +5894,99 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("StatusMenuPanel/StatsPanel/BlockChanceText").GetComponent<Text>().text = heroToCheck.finalBlockRating.ToString(); //Block Chance text
         GameObject.Find("StatusMenuPanel/StatsPanel/ParryChanceText").GetComponent<Text>().text = heroToCheck.finalParryRating.ToString(); //Parry Chance text
         GameObject.Find("StatusMenuPanel/StatsPanel/ThreatText").GetComponent<Text>().text = heroToCheck.finalThreatRating.ToString(); //Threat Rating text
+    }
+
+    void DrawStatusMenuEquipment()
+    {
+        if (heroToCheck.equipment[0] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HeadSlot/HeadIcon").GetComponent<Image>().sprite = heroToCheck.equipment[0].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HeadSlot/HeadIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HeadSlot/HeadText").GetComponent<Text>().text = heroToCheck.equipment[0].name;
+        }
+        else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HeadSlot/HeadIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HeadSlot/HeadText").GetComponent<Text>().text = "-";
+        }
+
+        if (heroToCheck.equipment[1] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/ChestSlot/ChestIcon").GetComponent<Image>().sprite = heroToCheck.equipment[1].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/ChestSlot/ChestIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/ChestSlot/ChestText").GetComponent<Text>().text = heroToCheck.equipment[1].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/ChestSlot/ChestIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/ChestSlot/ChestText").GetComponent<Text>().text = "-";
+        }
+
+        if (heroToCheck.equipment[2] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsIcon").GetComponent<Image>().sprite = heroToCheck.equipment[2].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsText").GetComponent<Text>().text = heroToCheck.equipment[2].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsText").GetComponent<Text>().text = "-";
+        }
+        
+        if (heroToCheck.equipment[3] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LegsSlot/LegsIcon").GetComponent<Image>().sprite = heroToCheck.equipment[3].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LegsSlot/LegsIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LegsSlot/LegsText").GetComponent<Text>().text = heroToCheck.equipment[3].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LegsSlot/LegsIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LegsSlot/LegsText").GetComponent<Text>().text = "-";
+        }
+
+        if (heroToCheck.equipment[4] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/FeetSlot/FeetIcon").GetComponent<Image>().sprite = heroToCheck.equipment[4].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/FeetSlot/FeetIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/FeetSlot/FeetText").GetComponent<Text>().text = heroToCheck.equipment[4].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/FeetSlot/FeetIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/FeetSlot/FeetText").GetComponent<Text>().text = "-";
+        }
+         
+        if (heroToCheck.equipment[5] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RelicSlot/RelicIcon").GetComponent<Image>().sprite = heroToCheck.equipment[5].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RelicSlot/RelicIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RelicSlot/RelicText").GetComponent<Text>().text = heroToCheck.equipment[5].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RelicSlot/RelicIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RelicSlot/RelicText").GetComponent<Text>().text = "-";
+        }
+
+        if (heroToCheck.equipment[6] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandIcon").GetComponent<Image>().sprite = heroToCheck.equipment[6].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandText").GetComponent<Text>().text = heroToCheck.equipment[6].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandText").GetComponent<Text>().text = "-";
+        }
+
+        if (heroToCheck.equipment[7] != null)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandIcon").GetComponent<Image>().sprite = heroToCheck.equipment[7].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandText").GetComponent<Text>().text = heroToCheck.equipment[7].name;
+        } else
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandText").GetComponent<Text>().text = "-";
+        }
+
     }
 
     #endregion
@@ -3754,6 +6041,8 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = "";
         GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
 
+        mainCursorState = MainCursorStates.IDLE;
+
         yield return (AnimateTalentsMenu());
     }
 
@@ -3770,6 +6059,8 @@ public class GameMenu : MonoBehaviour
         heroToCheck = null;
 
         ShowMainMenu();
+
+        mainCursorState = MainCursorStates.TALENTS;
     }
 
     /// <summary>
@@ -3880,9 +6171,11 @@ public class GameMenu : MonoBehaviour
         HideCanvas(MainMenuCanvas);
         DisplayCanvas(PartyMenuCanvas);
         menuState = MenuStates.PARTY;
-    
+
         DrawPartyActiveHeroes();
         DrawInactiveHeroButtons();
+
+        mainCursorState = MainCursorStates.IDLE;
 
         yield return (AnimatePartyMenu());
     }
@@ -3897,6 +6190,8 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(PartyMenuCanvas);
         menuState = MenuStates.MAIN;
+
+        mainCursorState = MainCursorStates.PARTY;
 
         ShowMainMenu();
     }
@@ -4084,7 +6379,7 @@ public class GameMenu : MonoBehaviour
             InactivePartyButton.transform.Find("NameText").GetComponent<Text>().text = hero.name;
             DrawHeroFace(hero, InactivePartyButton.transform.Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             InactivePartyButton.name = "Inactive Hero Button - ID " + hero.ID;
-            
+
             if (row1ChildCount <= 2)
             {
                 InactivePartyButton.transform.SetParent(PartyInactiveRow1Spacer, false);
@@ -4157,6 +6452,8 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(GridMenuCanvas);
         menuState = MenuStates.GRID;
 
+        mainCursorState = MainCursorStates.IDLE;
+
         yield return (AnimateGridMenu());
     }
 
@@ -4171,6 +6468,8 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(GridMenuCanvas);
         menuState = MenuStates.MAIN;
+
+        mainCursorState = MainCursorStates.GRID;
 
         ShowMainMenu();
     }
@@ -4345,6 +6644,8 @@ public class GameMenu : MonoBehaviour
 
         ClearQuestMenuFields();
 
+        mainCursorState = MainCursorStates.IDLE;
+
         yield return (AnimateQuestMenu());
     }
 
@@ -4359,6 +6660,8 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(QuestsMenuCanvas);
         menuState = MenuStates.MAIN;
+
+        mainCursorState = MainCursorStates.QUESTS;
 
         ShowMainMenu();
     }
@@ -4463,8 +6766,8 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/GoldText").GetComponent<Text>().text = "";
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ExpText").GetComponent<Text>().text = "";
 
-        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color = new Color(GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.r, 
-            GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.g, 
+        GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color = new Color(GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.r,
+            GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.g,
             GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.b, 0f);
 
         GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemText").GetComponent<Text>().text = "";
@@ -4569,6 +6872,8 @@ public class GameMenu : MonoBehaviour
 
         DrawBestiaryEntryList();
 
+        mainCursorState = MainCursorStates.IDLE;
+
         yield return (AnimateBestiaryMenu());
     }
 
@@ -4583,6 +6888,8 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(MainMenuCanvas);
         HideCanvas(BestiaryMenuCanvas);
         menuState = MenuStates.MAIN;
+
+        mainCursorState = MainCursorStates.BESTIARY;
 
         ShowMainMenu();
     }
@@ -4888,6 +7195,13 @@ public class GameMenu : MonoBehaviour
             Status_passivePanel.SetBool("open", !isOpen);
         }
 
+        if (Status_detailsPanel != null)
+        {
+            bool isOpen = Status_detailsPanel.GetBool("open");
+
+            Status_detailsPanel.SetBool("open", !isOpen);
+        }
+
         if (Status_statsPanel != null)
         {
             bool isOpen = Status_statsPanel.GetBool("open");
@@ -4902,18 +7216,42 @@ public class GameMenu : MonoBehaviour
             Status_equipPanel.SetBool("open", !isOpen);
         }
 
-        if (Status_resistancesPanel != null)
+        if (Status_elePanel != null)
         {
-            bool isOpen = Status_resistancesPanel.GetBool("open");
+            bool isOpen = Status_elePanel.GetBool("open");
 
-            Status_resistancesPanel.SetBool("open", !isOpen);
+            Status_elePanel.SetBool("open", !isOpen);
         }
 
-        if (Status_skillsPanel != null)
+        if (Status_statusPanel != null)
         {
-            bool isOpen = Status_skillsPanel.GetBool("open");
+            bool isOpen = Status_statusPanel.GetBool("open");
 
-            Status_skillsPanel.SetBool("open", !isOpen);
+            Status_statusPanel.SetBool("open", !isOpen);
+        }
+
+        yield return new WaitForSeconds(GetAnimationTime(Status_baseStatsPanel));
+    }
+
+    /// <summary>
+    /// Coroutine.  Facilitates processing of status menu panel animations
+    /// </summary>
+    IEnumerator AnimateSecondaryStatusMenu()
+    {
+        PlayAnimSE(AudioManager.instance.openMenuSE);
+               
+        if (Status_activesPanel != null)
+        {
+            bool isOpen = Status_activesPanel.GetBool("open");
+
+            Status_activesPanel.SetBool("open", !isOpen);
+        }
+
+        if (Status_magicPanel != null)
+        {
+            bool isOpen = Status_magicPanel.GetBool("open");
+
+            Status_magicPanel.SetBool("open", !isOpen);
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Status_baseStatsPanel));
@@ -5305,7 +7643,7 @@ public class GameMenu : MonoBehaviour
         float heroHP = hero.curHP;
         float heroBaseHP = hero.finalMaxHP;
         float calc_HP;
-        
+
         calc_HP = heroHP / heroBaseHP;
 
         return calc_HP;
@@ -5320,7 +7658,7 @@ public class GameMenu : MonoBehaviour
         float heroMP = hero.curMP;
         float heroBaseMP = hero.finalMaxMP;
         float calc_MP;
-        
+
         calc_MP = heroMP / heroBaseMP;
 
         return calc_MP;

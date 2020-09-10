@@ -6,7 +6,6 @@ public class PrefabManager : MonoBehaviour
 
     // Assign the prefab in the inspector
     public GameObject itemPrefab; //for the items in item list in battle, menu, and shop
-    public GameObject keyItemPrefab;
     public GameObject magicPrefab; //for magic listed in menu
     public GameObject equipPrefab;
     public GameObject damagePrefab;

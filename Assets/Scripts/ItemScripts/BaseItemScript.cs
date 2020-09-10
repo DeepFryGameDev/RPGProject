@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +23,11 @@ public class BaseItemScript
             EtherToHero(hero);
         }
 
+        if (scriptToRun == "High Potion")
+        {
+            HighPotionToHero(hero);
+        }
+
         SetValue();
     }
 
@@ -37,6 +42,19 @@ public class BaseItemScript
             hero.curHP = hero.finalMaxHP;
         }
         Debug.Log("Healing " + hero.name + " for 20 HP!");
+    }
+
+    void HighPotionToHero(BaseHero hero)
+    {
+        adjValue = 50;
+
+        hero.curHP += adjValue;
+
+        if (hero.curHP > hero.finalMaxHP)
+        {
+            hero.curHP = hero.finalMaxHP;
+        }
+        Debug.Log("Healing " + hero.name + " for 50 HP!");
     }
 
     void EtherToHero(BaseHero hero)
@@ -64,6 +82,11 @@ public class BaseItemScript
             EtherToEnemy(enemy);
         }
 
+        if (scriptToRun == "High Potion")
+        {
+            HighPotionToEnemy(enemy);
+        }
+
         SetValue();
     }
 
@@ -77,6 +100,18 @@ public class BaseItemScript
             enemy.curHP = enemy.baseHP;
         }
         Debug.Log("Healing " + enemy.name + " for 20 HP!");
+    }
+
+    void HighPotionToEnemy(BaseEnemy enemy)
+    {
+        adjValue = 50;
+        enemy.curHP += adjValue;
+
+        if (enemy.curHP > enemy.baseHP)
+        {
+            enemy.curHP = enemy.baseHP;
+        }
+        Debug.Log("Healing " + enemy.name + " for 50 HP!");
     }
 
     void EtherToEnemy(BaseEnemy enemy)

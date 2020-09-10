@@ -23,26 +23,29 @@ public class DebugEnemy2 : EnemyBehavior
 
                 BuildActionLists();
                 GetChosenAction();
-                behaviorStates = BehaviorStates.BEFOREMOVE;
+                behaviorStates = BehaviorStates.THINK;
 
             break;
 
             case (BehaviorStates.THINK):
-                Debug.Log("Thinking...");
-                //foreach tile in walkable range (inRange) <-- range loop
-                //simulate range for chosen attack using tile in loop as parent tile
-                //foreach tile in attack range <-- affect loop
-                //simulate affect pattern using tile in above loop as parent tile
-                //check for shielded tiles
-                //get count of how many targets affected
-                //when count is highest, set best tile to move as the tile from range loop and best tile to attack as the tile from affect loop
-                //set the shielded tiles based on best tile to attack as center tile
-                //go to BEFOREMOVE
+                if (!thinking)
+                {
+                    thinking = true;
+                    StartCoroutine(Think());
+                }
+
+                if (doneThinking)
+                {
+                    thinking = false;
+                    behaviorStates = BehaviorStates.BEFOREMOVE;
+                }
             break;
 
             case (BehaviorStates.BEFOREMOVE):
 
-                if (AttackInRangeOfTarget(chosenTarget, chosenAttack))
+                GetCurrentTile();
+
+                if (currentTile == bestMoveTile)
                 {
                     behaviorStates = BehaviorStates.ACTION;
                 }
@@ -51,28 +54,27 @@ public class DebugEnemy2 : EnemyBehavior
                     behaviorStates = BehaviorStates.MOVE;
                 }
 
-                break;
+            break;
 
             case (BehaviorStates.MOVE):
-
+                
                 if (!readyForAction)
                 {
                     if (foundTarget)
                     {
-                        MoveEnemy(false); //move algorithm should use best tile to move from THINK phase
+                        MoveEnemy();
                     }
                 } else
                 {
+                    foundPath = false;
                     behaviorStates = BehaviorStates.AFTERMOVE;
                 }
 
             break;
 
             case (BehaviorStates.AFTERMOVE):
-
-                BuildActionLists();
                 
-                if (AttackInRangeOfTarget(chosenTarget, chosenAttack))
+                if (bestTargetTile != null)
                 {
                     behaviorStates = BehaviorStates.ACTION;
                 }
@@ -86,18 +88,10 @@ public class DebugEnemy2 : EnemyBehavior
 
             case (BehaviorStates.ACTION):
 
-                if (!gettingTarget)
-                {
-                    GetTargets(chosenAttack.patternIndex, targetType.ToString()); //update as its coroutine
-                }
+                RunAction(chosenAttack, targets);
 
-                if (targets.Count != 0 && !gettingTarget)
-                {
-                    RunAction(chosenAttack, targets);
-
-                    Debug.Log("changing back to idle");
-                    behaviorStates = BehaviorStates.IDLE;
-                }
+                Debug.Log("changing back to idle");
+                behaviorStates = BehaviorStates.IDLE;
 
             break;
         }

@@ -7,18 +7,18 @@ using UnityEngine.UI;
 public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler //for setting magic menu details
 {
 
-    Text magicDesc;
-    Text MPCostText;
-    Text cooldownText;
-    BaseHero heroToCastOn;
+    public Text magicDesc;
+    public Text MPCostText;
+    public Text cooldownText;
+    public BaseHero heroToCastOn;
     BaseHero heroFromMenu;
     BaseMagicScript magicScript;
     GameMenu menu;
     AudioManager AM;
-    BaseAttack magicUsed;
+    public BaseAttack magicUsed;
 
-    Coroutine processMagic = null;
-    Coroutine chooseHero = null;
+    public Coroutine processMagic = null;
+    public Coroutine chooseHero = null;
 
     private void Start()
     {
@@ -30,7 +30,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         heroFromMenu = menu.heroToCheck; //hero that was chosen to enter the magic menu with
     }
 
-    BaseAttack GetMagic(string name) //gets the actual magic spell
+    public BaseAttack GetMagic(string name) //gets the actual magic spell
     {
         foreach (BaseAttack magic in heroFromMenu.MagicAttacks)
         {
@@ -42,7 +42,7 @@ public class MagicMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         return null;
     }
 
-    string GetMagicName() //gets the spell name based on which panel is clicked
+    public string GetMagicName() //gets the spell name based on which panel is clicked
     {
         return gameObject.transform.Find("Name").GetComponent<Text>().text;
     }
