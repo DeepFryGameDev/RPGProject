@@ -48,6 +48,4 @@ Menu transition SE - ripped from Shining Force 2
 
 -----
 
-
-
 You can also visit my portfolio containing previous projects I have developed: https://github.com/DeepFryGameDev/portfolio
