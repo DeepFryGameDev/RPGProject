@@ -17,14 +17,6 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         detailsText = GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
     }
 
-    void Update()
-    {
-        if (BSM.cancelledEnemySelect)
-        {
-            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //removes selector from being active if ChooseTarget is cancelled
-        }
-    }
-
     /// <summary>
     /// Sets chosen target for BSM
     /// </summary>
@@ -34,7 +26,6 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
         {
             GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
             BSM.chosenTarget = gameObject; //sets BSM target to this gameObject
-            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false); //hides selector after being chosen
             detailsText.GetComponent<Text>().text = "";
         }
     }
@@ -44,10 +35,6 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (BSM.choosingTarget)
-        {
-            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(true);
-        }
         detailsText.GetComponent<Text>().text = this.gameObject.GetComponent<EnemyStateMachine>().enemy.name;
     }
 
@@ -56,12 +43,6 @@ public class EnemyMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExi
     /// </summary>
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("should hide selector");
-
-        if (BSM.choosingTarget)
-        {
-            gameObject.GetComponent<EnemyStateMachine>().Selector.SetActive(false);
-        }
         detailsText.GetComponent<Text>().text = "";
     }
 }

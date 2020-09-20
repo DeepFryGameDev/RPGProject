@@ -22,7 +22,6 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
 
     //this GameObject
     [HideInInspector] public Vector2 startPosition; //to store enemy's starting position for movement
-    [HideInInspector] public GameObject Selector; //the selector cursor above the enemy
     //TimeforAction() stuff
     [HideInInspector] public bool actionStarted = false; //used for knowing whether to execute or exit the ieNumerator
 
@@ -46,10 +45,7 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //sets battle state machine to active battle state machine in BattleManager (in scene)
         startPosition = transform.position; //sets startPosition to the enemy's position at the start of battle
         cur_cooldown = Random.Range(0, 2.5f); //Sets random point for enemy ATB gauge to start
-
-        Selector = transform.Find("Selector").gameObject;
-        BSM.HideSelector(Selector); //hides enemy selector cursor
-
+        
         enemyBehavior = GetComponent<EnemyBehavior>();
 
         enemy.curHP = enemy.baseHP;
@@ -115,7 +111,6 @@ public class EnemyStateMachine : MonoBehaviour //for processing enemy turns
                         BSM.expPool += enemy.earnedEXP; //increases enemy's exp to exp pool to take after battle
                         this.gameObject.tag = "DeadEnemy"; //change tag of enemy to DeadEnemy
                         BSM.EnemiesInBattle.Remove(this.gameObject); //Makes this enemy not attackable by heroes
-                        BSM.HideSelector(Selector); //disable the selector cursor for the enemy
 
                         if (BSM.EnemiesInBattle.Count > 0) //remove all enemyAttacks inputs from active perform list if there are still enemies on the field
                         {

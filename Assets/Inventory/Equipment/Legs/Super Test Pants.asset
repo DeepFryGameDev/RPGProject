@@ -12,11 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f64d47f5fbc367146a0129985ca084d5, type: 3}
   m_Name: Super Test Pants
   m_EditorClassIdentifier: 
-  icon: {fileID: 21300000, guid: 4821b31fb58123f43b29ae1277ebdb3f, type: 3}
+  icon: {fileID: 21300000, guid: 0900c5aeb5f96ab4796956d26692c59a, type: 3}
   name: Super Test Pants
   description: It's super test pants!
   usableInMenu: 0
+  sellValue: 0
+  statusEffects: []
   useState: 0
+  type: 0
   equipmentSlot: 3
   equippableByPlayers: 
   Strength: 1
@@ -33,6 +36,7 @@ MonoBehaviour:
   hit: 0
   crit: 0
   move: 0
+  regen: 0
   dodge: 8
   parry: 7
   block: 0

@@ -145,6 +145,119 @@ public class QuestListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler, I
         }
     }
 
+    public void SetQuest()
+    {
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked)
+        {
+            menu.PlaySE(AM.confirmSE);
+
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked = true;
+            gameObject.transform.Find("QuestNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+            gameObject.transform.Find("QuestLevelText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        }
+    }
+
+    public void ShowQuestDetails()
+    {
+        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Active")
+        {
+            if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked)
+            {
+                int ID = int.Parse(gameObject.name.Replace("ActiveQuestListButton - ID ", ""));
+
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestNamePanel/QuestNameText").GetComponent<Text>().text = GetQuestByID(ID).name;
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestLevelText").GetComponent<Text>().text = GetQuestByID(ID).level.ToString();
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = GetQuestReq(GetQuestByID(ID), 1); //This needs to be updated to allow checking multiple requirements
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq2").GetComponent<Text>().text = "";
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq3").GetComponent<Text>().text = "";
+
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestDetailsPanel/QuestDescriptionText").GetComponent<Text>().text = GetQuestByID(ID).description;
+
+                if (GetQuestByID(ID).rewardGold > 0)
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/GoldText").GetComponent<Text>().text = GetQuestByID(ID).rewardGold.ToString();
+                }
+                else
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/GoldText").GetComponent<Text>().text = "00";
+                }
+
+                if (GetQuestByID(ID).rewardExp > 0)
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ExpText").GetComponent<Text>().text = GetQuestByID(ID).rewardExp.ToString();
+                }
+                else
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ExpText").GetComponent<Text>().text = "00";
+                }
+
+                if (GetQuestByID(ID).rewardItems.Count > 0)
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color = new Color(GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.r,
+    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.g,
+    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.b, 1.0f);
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().sprite = GetQuestByID(ID).rewardItems[0].item.icon;
+
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemText").GetComponent<Text>().text = GetQuestByID(ID).rewardItems[0].item.name;
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemDescription").GetComponent<Text>().text = GetQuestByID(ID).rewardItems[0].item.description;
+                }
+                else
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestRewardsPanel/ItemText").GetComponent<Text>().text = "None";
+                }
+            }
+        }
+
+        if (GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestOption == "Completed")
+        {
+            if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().QuestClicked)
+            {
+                int ID = int.Parse(gameObject.name.Replace("ActiveQuestListButton - ID ", ""));
+
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestNamePanel/QuestNameText").GetComponent<Text>().text = GetQuestByID(ID).name;
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestLevelText").GetComponent<Text>().text = GetQuestByID(ID).level.ToString();
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq1").GetComponent<Text>().text = GetQuestReq(GetQuestByID(ID), 1); //This needs to be updated to allow checking multiple requirements
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq2").GetComponent<Text>().text = "";
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestLevelRequirementsPanel/QuestReq3").GetComponent<Text>().text = "";
+
+                GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestDetailsPanel/QuestDescriptionText").GetComponent<Text>().text = GetQuestByID(ID).description;
+
+                if (GetQuestByID(ID).rewardGold > 0)
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/GoldText").GetComponent<Text>().text = GetQuestByID(ID).rewardGold.ToString();
+                }
+                else
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/GoldText").GetComponent<Text>().text = "00";
+                }
+
+                if (GetQuestByID(ID).rewardExp > 0)
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ExpText").GetComponent<Text>().text = GetQuestByID(ID).rewardExp.ToString();
+                }
+                else
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ExpText").GetComponent<Text>().text = "00";
+                }
+
+                if (GetQuestByID(ID).rewardItems.Count > 0)
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color = new Color(GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.r,
+    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.g,
+    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().color.b, 1.0f);
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemIcon").GetComponent<Image>().sprite = GetQuestByID(ID).rewardItems[0].item.icon;
+
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemText").GetComponent<Text>().text = GetQuestByID(ID).rewardItems[0].item.name;
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemDescription").GetComponent<Text>().text = GetQuestByID(ID).rewardItems[0].item.description;
+                }
+                else
+                {
+                    GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestRewardsPanel/ItemText").GetComponent<Text>().text = "None";
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Returns quest by given ID
     /// </summary>

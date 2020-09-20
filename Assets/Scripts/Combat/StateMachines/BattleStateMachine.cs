@@ -97,6 +97,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     int lowestRangeForAttack = 0;
 
     bool buttonPressed;
+    public bool heroMoving;
 
     public List<HandleTurn> PerformList = new List<HandleTurn>(); //to store the turns that have been chosen between enemies and heroes
     public List<GameObject> HeroesInBattle = new List<GameObject>(); //to store the gameobjects for all living heroes in battle
@@ -172,6 +173,9 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         HidePanel(victoryCanvas);
         HidePanel(GameObject.Find("BattleCanvas/BattleUI")); //for battle transition
+
+        GameManager.instance.inBattle = true;
+        GameObject.Find("GameManager/Cursor").transform.SetParent(GameObject.Find("BattleCanvas").transform);
     }
 
     private void Awake()
@@ -262,7 +266,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                 if (HeroesToManage.Count > 0) //if there is a hero's turn available (ATB gauge filled up and pending input)
                 {
                     //BattleCameraManager.instance.currentHero = HeroesToManage[0];
-                    ShowSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //Show hero's selector cursor
                     HeroChoice = new HandleTurn(); //new handle turn instance as HeroChoice
 
                     ShowPanel(moveActionPanel);
@@ -270,12 +273,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                     CreateActionButtons(); //populate action buttons
 
                     SetCancelButton(0); //Cancel button does nothing
-                    
-                    foreach (GameObject enObj in EnemiesInBattle)
-                    {
-                        EnemyBehavior eb = enObj.GetComponent<EnemyBehavior>();
-                        eb.DrawThreatBar();
-                    }
 
                     AudioManager.instance.PlaySE(AudioManager.instance.turnReady);
 
@@ -289,8 +286,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
             case (HeroGUI.DONE):
                 ClearActionLists();
-
-                ClearThreatBars();
 
                 HeroInputDone();
             break;
@@ -316,7 +311,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         PerformList.Add(HeroChoice); //adds the details of the current hero making selection's choice to the perform list
         ClearAttackPanel(); //cleans the attackpanel
-        HideSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //hides the current hero making selection's selector cursor
         HeroesToManage.RemoveAt(0); //removes the hero making selection from the heroesToManage list
         HeroInput = HeroGUI.ACTIVATE; //resets the HeroGUI switch back to the beginning to await the next hero's choice
     }
@@ -507,18 +501,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     }
 
     /// <summary>
-    /// Calls ClearThreatBar for each EnemyBehavior in EnemiesInBattle
-    /// </summary>
-    void ClearThreatBars()
-    {
-        foreach (GameObject enObj in EnemiesInBattle)
-        {
-            EnemyBehavior eb = enObj.GetComponent<EnemyBehavior>();
-            eb.ClearThreatBar();
-        }
-    }
-
-    /// <summary>
     /// Returns range from current hero to the target
     /// </summary>
     /// <param name="target">Target to check how many tiles away</param>
@@ -617,8 +599,10 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             foreach (BaseAttack magicAtk in HeroesToManage[0].GetComponent<HeroStateMachine>().hero.MagicAttacks) //for each magic attack
             {
                 GameObject MagicButton = Instantiate(magicButton) as GameObject; //instantiate prefab assigned to magicButton as a gameobject for selecting which magic to use after clicking magic in action panel
-                Text MagicButtonText = MagicButton.transform.Find("Text").gameObject.GetComponent<Text>(); //initializes text object as the text attached to above magicButton
-                MagicButtonText.text = magicAtk.name; //changes the text of the magicButton to the current magic attack in the loop
+                MagicButton.name = "MagicButton - ID " + GetAttackID(magicAtk);
+                MagicButton.transform.Find("ButtonCanvas/AttackName").gameObject.GetComponent<Text>().text = magicAtk.name; //changes the text of the magicButton to the current magic attack in the loop
+                MagicButton.transform.Find("ButtonCanvas/Icon").gameObject.GetComponent<Image>().sprite = magicAtk.icon;
+                MagicButton.transform.Find("ButtonCanvas/AttackCost").gameObject.GetComponent<Text>().text = magicAtk.MPCost.ToString();
                 MagicAttackButton MATB = MagicButton.GetComponent<MagicAttackButton>(); //initializes Magic Attack Button script from the Magic Attack Button assigned to the magic button prefab
                 MATB.magicAttackToPerform = magicAtk; //sets the magic attack button's attack to perform to the current magic attack in the loop
                 MagicButton.transform.SetParent(magicSpacer, false); //sets the parent of this button to the magic panel spacer
@@ -637,6 +621,18 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         {
             MagicActionButton.GetComponent<Button>().interactable = false; //keeps the magic attack button from being available. could also hide it. will likely change this in the future
         }
+    }
+
+    int GetAttackID(BaseAttack ba)
+    {
+        for (int i=0; i < AttackDB.instance.attacks.Count; i++)
+        {
+            if (AttackDB.instance.attacks[i] == ba)
+            {
+                return i;
+            }
+        }
+        return 0;
     }
 
     /// <summary>
@@ -750,7 +746,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             yield return null;
         }
 
-        GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
+        //GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.confirmSE);
 
         //HeroChoice.AttackersTarget = chosenEnemy;
         //HeroChoice.targetType = HandleTurn.Types.ENEMY;
@@ -797,7 +793,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         foreach (Item item in Inventory.instance.items) //for each item in inventory
         {
             int itemCount = 0;
-            if (!itemsAccountedFor.Contains(item)) //if item has not already been added to list
+            if (!itemsAccountedFor.Contains(item) && item.type != Item.Types.KEYITEM && item.GetType().ToString() != "Equipment") //if item has not already been added to list
             {
                 for (int i = 0; i < Inventory.instance.items.Count; i++)
                 {
@@ -807,10 +803,10 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
                     }
                 }
                 GameObject ItemButton = Instantiate(itemButton) as GameObject; //instantiate prefab assigned to itemButton as a gameobject for selecting which item to use after clicking item in action panel
-                Text ItemButtonText = ItemButton.transform.Find("Text").gameObject.GetComponent<Text>(); //initializes text object as the text attached to above itemButton
-                Text ItemButtonQuantity = ItemButton.transform.Find("Quantity").gameObject.GetComponent<Text>();
-                ItemButtonText.text = item.name; //changes the text of the itemButton to the current item in the loop
-                ItemButtonQuantity.text = itemCount.ToString();
+                ItemButton.name = "ItemButton - ID " + GetItemID(item);
+                ItemButton.transform.Find("ButtonCanvas/ItemName").gameObject.GetComponent<Text>().text = item.name; //changes the text of the itemButton to the current item in the loop
+                ItemButton.transform.Find("ButtonCanvas/Quantity").gameObject.GetComponent<Text>().text = itemCount.ToString();
+                ItemButton.transform.Find("ButtonCanvas/Icon").gameObject.GetComponent<Image>().sprite = item.icon;
                 ItemBattleMenuButton ItemToUseButton = ItemButton.GetComponent<ItemBattleMenuButton>(); //initializes Item Button script
                 ItemToUseButton.itemToUse = item;
                 ItemButton.transform.SetParent(itemSpacer, false); //sets the parent of this button to the item panel spacer
@@ -821,13 +817,25 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
                 if (!item.usableInMenu)
                 {
-                    ItemButton.transform.GetChild(0).GetComponent<Text>().color = Color.gray;
-                    ItemButton.transform.GetChild(1).GetComponent<Text>().color = Color.gray;
+                    ItemButton.transform.Find("ButtonCanvas/ItemName").GetComponent<Text>().color = Color.gray;
+                    ItemButton.transform.Find("ButtonCanvas/Quantity").GetComponent<Text>().color = Color.gray;
                 }
             }
         }
 
         itemsAccountedFor.Clear();
+    }
+
+    int GetItemID(Item item)
+    {
+        for (int i = 0; i < ItemDB.instance.items.Count; i++)
+        {
+            if (ItemDB.instance.items[i].item == item)
+            {
+                return i;
+            }
+        }
+        return 0;
     }
 
     /// <summary>
@@ -870,9 +878,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         playerMove = HeroesToManage[0].GetComponent<PlayerMove>();
 
         if (playerMove.canChooseAction)
-        {
-            BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
-
+        {            
             SetCancelButton(0);
             ShowPanel(actionPanel); //enables actionPanel (attack, magic, etc)
             HidePanel(moveActionPanel);
@@ -895,7 +901,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
             ClearMoveActionPanel();
             ClearActionLists();
-            ClearThreatBars();
 
             HeroStateMachine HSM = HeroesToManage[0].GetComponent<HeroStateMachine>();
 
@@ -915,7 +920,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
             }
 
             HSM.currentState = HeroStateMachine.TurnState.PROCESSING; //starts the turn over back to filling up the ATB gauge
-            HideSelector(HeroesToManage[0].transform.Find("Selector").gameObject); //hides the current hero making selection's selector cursor
             HeroesToManage.RemoveAt(0); //removes the hero making selection from the heroesToManage list
             HeroInput = HeroGUI.ACTIVATE; //resets the HeroGUI switch back to the beginning to await the next hero's choice
         }       
@@ -1040,7 +1044,7 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
     {
         if (Input.GetButtonDown("Cancel") && !buttonPressed)
         {
-            GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.backSE);
+            //GameObject.Find("GameManager/BGS").GetComponent<AudioSource>().PlayOneShot(AudioManager.instance.backSE);
             if (moveMenuCancel) //in movement phase
             {
                 BattleCameraManager.instance.camState = camStates.HEROTURN;
@@ -1766,6 +1770,9 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
 
         UpdateActiveHeroes(); //keeps hero's parameters (HP, MP, and any persistent buffs/debuffs) consistent through each battle
 
+        GameManager.instance.inBattle = false;
+        GameObject.Find("BattleCanvas/Cursor").transform.SetParent(GameObject.Find("GameManager").transform);
+
         GameManager.instance.LoadSceneAfterBattle(); //load scene from before battle
         GameManager.instance.gameState = GameStates.HOSTILE_STATE; //puts game manager back to hostile state
         GameManager.instance.enemiesToBattle.Clear(); //clears enemies to battle list to be used from scratch on next battle
@@ -1955,24 +1962,6 @@ public class BattleStateMachine : MonoBehaviour //for processing phases of battl
         panel.GetComponent<CanvasGroup>().alpha = 1;
         panel.GetComponent<CanvasGroup>().interactable = true;
         panel.GetComponent<CanvasGroup>().blocksRaycasts = true;
-    }
-
-    /// <summary>
-    /// Hides given selector by disabling attached sprite renderer
-    /// </summary>
-    /// <param name="selector">Selector GameObject to hide</param>
-    public void HideSelector(GameObject selector)
-    {
-        selector.GetComponent<SpriteRenderer>().enabled = false;
-    }
-
-    /// <summary>
-    /// Shows given selector by enabling attached sprite renderer
-    /// </summary>
-    /// <param name="selector">Selector GameObject to show</param>
-    public void ShowSelector(GameObject selector)
-    {
-        selector.GetComponent<SpriteRenderer>().enabled = true;
     }
 
     public void GetCenterTile(GameObject tile)

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler //for displaying item details in shop
+public class ItemShopMouseEvents : MonoBehaviour //for displaying item details in shop
 {
     Text itemDesc;
     Text ownedText;
@@ -18,32 +18,65 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
         itemDesc.text = "";
     }
 
-    public void OnPointerEnter(PointerEventData eventData) //sets item description panel with item's description
+    public void ShowItemDetails()
     {
         //itemDesc.text = GetItem(GetItemName()).description;
 
-        if (eventData.pointerCurrentRaycast.gameObject != null && eventData.pointerCurrentRaycast.gameObject.name == "BuyShopItemNameText" && !GameManager.instance.inConfirmation)
+        //Debug.Log(gameObject.name);
+
+        if (gameObject.name.Contains("ShopBuyItemPanel") && !GameManager.instance.inConfirmation)
         {
-            itemDesc.text = GetItem(eventData.pointerCurrentRaycast.gameObject.GetComponent<Text>().text).description;
-            ownedText.text = GetItemCount(eventData.pointerCurrentRaycast.gameObject.GetComponent<Text>().text).ToString();
+            itemDesc.text = GetItem(gameObject.transform.Find("BuyShopItemNameText").GetComponent<Text>().text).description;
+            ownedText.text = GetItemCount(gameObject.transform.Find("BuyShopItemNameText").GetComponent<Text>().text).ToString();
         }
 
-        if (eventData.pointerCurrentRaycast.gameObject != null && eventData.pointerCurrentRaycast.gameObject.name == "SellShopItemNameText" && !GameManager.instance.inConfirmation)
+        if (gameObject.name.Contains("ShopSellItemPanel") && !GameManager.instance.inConfirmation)
         {
-            itemDesc.text = GetItem(eventData.pointerCurrentRaycast.gameObject.GetComponent<Text>().text).description;
+            itemDesc.text = GetItem(gameObject.transform.Find("SellShopItemNameText").GetComponent<Text>().text).description;
         }
     }
 
-    public void OnPointerExit(PointerEventData eventData) //clears item description panel
+    public void ProcessShop()
     {
-        if (!GameManager.instance.inConfirmation)
+        if (gameObject.name.Contains("ShopBuyItemPanel") && !GameManager.instance.inConfirmation)
         {
-            itemDesc.text = "";
-            ownedText.text = "-";
+            if (CanMakeTransaction())
+            {
+                GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+                GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.itemShopCost.ToString();
+                GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold - int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
+
+                DisplayBuyConfirmationPanel();
+                GameManager.instance.inConfirmation = true;
+            }
+        }
+
+        if (gameObject.name.Contains("ShopSellItemPanel") && !GameManager.instance.inConfirmation)
+        {
+            //show 'How Many' window with 'sell' button that finalizes transaction
+            GameManager.instance.itemShopItem = GetItem(gameObject.transform.Find("SellShopItemNameText").GetComponent<Text>().text);
+            GameManager.instance.itemShopCost = GameManager.instance.itemShopItem.sellValue;
+
+            GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+            GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.itemShopCost.ToString();
+            GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold + int.Parse(GameObject.Find("GameManager/ShopCanvases/ItemShopCanvas/ItemShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
+
+            DisplaySellConfirmationPanel();
+            GameManager.instance.inConfirmation = true;
+        }
+
+        if (gameObject.name == "ShopBuyItemPanel" && !GameManager.instance.inConfirmation)
+        {
+            DisplayItemShopBuyGUI();
+        }
+
+        if (gameObject.name == "ShopSellItemPanel" && !GameManager.instance.inConfirmation)
+        {
+            DisplayItemShopSellGUI();
         }
     }
 
-    public void OnPointerClick(PointerEventData eventData) //begins item buy/sell process when clicked
+    /*public void OnPointerClick(PointerEventData eventData) //begins item buy/sell process when clicked
     {
         if (eventData.pointerCurrentRaycast.gameObject != null && eventData.pointerCurrentRaycast.gameObject.name == "BuyShopItemNameText" && !GameManager.instance.inConfirmation)
         {
@@ -85,7 +118,7 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             DisplayItemShopSellGUI();
         }
-    }
+    }*/
 
 
     bool CanMakeTransaction()
@@ -129,23 +162,20 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
         //menu.DrawItemList();
     }
 
-    Item GetItem(string name)
+    public Item GetItem(string name)
     {
-        Item item = null;
-
-        foreach (BaseShopItem BSI in GameManager.instance.itemShopList)
+        foreach (BaseItem item in ItemDB.instance.items)
         {
-            if (BSI.item.name == name)
+            if (name == item.item.name)
             {
-                item = BSI.item;
-                break;
+                return item.item;
             }
         }
 
-        return item;
+        return null;
     }
 
-    int GetItemCost(string name)
+    public int GetItemCost(string name)
     {
         int cost = 0;
 
@@ -208,7 +238,7 @@ public class ItemShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointer
 
         foreach (Item item in Inventory.instance.items)
         {
-            if (item.GetType() == typeof(Item))
+            if (item.GetType() == typeof(Item) && item.type != Item.Types.KEYITEM)
             {
                 int itemCount = 0;
                 if (!itemsAccountedFor.Contains(item))

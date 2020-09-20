@@ -47,11 +47,15 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     BattleStateMachine BSM;
     Pattern pattern = new Pattern();
+
+    Transform cursor;
     
     void Start()
     {
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         UpdateShieldable(this);
+
+        cursor = GameObject.Find("GridMap/TileCursor").transform;
     }
     
     void Update()
@@ -211,7 +215,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     /// Processes methods when cusor enters attached tile
     /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
-    {
+    {/*
         if (BSM.centerTile == null)
         {
             BSM.centerTile = this.gameObject;
@@ -324,6 +328,76 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                     }
                 }
             }
+        }*/
+    }
+
+    public void UpdateTilesInRange()
+    {
+        BSM.centerTile = this.gameObject;
+
+        RaycastHit2D[] hits = Physics2D.RaycastAll(cursor.position, Vector2.zero);
+
+        //facilitates display of if the tile can be selected (if it is in the attack pattern and is in range)
+        if (BSM.HeroChoice.chosenItem != null)
+        {
+            pattern.GetAffectPattern(this, 0); //gets pattern for 1 tile for item use
+        }
+        else
+        {
+            pattern.GetAffectPattern(this, BSM.HeroChoice.chosenAttack.patternIndex); //gets attack pattern
+        }
+        tilesInRange = pattern.pattern;
+        foreach (Tile tile in tilesInRange)
+        {
+            //Debug.Log(tile.gameObject.name + " is in affect");
+            RaycastHit2D[] shieldableTiles = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+            foreach (RaycastHit2D target in shieldableTiles)
+            {
+                if (target.collider.gameObject.tag != "Shieldable" && !tile.shielded)
+                {
+                    tile.inAffect = true;
+                }
+                else
+                {
+                    tile.inAffect = false;
+                }
+            }
+
+            CheckIfTileIsShielded(tile);
+        }
+        //Debug.Log(gameObject.name + " entered");
+
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider != null)
+            {
+                if (hit.collider.gameObject.tag == "Tile")
+                {
+                    if (hit.collider.gameObject.GetComponent<Tile>().inRange)
+                    {
+                        foreach (Tile tile in tilesInRange)
+                        {
+                            RaycastHit2D[] tilesHit = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+                            foreach (RaycastHit2D target in tilesHit)
+                            {
+                                if ((target.collider.gameObject.tag == "Enemy" || target.collider.gameObject.tag == "Hero") && tile.inAffect)
+                                {
+                                    //BSM.ShowSelector(target.collider.gameObject.transform.Find("Selector").gameObject);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void ResetTilesInRange()
+    {
+        foreach (Tile tile in tilesInRange)
+        {
+            tile.inAffect = false;
+            tile.shielded = false;
         }
     }
 
@@ -331,7 +405,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     /// Processes methods when cusor exits attached tile
     /// </summary>
     public void OnPointerExit(PointerEventData eventData)
-    {
+    {/*
         //resets enemy name on hover to blank when exiting tile
         GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>().text = "";
 
@@ -362,14 +436,14 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
             }
             //tilesInRange.Clear();
             //Debug.Log(gameObject.name + " exited");
-        }
+        }*/
     }
 
     /// <summary>
     /// Processes methods when cusor clicks on attached tile
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
-    {
+    {/*
         if (BSM.choosingTarget)
         {
             //this.inAffect = false;
@@ -411,7 +485,125 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
                     }
                 }
             }
+        }*/
+    }
+
+    public void SelectMoveTile(PlayerMove playerMove)
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(cursor.position, Vector3.zero);
+
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider != null)
+            {
+                if (hit.collider.tag == "Tile")
+                {
+                    Tile t = hit.collider.GetComponent<Tile>();
+
+                    if (t.selectable)
+                    {
+                        Debug.Log("moving to: " + hit.collider.gameObject.name);
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        playerMove.MoveToTile(t);
+                    }
+                }
+            }
         }
+    }
+
+    public void SelectActionTile()
+    {
+        if (BSM.choosingTarget)
+        {
+            //this.inAffect = false;
+
+            RaycastHit2D[] hits = Physics2D.RaycastAll(cursor.position, Vector3.zero);
+
+            //Debug.Log(cursor.position);
+
+            foreach (RaycastHit2D hit in hits)
+            {
+                if (hit.collider != null)
+                {
+                    if (hit.collider.gameObject.tag == "Tile")
+                    {
+                        //Debug.Log("SelectActionTile hit: " + hit.collider.gameObject.name + ", is in range: " + hit.collider.gameObject.GetComponent<Tile>().inRange);
+                        if (hit.collider.gameObject.GetComponent<Tile>().inRange)
+                        {
+                            BSM.HeroesToManage[0].GetComponent<HeroStateMachine>().ActionTarget = hit.collider.gameObject; //sets the primary target for animation to occur on the tile clicked
+
+                            BattleCameraManager.instance.parentTile = hit.collider.gameObject;
+
+                            //Debug.Log("parent tile: " + BattleCameraManager.instance.parentTile.name);
+
+                            foreach (Tile tile in tilesInRange)
+                            {
+                                //Debug.Log("tile in range: " + tile.gameObject.name);
+                                RaycastHit2D[] tilesHit = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+                                foreach (RaycastHit2D target in tilesHit)
+                                {
+                                    //Debug.Log("Tile hit: " + target.collider.gameObject.name);
+                                    if ((target.collider.gameObject.tag == "Enemy" || target.collider.gameObject.tag == "Hero") && !BSM.targets.Contains(target.collider.gameObject) && tile.inAffect)
+                                    {
+                                        //Debug.Log("adding " + target.collider.gameObject + " to targets");
+                                        //BSM.targets.Add(target.collider.gameObject); //adds all objects inside target range to targets list to be affected
+                                        BSM.HeroesToManage[0].GetComponent<HeroStateMachine>().targets.Add(target.collider.gameObject);
+                                    }
+                                }
+                            }
+
+                            if (BSM.HeroesToManage[0].GetComponent<HeroStateMachine>().targets.Count > 0)
+                            {
+                                //Debug.Log("clearing tiles and stuff");
+                                tilesInRange.Clear();
+                                ClearTiles();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public bool IfTargetsInRange()
+    {
+        if (BSM.choosingTarget)
+        {
+            //this.inAffect = false;
+
+            RaycastHit2D[] hits = Physics2D.RaycastAll(cursor.position, Vector3.zero);
+
+            //Debug.Log(cursor.position);
+
+            foreach (RaycastHit2D hit in hits)
+            {
+                if (hit.collider != null)
+                {
+                    if (hit.collider.gameObject.tag == "Tile")
+                    {
+                        //Debug.Log("SelectActionTile hit: " + hit.collider.gameObject.name + ", is in range: " + hit.collider.gameObject.GetComponent<Tile>().inRange);
+                        if (hit.collider.gameObject.GetComponent<Tile>().inRange)
+                        {
+                            foreach (Tile tile in tilesInRange)
+                            {
+                                //Debug.Log("tile in range: " + tile.gameObject.name);
+                                RaycastHit2D[] tilesHit = Physics2D.RaycastAll(tile.transform.position, Vector3.forward, 1);
+                                foreach (RaycastHit2D target in tilesHit)
+                                {
+                                    //Debug.Log("Tile hit: " + target.collider.gameObject.name);
+                                    if ((target.collider.gameObject.tag == "Enemy" || target.collider.gameObject.tag == "Hero") && !BSM.targets.Contains(target.collider.gameObject) && tile.inAffect)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -473,7 +665,7 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         Tile tileToCheck = null;
 
         //Debug.Log(BSM.centerTile.name);
-        Debug.Log("checking for shieldable tiles from: " + BSM.centerTile.name + " to: " + tile.gameObject.name);
+        //Debug.Log("checking for shieldable tiles from: " + BSM.centerTile.name + " to: " + tile.gameObject.name);
 
         //up
         RaycastHit2D[] upHits = Physics2D.RaycastAll(tile.transform.position, Vector3.up, 1);
@@ -603,15 +795,6 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         Debug.Log("shielding " + tileObj.name);
         tileObj.GetComponent<Tile>().shielded = true;
         tileObj.GetComponent<Tile>().inAffect = false;
-
-        RaycastHit2D[] hits = Physics2D.RaycastAll(tileObj.transform.position, Vector3.forward, 1);
-        foreach (RaycastHit2D hit in hits)
-        {
-            if (hit.collider.gameObject.tag == "Enemy" || hit.collider.gameObject.tag == "Hero")
-            {
-                BSM.HideSelector(hit.collider.gameObject.transform.Find("Selector").gameObject);
-            }
-        }
     }
 
     string DirectionFromCenterTile(Tile tileToCheck)

@@ -33,6 +33,28 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    public void ShowBestiaryEntryDetails()
+    {
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked)
+        {
+            int ID = int.Parse(gameObject.name.Replace("BestiaryEnemyEntryButton - ID ", ""));
+            BaseEnemyDBEntry entry = GetEnemyDBEntry(ID);
+            BaseEnemy enemy = entry.enemy;
+
+            GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyNamePanel/EnemyNameText").GetComponent<Text>().text = enemy.name;
+            GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyLevelPanel/EnemyLevelText").GetComponent<Text>().text = enemy.level.ToString();
+
+            GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel/EnemyGraphicImage").GetComponent<Image>().color = new Color(
+                GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel/EnemyGraphicImage").GetComponent<Image>().color.r,
+                GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel/EnemyGraphicImage").GetComponent<Image>().color.g,
+                GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel/EnemyGraphicImage").GetComponent<Image>().color.b,
+                1);
+            GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel/EnemyGraphicImage").GetComponent<Image>().sprite = entry.prefab.GetComponent<SpriteRenderer>().sprite;
+
+            GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDescriptionPanel/EnemyDescriptionText").GetComponent<Text>().text = entry.description;
+        }
+    }
+
     /// <summary>
     /// Resets all GUI objects to empty fields
     /// </summary>
@@ -48,6 +70,15 @@ public class BestiaryListButtonMouseEvents : MonoBehaviour, IPointerEnterHandler
     /// Sets Menu to lock clicked bestiary entry so other entries won't be affected when hovered
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked)
+        {
+            GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked = true;
+            gameObject.transform.Find("EnemyNameText").GetComponent<Text>().fontStyle = FontStyle.Bold;
+        }
+    }
+
+    public void SetBestEntry()
     {
         if (!GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().BestiaryEntryClicked)
         {

@@ -180,7 +180,7 @@ public class GridMenuMouseEvents : MonoBehaviour
     /// <summary>
     /// Sets all buttons as interactable
     /// </summary>
-    void EnableButtons()
+    public void EnableButtons()
     {
         for (int i = 0; i < GameManager.instance.activeHeroes.Count; i++)
         {

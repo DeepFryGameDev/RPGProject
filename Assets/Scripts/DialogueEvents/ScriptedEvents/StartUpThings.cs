@@ -33,6 +33,19 @@ public class StartUpThings : BaseScriptedEvent
 
         AddItem(2, 5);
 
+        StartQuest(0);
+        StartQuest(1);
+        StartQuest(2);
+        StartQuest(0);
+        StartQuest(1);
+        StartQuest(2);
+        StartQuest(0);
+        StartQuest(1);
+        StartQuest(2);
+        StartQuest(0);
+        StartQuest(1);
+        StartQuest(2);
+
         //DisableButtons(); //<-----Enable when menu is complete
     }
 
@@ -69,8 +82,8 @@ public class StartUpThings : BaseScriptedEvent
         }*/ //remove comments when not testing
 
         //for testing purposes
-        HeroDB.instance.heroes[0].spawnPoint = "11";
-        HeroDB.instance.heroes[1].spawnPoint = "22";
+        HeroDB.instance.heroes[0].spawnPoint = "23";
+        HeroDB.instance.heroes[1].spawnPoint = "24";
         HeroDB.instance.heroes[2].spawnPoint = "33";
         //------
     }

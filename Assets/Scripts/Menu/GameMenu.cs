@@ -8,6 +8,7 @@ using System.Linq;
 using System;
 using System.IO;
 using UnityEditor;
+using TMPro;
 
 public class GameMenu : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class GameMenu : MonoBehaviour
     public bool disableMenu = false;
     public bool disableMenuExit = false;
     [HideInInspector] public bool menuCalled = false;
+    [ReadOnly] public bool inMenu = false;
 
     public bool choosingHero = false;
 
@@ -124,6 +126,7 @@ public class GameMenu : MonoBehaviour
     Image StatusPanelHPProgressBar;
     Image StatusPanelMPProgressBar;
     Image StatusPanelEXPProgressBar;
+    TextMeshProUGUI StatusPanelDetailsText;
 
     //for grid menu objects
     GameObject Hero1GridPanel;
@@ -162,12 +165,7 @@ public class GameMenu : MonoBehaviour
     Image Hero4PartyMenuMPProgressBar;
     Image Hero5PartyMenuHPProgressBar;
     Image Hero5PartyMenuMPProgressBar;
-    Transform PartyInactiveRow1Spacer;
-    Transform PartyInactiveRow2Spacer;
-    Transform PartyInactiveRow3Spacer;
-    int row1ChildCount;
-    int row2ChildCount;
-    int row3ChildCount;
+    Transform PartyInactiveRowSpacer;
     GameObject InactivePartyButton;
     [HideInInspector] public BaseHero PartyHeroSelected = null;
     [HideInInspector] public string PartySelectedHeroType;
@@ -250,6 +248,7 @@ public class GameMenu : MonoBehaviour
     Animator Talents_talentDetailsPanel;
     Animator Party_activeHeroesPanel;
     Animator Party_inactiveHeroesPanel;
+    Animator Party_selectedHeroPanel;
     Animator Grid_heroGridPanel;
     Animator Grid_gridPanel;
     Animator Quest_questListOptions;
@@ -264,12 +263,13 @@ public class GameMenu : MonoBehaviour
     Animator Bestiary_enemyGraphicPanel;
     Animator Bestiary_enemyDescriptionPanel;
     Animator Bestiary_enemyDetailsPanel;
-
+    bool inAnimation;
 
     Transform cursor;
     bool dpadPressed;
-    float cursorMenuX = 605.5f;
-    float cursorHeroSelectX = 135f;
+    bool cancelPressed;
+    readonly float cursorMenuX = 605.5f;
+    readonly float cursorHeroSelectX = 135f;
 
     public enum MenuStates
     {
@@ -345,7 +345,6 @@ public class GameMenu : MonoBehaviour
     float arrangeOptionPosX = 551f;
     float arrangeOptionSpacerY = 21f;
     int arrangeCustomizeItem = 0;
-
 
     #endregion
 
@@ -426,16 +425,130 @@ public class GameMenu : MonoBehaviour
     [ReadOnly] public StatusMenuCursorStates statusMenuCursorState;
 
     int cursorOnStat = 0;
-    float statColumn1Y = 0f;
-    float statColumn2Y = 0f;
+    int cursorOnEle = 0;
+    int cursorOnRes = 0;
     int cursorOnEquip = 0;
-    float equipColumn1Y = 0f;
-    float equipColumn2Y = 0f;
+    bool inStatusSkills;
 
-    float eleColumn1Y = 0f;
-    float eleColumn2Y = 0f;
-    float resColumn1Y = 0f;
-    float resColumn2Y = 0f;
+    readonly string statColor = "<color=#ffa500ff>";
+
+    readonly string fireColor =      "<color=#ff0000ff>";
+    readonly string frostColor =     "<color=#00bfffff>";
+    readonly string lightningColor = "<color=#ffff00ff>";
+    readonly string waterColor =     "<color=#0000ffff>";
+    readonly string natureColor =    "<color=#6b8e23ff>";
+    readonly string earthColor =     "<color=#8b4513ff>";
+    readonly string holyColor =      "<color=#c0c0c0ff>";
+    readonly string darknessColor =  "<color=#800000ff>";
+
+    readonly string blindColor =     "<color=#2f4f4fff>";
+    readonly string silenceColor =   "<color=#f5f5dcff>";
+    readonly string sleepColor =     "<color=#4682b4ff>";
+    readonly string confuseColor =   "<color=#ffc0cbff>";
+    readonly string poisonColor =    "<color=#32cd32ff>";
+    readonly string petrifyColor =   "<color=#808080ff>";
+    readonly string slowColor =      "<color=#ffa500ff>";
+    readonly string zombieColor =    "<color=#98fb98ff>";
+
+    #endregion
+
+    #region talents menu cursor objects
+
+    public enum TalentsMenuCursorStates
+    {
+        TALENTS,
+        IDLE
+    }
+    [ReadOnly] public TalentsMenuCursorStates talentMenuCursorState;
+
+    int cursorOnTalent = 0;
+    int talentRow = 0;
+    int talentColumn = 0;
+
+    float talentColumnSpacer = 119f;
+    float talentRowSpacer = 53f;
+
+    #endregion
+
+    #region party menu cursor objects
+
+    public enum PartyMenuCursorStates
+    {
+        ACTIVE,
+        INACTIVE,
+        IDLE
+    }
+    [ReadOnly] public PartyMenuCursorStates partyMenuCursorState;
+
+    int cursorOnPartyActive = 0;
+    int cursorOnPartyInactive = 0;
+
+    float partyActiveSpacer = 62f;
+
+    float inactivePartySpacerX = 115f;
+    float inactivePartySpacerY = 28.5f;
+
+    PartySelectEvents pse1;
+    PartySelectEvents pse2;
+
+    bool partyChoosing;
+    string partyChoosingMode;
+
+    #endregion
+
+    #region grid menu cursor objects
+
+    public enum GridMenuCursorStates
+    {
+        HEROES,
+        GRID,
+        IDLE
+    }
+    [ReadOnly] public GridMenuCursorStates gridMenuCursorState;
+
+    int cursorOnGridHero = 0;
+
+    float gridHeroSpacer = 62f;
+
+    float gridSpacer = 63f;
+
+    int gridColumn;
+    int gridRow;
+
+    #endregion
+
+    #region quests menu cursor objects
+
+    public enum QuestMenuCursorStates
+    {
+        QUESTLIST,
+        OPTIONS,
+        IDLE
+    }
+    [ReadOnly] public QuestMenuCursorStates questMenuCursorState;
+
+    int cursorOnQuest = 0;
+    float questListSpacer = 37f;
+    float questListScrollBy = 36.45f;
+    QuestListButtonMouseEvents questSelected;
+
+    int cursorOnQuestOption;
+
+    #endregion
+
+    #region bestiary menu cursor objects
+
+    public enum BestiaryMenuCursorStates
+    {
+        BESTIARYLIST,
+        IDLE
+    }
+    [ReadOnly] public BestiaryMenuCursorStates bestiaryMenuCursorState;
+
+    int cursorOnBest = 0;
+    float bestListSpacer = 31f;
+    float bestListScrollBy = 31f;
+    BestiaryListButtonMouseEvents bestSelected;
 
     #endregion
 
@@ -465,7 +578,7 @@ public class GameMenu : MonoBehaviour
         heroToCheck = null;
 
         mainCursorState = MainCursorStates.IDLE;
-        cursor = GameObject.Find("GameManager/Menus/Cursor").transform;
+        cursor = GameObject.Find("GameManager/Cursor").transform;
 
         menuAudioSource = GameObject.Find("GameManager/Menus/MenuSounds").GetComponent<AudioSource>();
         animAudioSource = menuAudioSource = GameObject.Find("GameManager/Menus/AnimationSounds").GetComponent<AudioSource>();
@@ -504,9 +617,7 @@ public class GameMenu : MonoBehaviour
         BlackMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/BlackMagicListPanel/BlackMagicScroller/BlackMagicListSpacer").transform;
         SorceryMagicListSpacer = GameObject.Find("GameManager/Menus/MagicMenuCanvas/MagicMenuPanel/SorceryMagicListPanel/SorceryMagicScroller/SorceryMagicListSpacer").transform;
         EquipListSpacer = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform;
-        PartyInactiveRow1Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform;
-        PartyInactiveRow2Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow2Spacer").transform;
-        PartyInactiveRow3Spacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow3Spacer").transform;
+        PartyInactiveRowSpacer = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").transform;
         ActiveQuestListSpacer = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform;
         CompletedQuestListSpacer = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/CompletedQuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform;
         BestiaryEnemyListSpacer = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform;
@@ -593,6 +704,7 @@ public class GameMenu : MonoBehaviour
         StatusPanelHPProgressBar = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel/HPProgressBarBG/HPProgressBar").GetComponent<Image>();
         StatusPanelMPProgressBar = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel/MPProgressBarBG/MPProgressBar").GetComponent<Image>();
         StatusPanelEXPProgressBar = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/BaseStatsPanel/LevelProgressBarBG/LevelProgressBar").GetComponent<Image>();
+        StatusPanelDetailsText = GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/DetailsPanel/DetailsText").GetComponent<TextMeshProUGUI>();
 
         TalentsPanelHPProgressBar = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/HPProgressBarBG/HPProgressBar").GetComponent<Image>();
         TalentsPanelMPProgressBar = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/HeroPanel/MPProgressBarBG/MPProgressBar").GetComponent<Image>();
@@ -658,6 +770,7 @@ public class GameMenu : MonoBehaviour
         Talents_talentDetailsPanel = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel").GetComponent<Animator>();
         Party_activeHeroesPanel = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").GetComponent<Animator>();
         Party_inactiveHeroesPanel = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel").GetComponent<Animator>();
+        Party_selectedHeroPanel = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<Animator>();
         Grid_heroGridPanel = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel").GetComponent<Animator>();
         Grid_gridPanel = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel").GetComponent<Animator>();
         Quest_questListOptions = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/ActiveQuestsMenuPanel/QuestListOptions").GetComponent<Animator>();
@@ -672,12 +785,7 @@ public class GameMenu : MonoBehaviour
         Bestiary_enemyGraphicPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyGraphicPanel").GetComponent<Animator>();
         Bestiary_enemyDescriptionPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDescriptionPanel").GetComponent<Animator>();
         Bestiary_enemyDetailsPanel = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyDetailsPanel").GetComponent<Animator>();
-
-        //sets party spacer child counts
-        row1ChildCount = PartyInactiveRow1Spacer.childCount;
-        row2ChildCount = PartyInactiveRow2Spacer.childCount;
-        row3ChildCount = PartyInactiveRow3Spacer.childCount;
-
+        
         equipMode = "";
 
         PartyHeroSelected = null;
@@ -712,6 +820,12 @@ public class GameMenu : MonoBehaviour
         {
             UpdateCursor();
         }
+
+        if (Input.GetButtonDown("Cancel"))
+        {
+            cancelPressed = true;
+            //buttonPressed = true;
+        }
     }
 
     private void OnGUI() //Actually draws the menu, and facilitates cancelling from various menus
@@ -731,101 +845,120 @@ public class GameMenu : MonoBehaviour
 
             PauseBackground(true); //keeps background objects from processing
 
+            inMenu = true;
+
             ShowMainMenu();
+
+            cursor.gameObject.GetComponent<CanvasGroup>().alpha = 1;
+
             menuState = MenuStates.MAIN;
         }
 
-        if (Input.GetButtonDown("Cancel") && !disableMenuExit && menuState == MenuStates.MAIN && !buttonPressed) //if cancel is pressed while on main menu
+        /*if (cancelPressed)
+        {
+            Debug.Log("buttonPressed: " + buttonPressed + ", itemCustomizeModeOn: " + itemCustomizeModeOn + ", itemChoosingHero: " + itemChoosingHero + ", inArrangeMenu: " + inArrangeMenu + ", cancelPressed: " + cancelPressed);
+        }*/
+
+        if (!disableMenuExit && menuState == MenuStates.MAIN && !buttonPressed && (Input.GetButtonDown("Cancel")  || cancelPressed)) //if cancel is pressed while on main menu
         {
             StartCoroutine(ExitMainMenu());
+            cursor.gameObject.GetComponent<CanvasGroup>().alpha = 0;
+            inMenu = false;
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.ITEM && !buttonPressed && !itemCustomizeModeOn && !itemChoosingHero && !inArrangeMenu) //if cancel is pressed on item menu
+        if (menuState == MenuStates.ITEM && !buttonPressed && !itemCustomizeModeOn && !itemChoosingHero && !inArrangeMenu && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on item menu
         {
             StartCoroutine(HideItemMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.MAGIC && !buttonPressed && !choosingHeroForMagicMenu && !magicChoosingHero && magicMenuCursorState != MagicMenuCursorStates.USEMAGIC) //if cancel is pressed on magic menu
+        if (menuState == MenuStates.MAGIC && !buttonPressed && !choosingHeroForMagicMenu && !magicChoosingHero && magicMenuCursorState != MagicMenuCursorStates.USEMAGIC && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on magic menu
         {
             StartCoroutine(HideMagicMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.EQUIP && !buttonPressed && !inEquipList) //if cancel is pressed on magic menu
+        if (menuState == MenuStates.EQUIP && !buttonPressed && !inEquipList && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on magic menu
         {
             StartCoroutine(HideEquipMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.STATUS && !buttonPressed) //if cancel is pressed on status menu
+        if (menuState == MenuStates.STATUS && !buttonPressed && !inStatusSkills && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on status menu
         {
             StartCoroutine(HideStatusMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.TALENTS && !buttonPressed) //if cancel is pressed on talents menu
+        if (menuState == MenuStates.TALENTS && !buttonPressed && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on talents menu
         {
             StartCoroutine(HideTalentsMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.PARTY && !buttonPressed && (PartyHeroSelected == null)) //if cancel is pressed on party menu
+        if (menuState == MenuStates.PARTY && !buttonPressed && PartyHeroSelected == null && !partyChoosing && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on party menu
         {
             StartCoroutine(HidePartyMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.GRID && !buttonPressed) //if cancel is pressed on grid menu
+        if (menuState == MenuStates.GRID && !buttonPressed && !gridChoosingTile && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on grid menu
         {
             StartCoroutine(HideGridMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.QUESTS && !buttonPressed && !QuestClicked) //if cancel is pressed on quests menu
+        if (menuState == MenuStates.QUESTS && !buttonPressed && !QuestClicked && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on quests menu
         {
             StartCoroutine(HideQuestMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && menuState == MenuStates.BESTIARY && !buttonPressed && !BestiaryEntryClicked) //if cancel is pressed on bestiary menu
+        if (menuState == MenuStates.BESTIARY && !buttonPressed && !BestiaryEntryClicked && (Input.GetButtonDown("Cancel") || cancelPressed)) //if cancel is pressed on bestiary menu
         {
             StartCoroutine(HideBestiaryMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && inEquipList)
+        if (!buttonPressed && inEquipList && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             CancelFromEquipList();
             inEquipList = false;
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && QuestClicked)
+        if (!buttonPressed && QuestClicked && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             CancelQuestSelect();
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && BestiaryEntryClicked)
+        if (!buttonPressed && BestiaryEntryClicked && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             CancelBestiarySelect();
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && itemCustomizeModeOn)
+        if (!buttonPressed && itemCustomizeModeOn && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             PlaySE(AudioManager.instance.backSE);
 
             CancelCustomizeMode();
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && inArrangeMenu)
+        if (!buttonPressed && inArrangeMenu && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             PlaySE(AudioManager.instance.backSE);
 
             StartCoroutine(HideArrangeMenu());
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && itemChoosingHero)
+        if (!buttonPressed && itemChoosingHero && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             CancelItemChoosingHero();
         }
 
-        if (Input.GetButtonDown("Cancel") && !buttonPressed && choosingHeroForMagicMenu)
+        if (!buttonPressed && choosingHeroForMagicMenu && (Input.GetButtonDown("Cancel") || cancelPressed))
         {
             StartCoroutine(CancelMagicChoosingHero());
         }
 
-        CheckCancelPressed(); //makes sure cancel is only pressed once
+        //CheckCancelPressed(); //makes sure cancel is only pressed once
+
+        if (cancelPressed)
+        {
+            cancelPressed = false;
+            //buttonPressed = false;
+        }
+            
     }
 
     #region Cursor Functions
@@ -916,6 +1049,21 @@ public class GameMenu : MonoBehaviour
         if (menuState == MenuStates.STATUS)
             UpdateStatusCursor();
 
+        if (menuState == MenuStates.TALENTS)
+            UpdateTalentsCursor();
+
+        if (menuState == MenuStates.PARTY)
+            UpdatePartyCursor();
+
+        if (menuState == MenuStates.GRID)
+            UpdateGridCursor();
+
+        if (menuState == MenuStates.QUESTS)
+            UpdateQuestCursor();
+
+        if (menuState == MenuStates.BESTIARY)
+            UpdateBestiaryCursor();
+
         //CheckStates(); //comment out if dont need to test - this keeps outputting where each state is at any given time
 
         //----------leave at bottom
@@ -923,6 +1071,11 @@ public class GameMenu : MonoBehaviour
         {
             confirmPressed = false;
         }
+
+        /*if (Input.GetButtonUp("Cancel"))
+        {
+            buttonPressed = false;
+        }*/
 
         if (Input.GetAxisRaw("DpadVertical") == 0 && Input.GetAxisRaw("DpadHorizontal") == 0)
         {
@@ -936,7 +1089,7 @@ public class GameMenu : MonoBehaviour
 
     void UpdateCursorOnInput()
     {
-        if (!dpadPressed && (int)mainCursorState == 0)
+        if (!dpadPressed && (int)mainCursorState == 0 && !inAnimation)
         {
             if (Input.GetAxisRaw("DpadVertical") == 1) //up
             {
@@ -951,7 +1104,7 @@ public class GameMenu : MonoBehaviour
                 dpadPressed = true;
                 AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
             }
-        } else if (!dpadPressed && (int)mainCursorState == 8)
+        } else if (!dpadPressed && (int)mainCursorState == 8 && !inAnimation)
         {
             if (Input.GetAxisRaw("DpadVertical") == 1) //up
             {
@@ -966,7 +1119,7 @@ public class GameMenu : MonoBehaviour
                 dpadPressed = true;
                 AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
             }
-        } else if (!dpadPressed && (int)mainCursorState >= 0 && (int)mainCursorState <= 8)
+        } else if (!dpadPressed && (int)mainCursorState >= 0 && (int)mainCursorState <= 8 && !inAnimation)
         {
             if (Input.GetAxisRaw("DpadVertical") == 1) //up
             {
@@ -981,7 +1134,7 @@ public class GameMenu : MonoBehaviour
                 dpadPressed = true;
                 AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
             }
-        } else if (!dpadPressed && (int)mainCursorState == 9 && GameManager.instance.activeHeroes.Count() > 1)
+        } else if (!dpadPressed && (int)mainCursorState == 9 && GameManager.instance.activeHeroes.Count() > 1 && !inAnimation)
         {
             if (Input.GetAxisRaw("DpadVertical") == 1) //up
             {
@@ -996,7 +1149,7 @@ public class GameMenu : MonoBehaviour
                 dpadPressed = true;
                 AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
             }
-        } else if (!dpadPressed && (int)mainCursorState > 9 && (int)mainCursorState < 13 && GameManager.instance.activeHeroes.Count() > 1)
+        } else if (!dpadPressed && (int)mainCursorState > 9 && (int)mainCursorState < 13 && GameManager.instance.activeHeroes.Count() > 1 && !inAnimation)
         {
             if (Input.GetAxisRaw("DpadVertical") == 1) //up
             {
@@ -1018,7 +1171,7 @@ public class GameMenu : MonoBehaviour
                 AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
             }
             
-        } else if (!dpadPressed && (int)mainCursorState == 13)
+        } else if (!dpadPressed && (int)mainCursorState == 13 && !inAnimation)
         {
             if (Input.GetAxisRaw("DpadVertical") == 1) //up
             {
@@ -1035,19 +1188,30 @@ public class GameMenu : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Confirm") && (int)mainCursorState >= 0 && (int)mainCursorState <= 8 && !confirmPressed)
+        if (Input.GetButtonDown("Confirm") && (int)mainCursorState >= 0 && (int)mainCursorState <= 8 && !confirmPressed && !inAnimation)
         {
             confirmPressed = true;
             ProcessMenuNavigation((int)mainCursorState);
+            tempScrollDiff = 0;
         }
 
-        if (Input.GetButtonDown("Confirm") && (int)mainCursorState >= 9 && (int)mainCursorState <= 13 && !confirmPressed)
+        if (Input.GetButtonDown("Confirm") && (int)mainCursorState >= 9 && (int)mainCursorState <= 13 && !confirmPressed && !inAnimation)
         {
             confirmPressed = true;
             heroToCheck = GameManager.instance.activeHeroes[(int)mainCursorState - 9];
             AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
         }
         
+    }
+
+    void HideCursor()
+    {
+        cursor.GetComponent<CanvasGroup>().alpha = 0;
+    }
+
+    void ShowCursor()
+    {
+        cursor.GetComponent<CanvasGroup>().alpha = 1;
     }
 
     void ProcessMenuNavigation(int option)
@@ -1120,7 +1284,7 @@ public class GameMenu : MonoBehaviour
 
     void UpdateItemCursor()
     {
-        if (mainCursorState == MainCursorStates.IDLE && itemMenuCursorState != ItemMenuCursorStates.IDLE)
+        if (mainCursorState == MainCursorStates.IDLE && itemMenuCursorState != ItemMenuCursorStates.IDLE && !inAnimation)
         {
             if (itemChoosingHero) //when choosing hero
             {
@@ -1885,7 +2049,7 @@ public class GameMenu : MonoBehaviour
 
                 }
 
-                if (Input.GetButtonDown("Cancel"))
+                if (Input.GetButtonDown("Cancel") || cancelPressed)
                 {
                     itemMenuCursorState = ItemMenuCursorStates.OPTIONARRANGE;
                 }
@@ -2028,7 +2192,7 @@ public class GameMenu : MonoBehaviour
 
     void UpdateMagicCursor()
     {
-        if (mainCursorState == MainCursorStates.IDLE && magicMenuCursorState != MagicMenuCursorStates.IDLE)
+        if (mainCursorState == MainCursorStates.IDLE && magicMenuCursorState != MagicMenuCursorStates.IDLE && !inAnimation)
         {
             if (magicChoosingHero)
             {
@@ -2089,9 +2253,9 @@ public class GameMenu : MonoBehaviour
                     magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
                 }
 
-                if (Input.GetButtonDown("Cancel"))
+                if (Input.GetButtonDown("Cancel") || cancelPressed)
                 {
-                    buttonPressed = true;
+                    //buttonPressed = true;
                     Debug.Log("cancel pressed");
                     magicMenuCursorState = MagicMenuCursorStates.USEMAGIC;
                     magicChoosingHero = false;
@@ -2166,9 +2330,9 @@ public class GameMenu : MonoBehaviour
                     }
                 }
 
-                if (Input.GetButtonDown("Cancel"))
+                if (Input.GetButtonDown("Cancel") || cancelPressed)
                 {
-                    buttonPressed = true;
+                    //buttonPressed = true;
                     if (chosenMagic == "White")
                     {
                         magicMenuCursorState = MagicMenuCursorStates.OPTIONWHITE;
@@ -2439,7 +2603,7 @@ public class GameMenu : MonoBehaviour
 
     void UpdateEquipCursor()
     {
-        if (mainCursorState == MainCursorStates.IDLE && equipMenuCursorState != EquipMenuCursorStates.IDLE)
+        if (mainCursorState == MainCursorStates.IDLE && equipMenuCursorState != EquipMenuCursorStates.IDLE && !inAnimation)
         {
             if (equipMenuCursorState == EquipMenuCursorStates.EQUIPSLOTS)
             {
@@ -2516,7 +2680,7 @@ public class GameMenu : MonoBehaviour
 
                     if (cursorOnEquipSlot == 0)
                     {
-                        equipButtonClicked = "RightHandButton";
+                        equipButtonClicked = "RightArmButton";
                     } else if (cursorOnEquipSlot == 1)
                     {
                         equipButtonClicked = "HeadButton";
@@ -2528,10 +2692,10 @@ public class GameMenu : MonoBehaviour
                         equipButtonClicked = "FeetButton";
                     } else if (cursorOnEquipSlot == 4)
                     {
-                        equipButtonClicked = "LeftHandButton";
+                        equipButtonClicked = "LeftArmButton";
                     } else if (cursorOnEquipSlot == 5)
                     {
-                        equipButtonClicked = "WristsButton";
+                        equipButtonClicked = "HandsButton";
                     } else if (cursorOnEquipSlot == 6)
                     {
                         equipButtonClicked = "LegsButton";
@@ -2681,6 +2845,11 @@ public class GameMenu : MonoBehaviour
 
                 }
 
+                if (cancelPressed || Input.GetButtonDown("Cancel"))
+                {
+                    equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
+                }
+
                 equipListItem = GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform.GetChild(cursorOnEquipList).GetComponent<EquipMouseEvents>();
                 if (equipListItem.transform.GetChild(0).GetComponent<Text>().text != "None")
                 {
@@ -2701,6 +2870,7 @@ public class GameMenu : MonoBehaviour
                     } else
                     {
                         ChangeEquipment(null);
+                        PlaySE(AudioManager.instance.equipSE);
                     }
 
                     equipMenuCursorState = EquipMenuCursorStates.EQUIPSLOTS;
@@ -2796,9 +2966,1484 @@ public class GameMenu : MonoBehaviour
 
     void UpdateStatusCursor()
     {
-        if (mainCursorState == MainCursorStates.IDLE && statusMenuCursorState != StatusMenuCursorStates.IDLE)
+        if (mainCursorState == MainCursorStates.IDLE && statusMenuCursorState != StatusMenuCursorStates.IDLE && !inAnimation)
         {
+            if (statusMenuCursorState == StatusMenuCursorStates.STATS)
+            {
+                if (!dpadPressed && cursorOnStat >= 0 && cursorOnStat <= 15)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnStat = cursorOnStat + 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnStat >= 2 && cursorOnStat <= 17)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnStat = cursorOnStat - 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnStat%2 == 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnStat = cursorOnStat + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnStat%2 != 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnStat = cursorOnStat - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
 
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    cursorOnEquip = 0;
+                    statusMenuCursorState = StatusMenuCursorStates.EQUIPMENT;
+                    PlaySE(AudioManager.instance.confirmSE);
+                }
+
+                //set cursor position and details text
+                if (cursorOnStat == 0) //STR
+                {
+                    cursor.position = new Vector3(138f, 620f, 0);
+
+                    int atk = Mathf.RoundToInt(heroToCheck.finalStrength * .5f);
+                    int parry = Mathf.FloorToInt(heroToCheck.finalStrength * .1f);
+
+                    StatusPanelDetailsText.text = "Increases physical attack rating by " + statColor + atk.ToString() + "</color> and parry chance by " + statColor + parry.ToString() + "%</color>";
+                }
+                else if (cursorOnStat == 1) //STA
+                {
+                    cursor.position = new Vector3(253f, 620f, 0);
+
+                    int def = Mathf.RoundToInt(heroToCheck.finalStamina * .6f);
+                    int HP = Mathf.RoundToInt(heroToCheck.finalStamina * .75f);
+                    int mdef = Mathf.RoundToInt(heroToCheck.finalStamina * .5f);
+
+                    StatusPanelDetailsText.text = "Increases max HP by " + statColor + HP.ToString() + "</color>, physical defense rating by " + statColor + def.ToString() +
+                        "</color>, and magical defense rating by " + statColor + mdef.ToString();
+                }
+                else if (cursorOnStat == 2) //AGI
+                {
+                    cursor.position = new Vector3(138f, 604f, 0);
+
+                    int hit = Mathf.FloorToInt(heroToCheck.finalAgility * .12f);
+                    int dodge = Mathf.FloorToInt(heroToCheck.finalAgility * .2f);
+
+                    StatusPanelDetailsText.text = "Increases hit chance on physical attacks by " + statColor + hit.ToString() + "%</color> and dodge chance by " + statColor + dodge.ToString() + "%</color>";
+                }
+                else if (cursorOnStat == 3) //DEX
+                {
+                    cursor.position = new Vector3(253f, 604f, 0);
+
+                    int crit = Mathf.FloorToInt(heroToCheck.finalDexterity * .12f);
+                    int move = Mathf.FloorToInt(heroToCheck.finalDexterity * .02f);
+                    int parry = Mathf.FloorToInt(heroToCheck.finalDexterity * .05f);
+
+                    StatusPanelDetailsText.text = "Increases critical chance on physical attacks by " + statColor + crit.ToString() + "%</color>, move rating by " + statColor + 
+                        move.ToString() + "</color>, and parry chance by " + statColor + parry.ToString() + "%</color>";
+                }
+                else if (cursorOnStat == 4) //INT
+                {
+                    cursor.position = new Vector3(138f, 588f, 0);
+
+                    int matk = Mathf.RoundToInt(heroToCheck.finalIntelligence * .5f);
+                    int MP = Mathf.RoundToInt(heroToCheck.finalIntelligence * .75f);
+
+                    StatusPanelDetailsText.text = "Increases max MP by " + statColor + MP.ToString() + "</color> and magic attack rating by " + statColor + matk.ToString() + "</color>";
+                }
+                else if (cursorOnStat == 5) //SPI
+                {
+                    cursor.position = new Vector3(253f, 588f, 0);
+
+                    int regen = Mathf.CeilToInt(heroToCheck.finalSpirit * .15f);
+
+                    StatusPanelDetailsText.text = "Increases MP regen by " + statColor + regen.ToString() + "</color>";
+                }
+                else if (cursorOnStat == 6) //ATK
+                {
+                    cursor.position = new Vector3(138f, 549f, 0);
+
+                    StatusPanelDetailsText.text = "Increases damage done by physical attacks by " + statColor + heroToCheck.finalATK.ToString() + "</color>";
+                }
+                else if (cursorOnStat == 7) //MATK
+                {
+                    cursor.position = new Vector3(251f, 549f, 0);
+
+                    StatusPanelDetailsText.text = "Increases damage done by magical attacks by " + statColor + heroToCheck.finalMATK.ToString() + "</color>";
+                }
+                else if (cursorOnStat == 8) //DEF
+                {
+                    cursor.position = new Vector3(138f, 534f, 0);
+                    
+                    StatusPanelDetailsText.text = "Decreases damage done by physical attacks by " + statColor + heroToCheck.finalDEF.ToString() + "</color>";
+                }
+                else if (cursorOnStat == 9) //MDEF
+                {
+                    cursor.position = new Vector3(251f, 534f, 0);
+
+                    StatusPanelDetailsText.text = "Decreases damage done by magical attacks by " + statColor + heroToCheck.finalMDEF.ToString() + "</color>";
+                }
+                else if (cursorOnStat == 10) //HIT
+                {
+                    cursor.position = new Vector3(138f, 496f, 0);
+                    
+                    StatusPanelDetailsText.text = statColor + heroToCheck.finalHitRating.ToString() + "%</color> chance to hit with physical attacks";
+                }
+                else if (cursorOnStat == 11) //CRIT
+                {
+                    cursor.position = new Vector3(241f, 496f, 0);
+
+                    StatusPanelDetailsText.text = statColor + heroToCheck.finalCritRating.ToString() + "%</color> chance to critically strike with physical attacks";
+                }
+                else if (cursorOnStat == 12) //MOVE
+                {
+                    cursor.position = new Vector3(138f, 479f, 0);
+
+                    StatusPanelDetailsText.text = statColor + heroToCheck.finalMoveRating.ToString() + "</color> spaces available to move per turn";
+                }
+                else if (cursorOnStat == 13) //REGEN
+                {
+                    cursor.position = new Vector3(241f, 479f, 0);
+
+                    StatusPanelDetailsText.text = "Recovers " + statColor + heroToCheck.finalRegenRating.ToString() + "</color> MP per turn";
+                }
+                else if (cursorOnStat == 14) //DODGE
+                {
+                    cursor.position = new Vector3(138f, 449f, 0);
+
+                    StatusPanelDetailsText.text = statColor + heroToCheck.finalDodgeRating.ToString() + "%</color> chance to avoid a physical attack";
+                }
+                else if (cursorOnStat == 15) //BLOCK
+                {
+                    cursor.position = new Vector3(241f, 449f, 0);
+
+                    StatusPanelDetailsText.text = statColor + heroToCheck.finalBlockRating.ToString() + "%</color> chance to reduce a physical attack's damage by half";
+                }
+                else if (cursorOnStat == 16) //PARRY
+                {
+                    cursor.position = new Vector3(138f, 432f, 0);
+
+                    StatusPanelDetailsText.text = statColor + heroToCheck.finalParryRating.ToString() + "%</color> chance to reduce a physical attack's damage by 1/3, and immediately counter attack";
+                }
+                else if (cursorOnStat == 17) //THREAT
+                {
+                    cursor.position = new Vector3(241f, 432f, 0);
+
+                    StatusPanelDetailsText.text = "Increases threat generated by " + statColor + heroToCheck.finalThreatRating.ToString() + "</color>";
+                }
+            }
+
+            if (statusMenuCursorState == StatusMenuCursorStates.EQUIPMENT)
+            {
+                if (!dpadPressed && cursorOnEquip >= 0 && cursorOnEquip <= 5)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEquip = cursorOnEquip + 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnEquip >= 2 && cursorOnEquip <= 7)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEquip = cursorOnEquip - 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnEquip % 2 == 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnEquip = cursorOnEquip + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnEquip % 2 != 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnEquip = cursorOnEquip - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (cursorOnEquip == 0) //R.Arm
+                {
+                    cursor.position = new Vector3(352f, 618f, 0);
+
+                    if (heroToCheck.equipment[6] == null) {
+                        StatusPanelDetailsText.text = "";
+                    } else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[6].description;
+                    }                    
+                }
+                else if (cursorOnEquip == 1) //L.Arm
+                {
+                    cursor.position = new Vector3(525f, 618f, 0);
+
+                    if (heroToCheck.equipment[7] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[7].description;
+                    }
+                }
+                else if (cursorOnEquip == 2) //Head
+                {
+                    cursor.position = new Vector3(352f, 594f, 0);
+
+                    if (heroToCheck.equipment[0] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[0].description;
+                    }
+                }
+                else if (cursorOnEquip == 3) //Hands
+                {
+                    cursor.position = new Vector3(525f, 594f, 0);
+
+                    if (heroToCheck.equipment[2] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[2].description;
+                    }
+                }
+                else if (cursorOnEquip == 4) //Chest
+                {
+                    cursor.position = new Vector3(352f, 570f, 0);
+
+                    if (heroToCheck.equipment[1] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[1].description;
+                    }
+                }
+                else if (cursorOnEquip == 5) //Legs
+                {
+                    cursor.position = new Vector3(525f, 570f, 0);
+
+                    if (heroToCheck.equipment[3] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[3].description;
+                    }
+                }
+                else if (cursorOnEquip == 6) //Feet
+                {
+                    cursor.position = new Vector3(352f, 546f, 0);
+
+                    if (heroToCheck.equipment[4] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[4].description;
+                    }
+                }
+                else if (cursorOnEquip == 7) //Relic
+                {
+                    cursor.position = new Vector3(525f, 546f, 0);
+
+                    if (heroToCheck.equipment[5] == null)
+                    {
+                        StatusPanelDetailsText.text = "";
+                    }
+                    else
+                    {
+                        StatusPanelDetailsText.text = heroToCheck.equipment[5].description;
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    cursorOnEle = 0;
+                    statusMenuCursorState = StatusMenuCursorStates.ELEMENTS;
+                    PlaySE(AudioManager.instance.confirmSE);
+                }
+            }
+
+            if (statusMenuCursorState == StatusMenuCursorStates.ELEMENTS)
+            {
+                if (!dpadPressed && cursorOnEle >= 0 && cursorOnEle <= 13)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnEle = cursorOnEle + 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnEle >= 2 && cursorOnEle <= 15)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnEle = cursorOnEle - 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnEle % 2 == 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnEle = cursorOnEle + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnEle % 2 != 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnEle = cursorOnEle - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (cursorOnEle == 0) //Fire Attack
+                {
+                    cursor.position = new Vector3(396f, 508f, 0);
+                    
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + fireColor + "Fire</color> magic by " + fireColor + heroToCheck.fireEff  + "</color>";
+                }
+                else if (cursorOnEle == 1) //Fire Defense
+                {
+                    cursor.position = new Vector3(471f, 508f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + fireColor + "Fire</color> magic by " + fireColor + heroToCheck.fireDef +  "</color>";
+                }
+                else if (cursorOnEle == 2) //Frost Attack
+                {
+                    cursor.position = new Vector3(396f, 495f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + frostColor + "Frost</color> magic by " + frostColor + heroToCheck.frostEff +  "</color>";
+                }
+                else if (cursorOnEle == 3) //Frost Defense
+                {
+                    cursor.position = new Vector3(471f, 495f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + frostColor + "Frost</color> magic by " + frostColor + heroToCheck.frostDef +  "</color>";
+                }
+                else if (cursorOnEle == 4) //Lightning Attack
+                {
+                    cursor.position = new Vector3(396f, 482f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + lightningColor + "Lightning</color> magic by " + lightningColor + heroToCheck.lightningEff + "</color>";
+                }
+                else if (cursorOnEle == 5) //Lightning Defense
+                {
+                    cursor.position = new Vector3(471f, 482f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + lightningColor + "Lightning</color> magic by " + lightningColor + heroToCheck.lightningDef + "</color>";
+                }
+                else if (cursorOnEle == 6) //Water Attack
+                {
+                    cursor.position = new Vector3(396f, 469f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + waterColor + "Water</color> magic by " + waterColor + heroToCheck.waterEff + "</color>";
+                }
+                else if (cursorOnEle == 7) //Water Defense
+                {
+                    cursor.position = new Vector3(471f, 469f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + waterColor + "Water</color> magic by " + waterColor + heroToCheck.waterDef + "</color>";
+                }
+                else if (cursorOnEle == 8) //Nature Attack
+                {
+                    cursor.position = new Vector3(396f, 456f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + natureColor + "Nature</color> magic by " + natureColor + heroToCheck.natureEff + "</color>";
+                }
+                else if (cursorOnEle == 9) //Nature Defense
+                {
+                    cursor.position = new Vector3(471f, 456f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + natureColor + "Nature</color> magic by " + natureColor + heroToCheck.natureDef + "</color>";
+                }
+                else if (cursorOnEle == 10) //Earth Attack
+                {
+                    cursor.position = new Vector3(396f, 443f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + earthColor + "Earth</color> magic by " + earthColor + heroToCheck.earthEff + "</color>";
+                }
+                else if (cursorOnEle == 11) //Earth Defense
+                {
+                    cursor.position = new Vector3(471f, 443f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + earthColor + "Earth</color> magic by " + earthColor + heroToCheck.earthDef + "</color>";
+                }
+                else if (cursorOnEle == 12) //Holy Attack
+                {
+                    cursor.position = new Vector3(396f, 430f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + holyColor + "Holy</color> magic by " + holyColor + heroToCheck.holyEff + "</color>";
+                }
+                else if (cursorOnEle == 13) //Holy Defense
+                {
+                    cursor.position = new Vector3(471f, 430f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + holyColor + "Holy</color> magic by " + holyColor + heroToCheck.holyDef + "</color>";
+                }
+                else if (cursorOnEle == 14) //Dark Attack
+                {
+                    cursor.position = new Vector3(396f, 417f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + darknessColor + "Dark</color> magic by " + darknessColor + heroToCheck.darkEff + "</color>";
+                }
+                else if (cursorOnEle == 15) //Dark Defense
+                {
+                    cursor.position = new Vector3(471f, 417f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + darknessColor + "Dark</color> magic by " + darknessColor + heroToCheck.darkDef + "</color>";
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    cursorOnRes = 0;
+                    statusMenuCursorState = StatusMenuCursorStates.RESISTANCES;
+                    PlaySE(AudioManager.instance.confirmSE);
+                }
+            }
+
+            if (statusMenuCursorState == StatusMenuCursorStates.RESISTANCES)
+            {
+                if (!dpadPressed && cursorOnRes >= 0 && cursorOnRes <= 13)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnRes = cursorOnRes + 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnRes >= 2 && cursorOnRes <= 15)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnRes = cursorOnRes - 2;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnRes % 2 == 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnRes = cursorOnRes + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnRes % 2 != 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnRes = cursorOnRes - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (cursorOnRes == 0) //Blind Attack
+                {
+                    cursor.position = new Vector3(565f, 508f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + blindColor + "Blind</color> effects by " + blindColor + heroToCheck.blindEff + "</color>";
+                }
+                else if (cursorOnRes == 1) //Blind Defense
+                {
+                    cursor.position = new Vector3(641f, 508f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + blindColor + "Blind</color> effects by " + blindColor + heroToCheck.blindDef + "</color>";
+                }
+                else if (cursorOnRes == 2) //Silence Attack
+                {
+                    cursor.position = new Vector3(565f, 495f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + silenceColor + "Silence</color> effects by " + silenceColor + heroToCheck.silenceEff + "</color>";
+                }
+                else if (cursorOnRes == 3) //Silence Defense
+                {
+                    cursor.position = new Vector3(641f, 495f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + silenceColor + "Silence</color> effects by " + silenceColor + heroToCheck.silenceDef + "</color>";
+                }
+                else if (cursorOnRes == 4) //Sleep Attack
+                {
+                    cursor.position = new Vector3(565f, 482f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + sleepColor + "Sleep</color> effects by " + sleepColor + heroToCheck.sleepEff + "</color>";
+                }
+                else if (cursorOnRes == 5) //Sleep Defense
+                {
+                    cursor.position = new Vector3(641f, 482f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + sleepColor + "Sleep</color> effects by " + sleepColor + heroToCheck.sleepDef + "</color>";
+                }
+                else if (cursorOnRes == 6) //Confuse Attack
+                {
+                    cursor.position = new Vector3(565f, 469f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + confuseColor + "Confuse</color> effects by " + confuseColor + heroToCheck.confuseEff + "</color>";
+                }
+                else if (cursorOnRes == 7) //Confuse Defense
+                {
+                    cursor.position = new Vector3(641f, 469f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + confuseColor + "Confuse</color> effects by " + confuseColor + heroToCheck.confuseDef + "</color>";
+                }
+                else if (cursorOnRes == 8) //Poison Attack
+                {
+                    cursor.position = new Vector3(565f, 456f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + poisonColor + "Poison</color> effects by " + poisonColor + heroToCheck.poisonEff + "</color>";
+                }
+                else if (cursorOnRes == 9) //Poison Defense
+                {
+                    cursor.position = new Vector3(641f, 456f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + poisonColor + "Poison</color> effects by " + poisonColor + heroToCheck.poisonDef + "</color>";
+                }
+                else if (cursorOnRes == 10) //Petrify Attack
+                {
+                    cursor.position = new Vector3(565f, 443f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + petrifyColor + "Petrify</color> effects by " + petrifyColor + heroToCheck.petrifyEff + "</color>";
+                }
+                else if (cursorOnRes == 11) //Petrify Defense
+                {
+                    cursor.position = new Vector3(641f, 443f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + petrifyColor + "Petrify</color> effects by " + petrifyColor + heroToCheck.petrifyDef + "</color>";
+                }
+                else if (cursorOnRes == 12) //Slow Attack
+                {
+                    cursor.position = new Vector3(565f, 430f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + slowColor + "Slow</color> effects by " + slowColor + heroToCheck.slowEff + "</color>";
+                }
+                else if (cursorOnRes == 13) //Slow Defense
+                {
+                    cursor.position = new Vector3(641f, 430f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + slowColor + "Slow</color> effects by " + slowColor + heroToCheck.slowDef + "</color>";
+                }
+                else if (cursorOnRes == 14) //Zombie Attack
+                {
+                    cursor.position = new Vector3(565f, 417f, 0);
+
+                    StatusPanelDetailsText.text = "Increases effectiveness of " + zombieColor + "Zombie</color> effects by " + zombieColor + heroToCheck.zombieEff + "</color>";
+                }
+                else if (cursorOnRes == 15) //Zombie Defense
+                {
+                    cursor.position = new Vector3(641f, 417f, 0);
+
+                    StatusPanelDetailsText.text = "Increases resistance to " + zombieColor + "Zombie</color> effects by " + zombieColor + heroToCheck.zombieDef + "</color>";
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    inStatusSkills = true;
+
+                    statusMenuCursorState = StatusMenuCursorStates.SKILLS;
+                    PlaySE(AudioManager.instance.confirmSE);
+
+                    StartCoroutine(AnimateSecondaryStatusMenu());
+                }
+            }
+
+            if (statusMenuCursorState == StatusMenuCursorStates.SKILLS)
+            {
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    inStatusSkills = false;
+
+                    StartCoroutine(AnimateSecondaryStatusMenu());
+
+                    cursorOnStat = 0;
+                    statusMenuCursorState = StatusMenuCursorStates.STATS;
+                }
+
+                if (Input.GetButtonDown("Cancel") || cancelPressed)
+                {
+                    inStatusSkills = false;
+
+                    StartCoroutine(AnimateSecondaryStatusMenu());
+
+                    cursorOnStat = 0;
+                    statusMenuCursorState = StatusMenuCursorStates.STATS;
+                    
+                }
+            }
+        }
+    }
+
+    void UpdateTalentsCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && talentMenuCursorState != TalentsMenuCursorStates.IDLE && !inAnimation)
+        {
+            TalentsMouseEvents talentEvent;
+
+            if (talentMenuCursorState == TalentsMenuCursorStates.TALENTS)
+            {
+                if (!dpadPressed && cursorOnTalent >= 0 && talentRow <= 4)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnTalent = cursorOnTalent + 3;
+                        talentRow = talentRow + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && talentRow >= 1 && talentRow <= 5)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnTalent = cursorOnTalent - 3;
+                        talentRow = talentRow - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && talentColumn <= 1)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnTalent = cursorOnTalent + 1;
+                        talentColumn = talentColumn + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && talentColumn >= 1)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnTalent = cursorOnTalent - 1;
+                        talentColumn = talentColumn - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                talentEvent = GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentsPanel/Talent" +
+                        (talentRow + 1).ToString() + "/Talent" + (talentColumn + 1).ToString() + "Button").GetComponent<TalentsMouseEvents>();
+
+                talentEvent.ShowTalentDetails();
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    talentEvent.TalentButtonClicked();
+                }
+
+                cursor.position = new Vector3(386f + (talentColumnSpacer * talentColumn), 703f - (talentRowSpacer * talentRow), 0);
+            }
+        }
+    }
+
+    void UpdatePartyCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && partyMenuCursorState != PartyMenuCursorStates.IDLE && !inAnimation)
+        {
+            int activeHeroes = GameManager.instance.activeHeroes.Count;
+            int inactiveHeroes = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").transform.childCount;
+
+            PartySelectEvents tempPSE;
+
+            if (partyMenuCursorState == PartyMenuCursorStates.ACTIVE)
+            {
+
+                if (!dpadPressed && cursorOnPartyActive >= 0 && cursorOnPartyActive <= (activeHeroes - 2))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnPartyActive = cursorOnPartyActive + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnPartyActive >= 1 && cursorOnPartyActive <= (activeHeroes - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnPartyActive = cursorOnPartyActive - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                
+                if (!dpadPressed && inactiveHeroes > 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        dpadPressed = true;
+
+                        cursorOnPartyInactive = 0;
+
+                        partyMenuCursorState = PartyMenuCursorStates.INACTIVE;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (!dpadPressed && cursorOnPartyActive >= 0 && cursorOnPartyActive <= (activeHeroes - 1) && partyChoosing && partyChoosingMode == "Active")
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnPartyActive = cursorOnPartyActive + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (!dpadPressed && cursorOnPartyActive >= 1 && cursorOnPartyActive <= activeHeroes && partyChoosing)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnPartyActive = cursorOnPartyActive - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    if (partyChoosing)
+                    {
+                        pse2 = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(cursorOnPartyActive).GetComponent<PartySelectEvents>();
+                        pse2.SelectHeroFromActive();
+
+                        partyChoosing = false;
+                    } else
+                    {
+                        pse1 = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(cursorOnPartyActive).GetComponent<PartySelectEvents>();
+                        pse1.SelectHeroFromActive();
+
+                        partyChoosingMode = "Inactive";
+                        cursorOnPartyInactive = 0;
+                        partyChoosing = true;
+                        partyMenuCursorState = PartyMenuCursorStates.INACTIVE;
+                    }
+                }
+
+                if ((Input.GetButtonDown("Cancel") || cancelPressed) && partyChoosing)
+                {
+                    pse1.UnboldButtons();
+                    partyChoosing = false;
+                }
+
+
+                tempPSE = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/ActiveHeroesPanel").transform.GetChild(cursorOnPartyActive).GetComponent<PartySelectEvents>();
+                tempPSE.ShowSelectedActiveHeroPanel();
+
+                cursor.position = new Vector3(136f, 696f - (partyActiveSpacer * cursorOnPartyActive), 0);
+            }
+
+            if (partyMenuCursorState == PartyMenuCursorStates.INACTIVE)
+            {
+                GridLayoutGroup glg;
+
+                int row = Mathf.FloorToInt(cursorOnPartyInactive / 3);
+                int column = (cursorOnPartyInactive - (row * 3));
+
+                glg = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").GetComponent<GridLayoutGroup>();
+
+                //need to get max column and row count
+                int maxColumn = inactiveHeroes % 3; //if = 0, max column has been hit
+                if (maxColumn == 0)
+                    maxColumn = 3;
+                maxColumn = maxColumn - 1;
+
+                int maxRow = 0;
+
+                GetMaxRow(glg, out maxRow);
+
+                if (!dpadPressed && inactiveHeroes > 1)
+                {
+                    if (row != 0)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                        {
+                            cursorOnPartyInactive = cursorOnPartyInactive - 3;
+                            row = row - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    
+                    if (row != maxRow && row != (maxRow - 1))
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            cursorOnPartyInactive = cursorOnPartyInactive + 3;
+                            row = row + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                    else if (row == (maxRow - 1))
+                    {
+                        int tempCursor = cursorOnPartyInactive + 4; //keeps cursor from moving down if there is no magic available in that space
+
+                        if (Input.GetAxisRaw("DpadVertical") == -1 && tempCursor <= inactiveHeroes) //down
+                        {
+                            cursorOnPartyInactive = cursorOnPartyInactive + 3;
+                            row = row + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+
+                    if (column != 0)
+                    {
+                        if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                        {
+                            column = column - 1;
+                            cursorOnPartyInactive = cursorOnPartyInactive - 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+
+                    if ((row == maxRow && column != maxColumn) || (row != maxRow && maxRow > 0 && column < 2))
+                    {
+                        if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                        {
+                            column = column + 1;
+                            cursorOnPartyInactive = cursorOnPartyInactive + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                } else if (!dpadPressed && column == 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        partyMenuCursorState = PartyMenuCursorStates.ACTIVE;
+                    }
+                }
+                
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    if (partyChoosing)
+                    {
+                        if (inactiveHeroes == 0)
+                        {
+                            Debug.Log("needs to be implemented");
+                        } else
+                        {
+                            pse2 = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").transform.GetChild(cursorOnPartyInactive).GetComponent<PartySelectEvents>();
+                            pse2.SelectHeroFromInactive();
+                            partyChoosing = false;
+                        }                        
+                    } else
+                    {
+                        partyChoosing = true;
+                        partyChoosingMode = "Active";
+                        pse1 = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").transform.GetChild(cursorOnPartyInactive).GetComponent<PartySelectEvents>();
+                        pse1.SelectHeroFromInactive();
+                    }
+                    
+                    partyMenuCursorState = PartyMenuCursorStates.ACTIVE;
+                }
+
+                if ((Input.GetButtonDown("Cancel") || cancelPressed) && partyChoosing)
+                {
+                    pse1.UnboldButtons();
+                    partyChoosing = false;
+                    partyMenuCursorState = PartyMenuCursorStates.ACTIVE;
+                }
+
+                tempPSE = GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").transform.GetChild(cursorOnPartyInactive).GetComponent<PartySelectEvents>();
+                tempPSE.ShowSelectedHeroPanel();
+
+                cursor.position = new Vector3(344f + (inactivePartySpacerX * column), 547f - (inactivePartySpacerY * row), 0);
+            }
+        }
+    }
+
+    void UpdateGridCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && gridMenuCursorState != GridMenuCursorStates.IDLE && !inAnimation)
+        {
+            GridMenuMouseEvents gme;
+
+            if (gridMenuCursorState == GridMenuCursorStates.HEROES)
+            {
+                int activeHeroes = GameManager.instance.activeHeroes.Count;
+
+                if (!dpadPressed && cursorOnGridHero >= 0 && cursorOnGridHero <= 3 && cursorOnGridHero < (activeHeroes - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnGridHero = cursorOnGridHero + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && cursorOnGridHero >= 1 && cursorOnGridHero <= 4)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnGridHero = cursorOnGridHero - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        gridColumn = 1;
+                        gridRow = 1;
+
+                        gridMenuCursorState = GridMenuCursorStates.GRID;
+                    }
+                }
+
+                gme = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/HeroGridPanel").transform.GetChild(cursorOnGridHero).GetComponent<GridMenuMouseEvents>();
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    if (!gridChoosingTile)
+                    {
+                        gme.SetHero();
+
+                        gridColumn = int.Parse(GameManager.instance.activeHeroes[cursorOnGridHero].spawnPoint[0].ToString());
+                        gridRow = int.Parse(GameManager.instance.activeHeroes[cursorOnGridHero].spawnPoint[1].ToString());
+
+                        gridMenuCursorState = GridMenuCursorStates.GRID;
+                    } else
+                    {
+                        gme.SetHero();
+                    }
+                }
+
+                cursor.position = new Vector3(136f, 696f - (gridHeroSpacer * cursorOnGridHero), 0);
+            }
+
+            if (gridMenuCursorState == GridMenuCursorStates.GRID)
+            {
+                if (!dpadPressed && gridRow >= 1 && gridRow <= 4)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        gridRow = gridRow + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && gridRow >= 2 && gridRow <= 5)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        gridRow = gridRow - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && gridColumn >= 1 && gridColumn <= 4)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                        gridColumn = gridColumn + 1;
+
+                        gridMenuCursorState = GridMenuCursorStates.GRID;
+                    }
+                }
+                if (!dpadPressed && gridColumn >= 2 && gridColumn <= 5)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        gridColumn = gridColumn - 1;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                if (!dpadPressed && gridColumn == 1 && !gridChoosingTile)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        gridMenuCursorState = GridMenuCursorStates.HEROES;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                gme = GameObject.Find("GameManager/Menus/GridMenuCanvas/GridMenuPanel/GridPanel/Grid - " + gridColumn.ToString() + gridRow.ToString()).GetComponent<GridMenuMouseEvents>();
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    gme.ChangeSpawnPoint();
+                }
+
+                if ((Input.GetButtonDown("Cancel") || cancelPressed) && gridChoosingTile)
+                {
+                    gme.EnableButtons();
+                    gridChoosingTile = false;
+                    gridMenuCursorState = GridMenuCursorStates.HEROES;
+                }
+
+                cursor.position = new Vector3(364f + (gridSpacer * (gridColumn - 1)), 696f - (gridSpacer * (gridRow - 1)), 0);
+            }
+        }
+    }
+
+    void UpdateQuestCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && questMenuCursorState != QuestMenuCursorStates.IDLE && !inAnimation)
+        {
+            int questCount;
+            questCount = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/" + QuestOption + "QuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform.childCount;
+
+            if (questCount == 0)
+            {
+                questMenuCursorState = QuestMenuCursorStates.OPTIONS;
+            }
+
+            if (questMenuCursorState == QuestMenuCursorStates.QUESTLIST)
+            {
+                int scrollDiff = questCount - 7;
+
+                if (questCount <= 7)
+                {
+                    tempScrollDiff = 0;
+                }
+
+                RectTransform spacerScroll = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/" + QuestOption + "QuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").GetComponent<RectTransform>();
+
+                //Debug.Log(cursorOnItem);
+
+                if (!dpadPressed && cursorOnQuest == 0 && tempScrollDiff == 0)
+                {
+                    if (questCount > 1)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            cursorOnQuest = cursorOnQuest + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        questMenuCursorState = QuestMenuCursorStates.OPTIONS;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnQuest == 0 && tempScrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnQuest = cursorOnQuest + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (questListScrollBy * (tempScrollDiff - 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnQuest > 0 && cursorOnQuest < 6)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnQuest = cursorOnQuest - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnQuest = cursorOnQuest + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnQuest == 6 && tempScrollDiff == 0 && scrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnQuest = cursorOnQuest - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, questListScrollBy, 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnQuest == 6 && tempScrollDiff == 0 && scrollDiff == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnQuest = cursorOnQuest - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnQuest == 6 && tempScrollDiff > 0 && (cursorOnQuest + tempScrollDiff) < (questCount - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnQuest = 5;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (questListScrollBy * (tempScrollDiff + 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnQuest == 6 && tempScrollDiff > 0 && (cursorOnQuest + tempScrollDiff) == (questCount - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnQuest = 5;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (questCount != 0)
+                {
+                    if (cursorOnQuest == questCount)
+                    {
+                        cursorOnQuest = questCount - 1;
+                    }
+
+                    if (cursorOnQuest == 0 && tempScrollDiff == 0)
+                    {
+                        cursor.position = new Vector3(133f, 655f, 0);
+                        questSelected = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/" + QuestOption + "QuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform.GetChild(0).GetComponent<QuestListButtonMouseEvents>();
+                    }
+                    else if (cursorOnQuest == 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(133f, 655f, 0);
+                        questSelected = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/" + QuestOption + "QuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform.GetChild(tempScrollDiff).GetComponent<QuestListButtonMouseEvents>();
+                    }
+                    else if (cursorOnQuest > 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(133f, (655f - (questListSpacer * cursorOnQuest)), 0);
+                        questSelected = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/" + QuestOption + "QuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform.GetChild(cursorOnQuest + tempScrollDiff).GetComponent<QuestListButtonMouseEvents>();
+                    }
+                    else
+                    {
+                        cursor.position = new Vector3(133f, (655f - (questListSpacer * cursorOnQuest)), 0);
+                        questSelected = GameObject.Find("GameManager/Menus/QuestsMenuCanvas/" + QuestOption + "QuestsMenuPanel/QuestListPanel/QuestListScroller/QuestListSpacer").transform.GetChild(cursorOnQuest).GetComponent<QuestListButtonMouseEvents>();
+                    }
+
+                    questSelected.ShowQuestDetails();
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    questSelected.SetQuest();
+                }
+            }
+
+            if (questMenuCursorState == QuestMenuCursorStates.OPTIONS)
+            {
+                if (!dpadPressed && cursorOnQuestOption == 0)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1) //right
+                    {
+                        cursorOnQuestOption = 1;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                } else if (!dpadPressed && cursorOnQuestOption == 1)
+                {
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1) //left
+                    {
+                        cursorOnQuestOption = 0;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (!dpadPressed)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnQuest = 0;
+                        questMenuCursorState = QuestMenuCursorStates.QUESTLIST;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    if (cursorOnQuestOption == 0)
+                    {
+                        ShowActiveQuestsPanel();
+                    } else if (cursorOnQuestOption == 1)
+                    {
+                        ShowCompletedQuestsPanel();
+                    }
+                    cursorOnQuest = 0;
+                    questMenuCursorState = QuestMenuCursorStates.QUESTLIST;
+                }
+
+                if (cursorOnQuestOption == 0)
+                {
+                    cursor.position = new Vector3(131f, 710f, 0);
+                } else if (cursorOnQuestOption == 1)
+                {
+                    cursor.position = new Vector3(195f, 710f, 0);
+                }
+            }
+        }
+    }
+
+    void UpdateBestiaryCursor()
+    {
+        if (mainCursorState == MainCursorStates.IDLE && bestiaryMenuCursorState != BestiaryMenuCursorStates.IDLE && !inAnimation)
+        {
+            int bestCount;
+            bestCount = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform.childCount;
+
+            if (bestiaryMenuCursorState == BestiaryMenuCursorStates.BESTIARYLIST)
+            {
+                int scrollDiff = bestCount - 9;
+
+                if (bestCount <= 9)
+                {
+                    tempScrollDiff = 0;
+                }
+
+                RectTransform spacerScroll = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").GetComponent<RectTransform>();
+
+                //Debug.Log(cursorOnItem);
+
+                if (!dpadPressed && cursorOnBest == 0 && tempScrollDiff == 0)
+                {
+                    if (bestCount > 1)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                        {
+                            cursorOnBest = cursorOnBest + 1;
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                        }
+                    }
+                }
+                else if (!dpadPressed && cursorOnBest == 0 && tempScrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnBest = cursorOnBest + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (bestListScrollBy * (tempScrollDiff - 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnBest > 0 && cursorOnBest < 8)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnBest = cursorOnBest - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        cursorOnBest = cursorOnBest + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnBest == 8 && tempScrollDiff == 0 && scrollDiff > 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnBest = cursorOnBest - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, bestListScrollBy, 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnBest == 8 && tempScrollDiff == 0 && scrollDiff == 0)
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnBest = cursorOnBest - 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnBest == 8 && tempScrollDiff > 0 && (cursorOnBest + tempScrollDiff) < (bestCount - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnBest = 7;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                    {
+                        spacerScroll.anchoredPosition = new Vector3(0.0f, (bestListScrollBy * (tempScrollDiff + 1)), 0.0f);
+
+                        tempScrollDiff = tempScrollDiff + 1;
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+                else if (!dpadPressed && cursorOnBest == 8 && tempScrollDiff > 0 && (cursorOnBest + tempScrollDiff) == (bestCount - 1))
+                {
+                    if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                    {
+                        cursorOnBest = 7;
+
+                        dpadPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    }
+                }
+
+                if (bestCount != 0)
+                {
+                    if (cursorOnQuest == bestCount)
+                    {
+                        cursorOnQuest = bestCount - 1;
+                    }
+
+                    if (cursorOnBest == 0 && tempScrollDiff == 0)
+                    {
+                        cursor.position = new Vector3(134f, 684.5f, 0);
+                        bestSelected = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform.GetChild(0).GetComponent<BestiaryListButtonMouseEvents>();
+                    }
+                    else if (cursorOnBest == 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(134f, 684.5f, 0);
+                        bestSelected = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform.GetChild(tempScrollDiff).GetComponent<BestiaryListButtonMouseEvents>();
+                    }
+                    else if (cursorOnBest > 0 && tempScrollDiff > 0)
+                    {
+                        cursor.position = new Vector3(134f, (684.5f - (bestListSpacer * cursorOnBest)), 0);
+                        bestSelected = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform.GetChild(cursorOnBest + tempScrollDiff).GetComponent<BestiaryListButtonMouseEvents>();
+                    }
+                    else
+                    {
+                        cursor.position = new Vector3(134f, (684.5f - (bestListSpacer * cursorOnBest)), 0);
+                        bestSelected = GameObject.Find("GameManager/Menus/BestiaryMenuCanvas/BestiaryMenuPanel/EnemyListPanel/EnemyListScroller/EnemyListSpacer").transform.GetChild(cursorOnBest).GetComponent<BestiaryListButtonMouseEvents>();
+                    }
+
+                    bestSelected.ShowBestiaryEntryDetails();
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+
+                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                    bestSelected.SetBestEntry();
+                }
+            }
         }
     }
 
@@ -3177,6 +4822,7 @@ public class GameMenu : MonoBehaviour
         ShowMainMenu();
         
         mainCursorState = MainCursorStates.ITEM;
+        itemMenuCursorState = ItemMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -3952,6 +5598,7 @@ public class GameMenu : MonoBehaviour
 
         ShowMainMenu();
         mainCursorState = MainCursorStates.MAGIC;
+        magicMenuCursorState = MagicMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -4207,21 +5854,21 @@ public class GameMenu : MonoBehaviour
         }
         if (heroToCheck.equipment[2] == null)
         {
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = "";
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = null;
+            GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotText").GetComponent<Text>().text = "";
+            GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().sprite = null;
 
-            Color temp = GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color;
             temp.a = 0f;
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color = temp;
         }
         else
         {
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = heroToCheck.equipment[2].name;
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[2].icon;
+            GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotText").GetComponent<Text>().text = heroToCheck.equipment[2].name;
+            GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[2].icon;
 
-            Color temp = GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
-            GameObject.Find(baseEquipPath + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color = temp;
         }
         if (heroToCheck.equipment[3] == null)
         {
@@ -4275,38 +5922,38 @@ public class GameMenu : MonoBehaviour
         }
         if (heroToCheck.equipment[6] == null)
         {
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = "";
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = null;
+            GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotText").GetComponent<Text>().text = "";
+            GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().sprite = null;
 
-            Color temp = GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color;
             temp.a = 0f;
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color = temp;
         } else
         {
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = heroToCheck.equipment[6].name;
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[6].icon;
+            GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotText").GetComponent<Text>().text = heroToCheck.equipment[6].name;
+            GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[6].icon;
 
-            Color temp = GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
-            GameObject.Find(baseEquipPath + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color = temp;
         }
         if (heroToCheck.equipment[7] == null)
         {
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = "";
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = null;
+            GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotText").GetComponent<Text>().text = "";
+            GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().sprite = null;
 
-            Color temp = GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color;
             temp.a = 0f;
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color = temp;
         }
         else
         {
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = heroToCheck.equipment[7].name;
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[7].icon;
+            GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotText").GetComponent<Text>().text = heroToCheck.equipment[7].name;
+            GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().sprite = heroToCheck.equipment[7].icon;
 
-            Color temp = GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+            Color temp = GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color;
             temp.a = 1f;
-            GameObject.Find(baseEquipPath + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+            GameObject.Find(baseEquipPath + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color = temp;
         }
 
     }
@@ -4415,6 +6062,7 @@ public class GameMenu : MonoBehaviour
 
         ShowMainMenu();
         mainCursorState = MainCursorStates.EQUIP;
+        equipMenuCursorState = EquipMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -4480,11 +6128,11 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (equipButtonClicked == "WristsButton")
+            if (equipButtonClicked == "HandsButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
-                    if (equip.equipmentSlot.ToString() == "WRISTS")
+                    if (equip.equipmentSlot.ToString() == "HANDS")
                     {
                         int equipCount = 0;
                         if (!equipmentAccountedFor.Contains(equip))
@@ -4620,11 +6268,11 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (equipButtonClicked == "RightHandButton")
+            if (equipButtonClicked == "RightArmButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
-                    if (equip.equipmentSlot.ToString() == "RIGHTHAND")
+                    if (equip.equipmentSlot.ToString() == "RIGHTARM")
                     {
                         int equipCount = 0;
                         if (!equipmentAccountedFor.Contains(equip))
@@ -4648,11 +6296,11 @@ public class GameMenu : MonoBehaviour
                 }
             }
 
-            if (equipButtonClicked == "LeftHandButton")
+            if (equipButtonClicked == "LeftArmButton")
             {
                 foreach (Equipment equip in equipmentList)
                 {
-                    if (equip.equipmentSlot.ToString() == "LEFTHAND")
+                    if (equip.equipmentSlot.ToString() == "LEFTARM")
                     {
                         int equipCount = 0;
                         if (!equipmentAccountedFor.Contains(equip))
@@ -4708,16 +6356,16 @@ public class GameMenu : MonoBehaviour
                 temp.a = 0f;
                 GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color = temp;
             }
-            if (equipButtonClicked == "WristsButton")
+            if (equipButtonClicked == "HandsButton")
             {
                 heroToCheck.Unequip(2);
 
-                GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = "";
-                GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = null;
+                GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotText").GetComponent<Text>().text = "";
+                GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().sprite = null;
 
-                Color temp = GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+                Color temp = GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color;
                 temp.a = 0f;
-                GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+                GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color = temp;
             }
             if (equipButtonClicked == "LegsButton")
             {
@@ -4752,27 +6400,27 @@ public class GameMenu : MonoBehaviour
                 temp.a = 0f;
                 GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color = temp;
             }
-            if (equipButtonClicked == "RightHandButton")
+            if (equipButtonClicked == "RightArmButton")
             {
                 heroToCheck.Unequip(6);
 
-                GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = "";
-                GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = null;
+                GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotText").GetComponent<Text>().text = "";
+                GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().sprite = null;
 
-                Color temp = GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+                Color temp = GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color;
                 temp.a = 0f;
-                GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+                GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color = temp;
             }
-            if (equipButtonClicked == "LeftHandButton")
+            if (equipButtonClicked == "LeftArmButton")
             {
                 heroToCheck.Unequip(7);
 
-                GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = "";
-                GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = null;
+                GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotText").GetComponent<Text>().text = "";
+                GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().sprite = null;
 
-                Color temp = GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+                Color temp = GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color;
                 temp.a = 0f;
-                GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+                GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color = temp;
             }
 
             heroToCheck.GetCurrentStatsFromEquipment();
@@ -4820,12 +6468,12 @@ public class GameMenu : MonoBehaviour
 
         heroToCheck.Unequip(2);
 
-        GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = "";
-        GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = null;
+        GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().sprite = null;
 
-        temp = GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+        temp = GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color;
         temp.a = 0f;
-        GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+        GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color = temp;
 
         heroToCheck.Unequip(3);
 
@@ -4856,21 +6504,21 @@ public class GameMenu : MonoBehaviour
 
         heroToCheck.Unequip(6);
 
-        GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = "";
-        GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = null;
+        GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().sprite = null;
 
-        temp = GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+        temp = GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color;
         temp.a = 0f;
-        GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+        GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color = temp;
 
         heroToCheck.Unequip(7);
 
-        GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = "";
-        GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = null;
+        GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotText").GetComponent<Text>().text = "";
+        GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().sprite = null;
 
-        temp = GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+        temp = GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color;
         temp.a = 0f;
-        GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+        GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color = temp;
 
         heroToCheck.GetCurrentStatsFromEquipment();
         heroToCheck.UpdateStatsFromTalents();
@@ -4923,16 +6571,16 @@ public class GameMenu : MonoBehaviour
                     temp.a = 0f;
                     GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color = temp;
                 }
-                if (equipButtonClicked == "WristsButton")
+                if (equipButtonClicked == "HandsButton")
                 {
                     heroToCheck.Unequip(2);
 
-                    GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = "";
-                    GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = null;
+                    GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotText").GetComponent<Text>().text = "";
+                    GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().sprite = null;
 
-                    Color temp = GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+                    Color temp = GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color;
                     temp.a = 0f;
-                    GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+                    GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color = temp;
                 }
                 if (equipButtonClicked == "LegsButton")
                 {
@@ -4967,27 +6615,27 @@ public class GameMenu : MonoBehaviour
                     temp.a = 0f;
                     GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color = temp;
                 }
-                if (equipButtonClicked == "RightHandButton")
+                if (equipButtonClicked == "RightArmButton")
                 {
                     heroToCheck.Unequip(6);
 
-                    GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = "";
-                    GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = null;
+                    GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotText").GetComponent<Text>().text = "";
+                    GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().sprite = null;
 
-                    Color temp = GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+                    Color temp = GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color;
                     temp.a = 0f;
-                    GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+                    GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color = temp;
                 }
-                if (equipButtonClicked == "LeftHandButton")
+                if (equipButtonClicked == "LeftArmButton")
                 {
                     heroToCheck.Unequip(7);
 
-                    GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = "";
-                    GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = null;
+                    GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotText").GetComponent<Text>().text = "";
+                    GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().sprite = null;
 
-                    Color temp = GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+                    Color temp = GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color;
                     temp.a = 0f;
-                    GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+                    GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color = temp;
                 }
 
                 UpdateEquipmentArrowsToNeutral();
@@ -5023,15 +6671,15 @@ public class GameMenu : MonoBehaviour
                 temp.a = 1f;
                 GameObject.Find(equipMenuBase + "ChestSlot/ChestButton/ChestSlotIcon").GetComponent<Image>().color = temp;
             }
-            if (equipButtonClicked == "WristsButton")
+            if (equipButtonClicked == "HandsButton")
             {
-                GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotText").GetComponent<Text>().text = toEquip.name;
-                GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().sprite = toEquip.icon;
+                GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotText").GetComponent<Text>().text = toEquip.name;
+                GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().sprite = toEquip.icon;
                 heroToCheck.Equip(toEquip);
 
-                Color temp = GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color;
+                Color temp = GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color;
                 temp.a = 1f;
-                GameObject.Find(equipMenuBase + "WristsSlot/WristsButton/WristsSlotIcon").GetComponent<Image>().color = temp;
+                GameObject.Find(equipMenuBase + "HandsSlot/HandsButton/HandsSlotIcon").GetComponent<Image>().color = temp;
             }
             if (equipButtonClicked == "LegsButton")
             {
@@ -5063,25 +6711,25 @@ public class GameMenu : MonoBehaviour
                 temp.a = 1f;
                 GameObject.Find(equipMenuBase + "RelicSlot/RelicButton/RelicSlotIcon").GetComponent<Image>().color = temp;
             }
-            if (equipButtonClicked == "LeftHandButton")
+            if (equipButtonClicked == "LeftArmButton")
             {
-                GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotText").GetComponent<Text>().text = toEquip.name;
-                GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().sprite = toEquip.icon;
+                GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotText").GetComponent<Text>().text = toEquip.name;
+                GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().sprite = toEquip.icon;
                 heroToCheck.Equip(toEquip);
 
-                Color temp = GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color;
+                Color temp = GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color;
                 temp.a = 1f;
-                GameObject.Find(equipMenuBase + "LeftHandSlot/LeftHandButton/LeftHandSlotIcon").GetComponent<Image>().color = temp;
+                GameObject.Find(equipMenuBase + "LeftArmSlot/LeftArmButton/LeftArmSlotIcon").GetComponent<Image>().color = temp;
             }
-            if (equipButtonClicked == "RightHandButton")
+            if (equipButtonClicked == "RightArmButton")
             {
-                GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotText").GetComponent<Text>().text = toEquip.name;
-                GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().sprite = toEquip.icon;
+                GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotText").GetComponent<Text>().text = toEquip.name;
+                GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().sprite = toEquip.icon;
                 heroToCheck.Equip(toEquip);
 
-                Color temp = GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color;
+                Color temp = GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color;
                 temp.a = 1f;
-                GameObject.Find(equipMenuBase + "RightHandSlot/RightHandButton/RightHandSlotIcon").GetComponent<Image>().color = temp;
+                GameObject.Find(equipMenuBase + "RightArmSlot/RightArmButton/RightArmSlotIcon").GetComponent<Image>().color = temp;
             }
 
             foreach (Transform child in GameObject.Find("GameManager/Menus/EquipMenuCanvas/EquipMenuPanel/EquipListPanel/EquipScroller/EquipListSpacer").transform)
@@ -5157,7 +6805,7 @@ public class GameMenu : MonoBehaviour
             return heroToCheck.equipment[1];
         }
 
-        if (equipButtonClicked == "WristsButton")
+        if (equipButtonClicked == "HandsButton")
         {
             return heroToCheck.equipment[2];
         }
@@ -5177,12 +6825,12 @@ public class GameMenu : MonoBehaviour
             return heroToCheck.equipment[5];
         }
 
-        if (equipButtonClicked == "RightHandButton")
+        if (equipButtonClicked == "RightArmButton")
         {
             return heroToCheck.equipment[6];
         }
 
-        if (equipButtonClicked == "LeftHandButton")
+        if (equipButtonClicked == "LeftArmButton")
         {
             return heroToCheck.equipment[7];
         }
@@ -5205,7 +6853,7 @@ public class GameMenu : MonoBehaviour
             return 1;
         }
 
-        if (equipButtonClicked == "WristsButton")
+        if (equipButtonClicked == "HandsButton")
         {
             return 2;
         }
@@ -5225,12 +6873,12 @@ public class GameMenu : MonoBehaviour
             return 5;
         }
 
-        if (equipButtonClicked == "RightHandButton")
+        if (equipButtonClicked == "RightArmButton")
         {
             return 6;
         }
 
-        if (equipButtonClicked == "LeftHandButton")
+        if (equipButtonClicked == "LeftArmButton")
         {
             return 7;
         }
@@ -5824,6 +7472,8 @@ public class GameMenu : MonoBehaviour
         DrawStatusMenuBaseStats();
         DrawStatusMenuStats();
         DrawStatusMenuEquipment();
+        DrawStatusElements();
+        DrawStatusResistances();
 
         mainCursorState = MainCursorStates.IDLE;
         statusMenuCursorState = StatusMenuCursorStates.STATS;
@@ -5847,6 +7497,7 @@ public class GameMenu : MonoBehaviour
         ShowMainMenu();
 
         mainCursorState = MainCursorStates.STATUS;
+        statusMenuCursorState = StatusMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -5923,13 +7574,13 @@ public class GameMenu : MonoBehaviour
 
         if (heroToCheck.equipment[2] != null)
         {
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsIcon").GetComponent<Image>().sprite = heroToCheck.equipment[2].icon;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsIcon").GetComponent<Image>().enabled = true;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsText").GetComponent<Text>().text = heroToCheck.equipment[2].name;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HandsSlot/HandsIcon").GetComponent<Image>().sprite = heroToCheck.equipment[2].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HandsSlot/HandsIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HandsSlot/HandsText").GetComponent<Text>().text = heroToCheck.equipment[2].name;
         } else
         {
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsIcon").GetComponent<Image>().enabled = false;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/WristsSlot/WristsText").GetComponent<Text>().text = "-";
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HandsSlot/HandsIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/HandsSlot/HandsText").GetComponent<Text>().text = "-";
         }
         
         if (heroToCheck.equipment[3] != null)
@@ -5967,26 +7618,66 @@ public class GameMenu : MonoBehaviour
 
         if (heroToCheck.equipment[6] != null)
         {
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandIcon").GetComponent<Image>().sprite = heroToCheck.equipment[6].icon;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandIcon").GetComponent<Image>().enabled = true;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandText").GetComponent<Text>().text = heroToCheck.equipment[6].name;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightArmSlot/RightArmIcon").GetComponent<Image>().sprite = heroToCheck.equipment[6].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightArmSlot/RightArmIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightArmSlot/RightArmText").GetComponent<Text>().text = heroToCheck.equipment[6].name;
         } else
         {
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandIcon").GetComponent<Image>().enabled = false;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightHandSlot/RightHandText").GetComponent<Text>().text = "-";
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightArmSlot/RightArmIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/RightArmSlot/RightArmText").GetComponent<Text>().text = "-";
         }
 
         if (heroToCheck.equipment[7] != null)
         {
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandIcon").GetComponent<Image>().sprite = heroToCheck.equipment[7].icon;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandIcon").GetComponent<Image>().enabled = true;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandText").GetComponent<Text>().text = heroToCheck.equipment[7].name;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftArmSlot/LeftArmIcon").GetComponent<Image>().sprite = heroToCheck.equipment[7].icon;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftArmSlot/LeftArmIcon").GetComponent<Image>().enabled = true;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftArmSlot/LeftArmText").GetComponent<Text>().text = heroToCheck.equipment[7].name;
         } else
         {
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandIcon").GetComponent<Image>().enabled = false;
-            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftHandSlot/LeftHandText").GetComponent<Text>().text = "-";
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftArmSlot/LeftArmIcon").GetComponent<Image>().enabled = false;
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/EquipPanel/LeftArmSlot/LeftArmText").GetComponent<Text>().text = "-";
         }
 
+    }
+
+    void DrawStatusElements()
+    {
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/FireAttackText").GetComponent<Text>().text = heroToCheck.fireEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/FireDefenseText").GetComponent<Text>().text = heroToCheck.fireDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/FrostAttackText").GetComponent<Text>().text = heroToCheck.frostEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/FrostDefenseText").GetComponent<Text>().text = heroToCheck.frostDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/LightningAttackText").GetComponent<Text>().text = heroToCheck.lightningEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/LightningDefenseText").GetComponent<Text>().text = heroToCheck.lightningDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/WaterAttackText").GetComponent<Text>().text = heroToCheck.waterEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/WaterDefenseText").GetComponent<Text>().text = heroToCheck.waterDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/NatureAttackText").GetComponent<Text>().text = heroToCheck.natureEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/NatureDefenseText").GetComponent<Text>().text = heroToCheck.natureDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/EarthAttackText").GetComponent<Text>().text = heroToCheck.earthEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/EarthDefenseText").GetComponent<Text>().text = heroToCheck.earthDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/HolyAttackText").GetComponent<Text>().text = heroToCheck.holyEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/HolyDefenseText").GetComponent<Text>().text = heroToCheck.holyDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/DarknessAttackText").GetComponent<Text>().text = heroToCheck.darkEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ElePanel/DarknessDefenseText").GetComponent<Text>().text = heroToCheck.darkDef.ToString();
+    }
+
+    void DrawStatusResistances()
+    {
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/BlindEffText").GetComponent<Text>().text = heroToCheck.blindEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/BlindResText").GetComponent<Text>().text = heroToCheck.blindDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/SilenceEffText").GetComponent<Text>().text = heroToCheck.silenceEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/SilenceResText").GetComponent<Text>().text = heroToCheck.silenceDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/SleepEffText").GetComponent<Text>().text = heroToCheck.sleepEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/SleepResText").GetComponent<Text>().text = heroToCheck.sleepDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/ConfuseEffText").GetComponent<Text>().text = heroToCheck.confuseEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/ConfuseResText").GetComponent<Text>().text = heroToCheck.confuseDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/PoisonEffText").GetComponent<Text>().text = heroToCheck.poisonEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/PoisonResText").GetComponent<Text>().text = heroToCheck.poisonDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/PetrifyEffText").GetComponent<Text>().text = heroToCheck.petrifyEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/PetrifyResText").GetComponent<Text>().text = heroToCheck.petrifyDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/SlowEffText").GetComponent<Text>().text = heroToCheck.slowEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/SlowResText").GetComponent<Text>().text = heroToCheck.slowDef.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/ZombieEffText").GetComponent<Text>().text = heroToCheck.zombieEff.ToString();
+        GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/StatusPanel/ZombieResText").GetComponent<Text>().text = heroToCheck.zombieDef.ToString();
     }
 
     #endregion
@@ -5998,6 +7689,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ShowTalentsMenu()
     {
+        mainCursorState = MainCursorStates.HEROSELECT1;
+
         if (menuToDraw != null)
         {
             StopCoroutine(menuToDraw);
@@ -6042,6 +7735,10 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
 
         mainCursorState = MainCursorStates.IDLE;
+        talentMenuCursorState = TalentsMenuCursorStates.TALENTS;
+        cursorOnTalent = 0;
+        talentRow = 0;
+        talentColumn = 0;
 
         yield return (AnimateTalentsMenu());
     }
@@ -6061,6 +7758,7 @@ public class GameMenu : MonoBehaviour
         ShowMainMenu();
 
         mainCursorState = MainCursorStates.TALENTS;
+        talentMenuCursorState = TalentsMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -6176,6 +7874,8 @@ public class GameMenu : MonoBehaviour
         DrawInactiveHeroButtons();
 
         mainCursorState = MainCursorStates.IDLE;
+        partyMenuCursorState = PartyMenuCursorStates.ACTIVE;
+        partyChoosingMode = "Inactive";
 
         yield return (AnimatePartyMenu());
     }
@@ -6191,9 +7891,10 @@ public class GameMenu : MonoBehaviour
         HideCanvas(PartyMenuCanvas);
         menuState = MenuStates.MAIN;
 
-        mainCursorState = MainCursorStates.PARTY;
-
         ShowMainMenu();
+
+        mainCursorState = MainCursorStates.PARTY;
+        partyMenuCursorState = PartyMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -6380,20 +8081,7 @@ public class GameMenu : MonoBehaviour
             DrawHeroFace(hero, InactivePartyButton.transform.Find("FacePanel").GetComponent<Image>()); //Draws face graphic
             InactivePartyButton.name = "Inactive Hero Button - ID " + hero.ID;
 
-            if (row1ChildCount <= 2)
-            {
-                InactivePartyButton.transform.SetParent(PartyInactiveRow1Spacer, false);
-                row1ChildCount++;
-            } else if (row2ChildCount <= 2)
-            {
-                InactivePartyButton.transform.SetParent(PartyInactiveRow2Spacer, false);
-                row2ChildCount++;
-            }
-            else if (row3ChildCount <= 2)
-            {
-                InactivePartyButton.transform.SetParent(PartyInactiveRow3Spacer, false);
-                row3ChildCount++;
-            }
+            InactivePartyButton.transform.SetParent(PartyInactiveRowSpacer, false);
         }
     }
 
@@ -6402,22 +8090,10 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public void ResetInactiveHeroList()
     {
-        foreach (Transform child in PartyInactiveRow1Spacer.transform)
+        foreach (Transform child in PartyInactiveRowSpacer.transform)
         {
             Destroy(child.gameObject);
         }
-        foreach (Transform child in PartyInactiveRow2Spacer.transform)
-        {
-            Destroy(child.gameObject);
-        }
-        foreach (Transform child in PartyInactiveRow3Spacer.transform)
-        {
-            Destroy(child.gameObject);
-        }
-
-        row1ChildCount = 0;
-        row2ChildCount = 0;
-        row3ChildCount = 0;
     }
 
     #endregion
@@ -6452,7 +8128,9 @@ public class GameMenu : MonoBehaviour
         DisplayCanvas(GridMenuCanvas);
         menuState = MenuStates.GRID;
 
+        cursorOnGridHero = 0;
         mainCursorState = MainCursorStates.IDLE;
+        gridMenuCursorState = GridMenuCursorStates.HEROES;
 
         yield return (AnimateGridMenu());
     }
@@ -6469,9 +8147,10 @@ public class GameMenu : MonoBehaviour
         HideCanvas(GridMenuCanvas);
         menuState = MenuStates.MAIN;
 
-        mainCursorState = MainCursorStates.GRID;
-
         ShowMainMenu();
+
+        mainCursorState = MainCursorStates.GRID;
+        gridMenuCursorState = GridMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -6644,7 +8323,11 @@ public class GameMenu : MonoBehaviour
 
         ClearQuestMenuFields();
 
+        cursorOnQuest = 0;
+        cursorOnQuestOption = 0;
+        QuestOption = "Active";
         mainCursorState = MainCursorStates.IDLE;
+        questMenuCursorState = QuestMenuCursorStates.QUESTLIST;
 
         yield return (AnimateQuestMenu());
     }
@@ -6661,9 +8344,10 @@ public class GameMenu : MonoBehaviour
         HideCanvas(QuestsMenuCanvas);
         menuState = MenuStates.MAIN;
 
-        mainCursorState = MainCursorStates.QUESTS;
-
         ShowMainMenu();
+
+        mainCursorState = MainCursorStates.QUESTS;
+        questMenuCursorState = QuestMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -6873,6 +8557,7 @@ public class GameMenu : MonoBehaviour
         DrawBestiaryEntryList();
 
         mainCursorState = MainCursorStates.IDLE;
+        bestiaryMenuCursorState = BestiaryMenuCursorStates.BESTIARYLIST;
 
         yield return (AnimateBestiaryMenu());
     }
@@ -6889,9 +8574,10 @@ public class GameMenu : MonoBehaviour
         HideCanvas(BestiaryMenuCanvas);
         menuState = MenuStates.MAIN;
 
-        mainCursorState = MainCursorStates.BESTIARY;
-
         ShowMainMenu();
+
+        mainCursorState = MainCursorStates.BESTIARY;
+        bestiaryMenuCursorState = BestiaryMenuCursorStates.IDLE;
     }
 
     /// <summary>
@@ -6985,6 +8671,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateMainMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (MM_infoPanelAnimator != null)
@@ -7016,6 +8704,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(MM_infoPanelAnimator));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7023,6 +8713,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateItemMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Items_itemOptionsPanel != null)
@@ -7061,6 +8753,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Items_itemOptionsPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7068,6 +8762,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateMagicMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Magic_heroMagicPanel != null)
@@ -7120,6 +8816,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Magic_heroMagicPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7127,6 +8825,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateEquipMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Equip_equipDescriptionPanel != null)
@@ -7172,6 +8872,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Equip_equipDescriptionPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7179,6 +8881,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateStatusMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Status_baseStatsPanel != null)
@@ -7231,6 +8935,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Status_baseStatsPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7238,11 +8944,21 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateSecondaryStatusMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
-               
+
+        bool activesWasOpen = Status_activesPanel.GetBool("open");
+        bool magicWasOpen = Status_magicPanel.GetBool("open");
+
         if (Status_activesPanel != null)
         {
             bool isOpen = Status_activesPanel.GetBool("open");
+
+            if (!isOpen)
+            {
+                GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ActiveEffectsPanel").GetComponent<CanvasGroup>().alpha = 1;
+            }
 
             Status_activesPanel.SetBool("open", !isOpen);
         }
@@ -7250,11 +8966,28 @@ public class GameMenu : MonoBehaviour
         if (Status_magicPanel != null)
         {
             bool isOpen = Status_magicPanel.GetBool("open");
+            
+            if (!isOpen)
+            {
+                GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/MagicPanel").GetComponent<CanvasGroup>().alpha = 1;
+            }
 
             Status_magicPanel.SetBool("open", !isOpen);
         }
 
-        yield return new WaitForSeconds(GetAnimationTime(Status_baseStatsPanel));
+        yield return new WaitForSeconds(GetAnimationTime(Status_statsPanel));
+
+        if (magicWasOpen)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/MagicPanel").GetComponent<CanvasGroup>().alpha = 0;
+        }
+
+        if (activesWasOpen)
+        {
+            GameObject.Find("GameManager/Menus/StatusMenuCanvas/StatusMenuPanel/ActiveEffectsPanel").GetComponent<CanvasGroup>().alpha = 0;
+        }
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7262,6 +8995,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateTalentsMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Talents_heroPanel != null)
@@ -7286,6 +9021,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Talents_heroPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7293,6 +9030,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimatePartyMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Party_activeHeroesPanel != null)
@@ -7309,7 +9048,16 @@ public class GameMenu : MonoBehaviour
             Party_inactiveHeroesPanel.SetBool("open", !isOpen);
         }
 
+        if (Party_selectedHeroPanel != null)
+        {
+            bool isOpen = Party_selectedHeroPanel.GetBool("open");
+
+            Party_selectedHeroPanel.SetBool("open", !isOpen);
+        }
+
         yield return new WaitForSeconds(GetAnimationTime(Party_activeHeroesPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7317,6 +9065,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateGridMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Grid_heroGridPanel != null)
@@ -7334,6 +9084,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Grid_heroGridPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7341,6 +9093,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateQuestMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Quest_questListOptions != null)
@@ -7386,6 +9140,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Quest_questListOptions));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7393,6 +9149,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     IEnumerator AnimateBestiaryMenu()
     {
+        inAnimation = true;
+
         PlayAnimSE(AudioManager.instance.openMenuSE);
 
         if (Bestiary_enemyListPanel != null)
@@ -7438,6 +9196,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Bestiary_enemyListPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7445,6 +9205,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public IEnumerator AnimateMagicHeroSelectPanel()
     {
+        inAnimation = true;
+
         if (Magic_heroSelectMagicPanel != null)
         {
             bool isOpen = Magic_heroSelectMagicPanel.GetBool("open");
@@ -7453,6 +9215,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Magic_heroSelectMagicPanel));
+
+        inAnimation = false;
     }
 
     /// <summary>
@@ -7460,6 +9224,8 @@ public class GameMenu : MonoBehaviour
     /// </summary>
     public IEnumerator AnimateArrangeOptionsPanel()
     {
+        inAnimation = true;
+
         if (Items_arrangeOptionsPanel != null)
         {
             bool isOpen = Items_arrangeOptionsPanel.GetBool("open");
@@ -7468,6 +9234,8 @@ public class GameMenu : MonoBehaviour
         }
 
         yield return new WaitForSeconds(GetAnimationTime(Items_arrangeOptionsPanel));
+
+        inAnimation = false;
     }
 
     #endregion
@@ -7537,12 +9305,13 @@ public class GameMenu : MonoBehaviour
     /// <summary>
     /// Makes sure cancel button is only processed once when pressed
     /// </summary>
-    void CheckCancelPressed() //
+    void CheckCancelPressed()
     {
         if (Input.GetButtonDown("Cancel"))
         {
             //Debug.Log("buttonPressed");
             buttonPressed = true;
+            cancelPressed = true;
         }
         if (buttonPressed)
         {
@@ -7550,6 +9319,7 @@ public class GameMenu : MonoBehaviour
             {
                 //Debug.Log("button released");
                 buttonPressed = false;
+                cancelPressed = false;
             }
         }
     }
@@ -7826,6 +9596,6 @@ public class GameMenu : MonoBehaviour
         File.Delete("Assets/Resources/Temp/BGScreenshot.png.meta");
     }*/
 
-    #endregion
+                #endregion
 
 }

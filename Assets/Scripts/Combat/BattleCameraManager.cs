@@ -11,6 +11,7 @@ public class BattleCameraManager : MonoBehaviour
 
     Vector3 homePos = new Vector3(-4.1f, 0.49f, -10.0f);
     float homeSize = 4.305343f;
+    float moveSize = 2.0f;
 
     float targetZoomSize = 2.0f;
 
@@ -29,7 +30,7 @@ public class BattleCameraManager : MonoBehaviour
 
     float baseZ = -10f;
 
-    float canvasAdj = -1.0f;
+    //float canvasAdj = -1.0f;
 
     public bool startBattleZoom;
     bool battleReady;
@@ -52,6 +53,8 @@ public class BattleCameraManager : MonoBehaviour
     float lossFadeTime = 0.25f;
 
     public GameObject currentUnit;
+
+    Transform cursor;
 
     //Set externally
     public bool showingDamage;
@@ -82,6 +85,8 @@ public class BattleCameraManager : MonoBehaviour
         magicCastingAnimFinished = false;
         currentMagicTarget = null;
 
+        cursor = GameObject.Find("GridMap/TileCursor").transform;
+
         heroesInBattle = GameObject.FindGameObjectsWithTag("Hero");
         enemiesInBattle = GameObject.FindGameObjectsWithTag("Enemy");
     }
@@ -99,8 +104,8 @@ public class BattleCameraManager : MonoBehaviour
                 //-----
                 //if debugging, use below to skip pre-battle zoom, otherwise comment out
 
-                startBattleZoom = false;
-                battleReady = true;
+                //startBattleZoom = false;
+                //battleReady = true;
 
                 //------
                 if (startBattleZoom)
@@ -213,19 +218,30 @@ public class BattleCameraManager : MonoBehaviour
             case (camStates.HEROTURN):
 
                 //Hover camera over unit, zoom out if needed
-                if (cam.orthographicSize != homeSize)
+                if (cam.orthographicSize != moveSize)
                 {
                     //Debug.Log("Zooming camera: " + cam.orthographicSize);
-                    cam.orthographicSize = Mathf.MoveTowards(cam.orthographicSize, homeSize, baseZoomTime * Time.deltaTime);
+                    cam.orthographicSize = Mathf.MoveTowards(cam.orthographicSize, moveSize, baseZoomTime * Time.deltaTime);
                 }
 
-                //Follow unit through movement phase
-                if (cam.transform.position != new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ))
+                //Follow cursor
+                if (cam.transform.position != new Vector3(cursor.transform.position.x, cursor.transform.position.y, baseZ))
                 {
-                    cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ), baseMoveTime * Time.deltaTime);
+                    cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(cursor.transform.position.x, cursor.transform.position.y, baseZ), baseMoveTime * Time.deltaTime);
                 }
 
-                break;
+                /*if (BSM.heroMoving) //Once chosen a tile to move to, follow unit through movement phase
+                {
+                    if (cam.transform.position != new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ))
+                    {
+                        cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ), baseMoveTime * Time.deltaTime);
+                    }
+                } else  //Follow cursor
+                {
+
+                }*/
+
+            break;
 
             //When enemy's turn begins and they are moving
             case (camStates.ENEMYTURN):
@@ -273,11 +289,17 @@ public class BattleCameraManager : MonoBehaviour
                     cam.orthographicSize = Mathf.MoveTowards(cam.orthographicSize, (baseChooseTargetZoomSize + (BSM.tileRange + 1)), baseZoomTime * Time.deltaTime);
                 }
 
+                //Follow cursor
+                if (cam.transform.position != new Vector3(cursor.transform.position.x, cursor.transform.position.y, baseZ))
+                {
+                    cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(cursor.transform.position.x, cursor.transform.position.y, baseZ), baseMoveTime * Time.deltaTime);
+                }
+
                 //Center camera to unit position
-                if (cam.transform.position != new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ))
+                /*if (cam.transform.position != new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ))
                 {
                     cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(currentUnit.transform.position.x, (currentUnit.transform.position.y + canvasAdj), baseZ), baseMoveTime * Time.deltaTime);
-                }
+                }*/
 
                 break;
 

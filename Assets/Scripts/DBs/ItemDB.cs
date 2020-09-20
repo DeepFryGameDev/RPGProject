@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,4 +21,9 @@ public class ItemDB : MonoBehaviour
         instance = this;
     }
     #endregion
+
+    public BaseItem GetItem(int ID)
+    {
+        return items[ID];
+    }
 }

@@ -96,7 +96,9 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public bool startBattleFromScript; //if battle is being started from script
 
     [HideInInspector] public string battleSceneToLoad;
-    
+
+    public bool inShop;
+    public bool inBattle;
 
     void Awake()
     {

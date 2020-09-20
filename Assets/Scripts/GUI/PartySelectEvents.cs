@@ -27,7 +27,6 @@ public class PartySelectEvents : MonoBehaviour
         if (Input.GetButtonDown("Cancel") && menu.PartyHeroSelected != null) //if cancel is pressed after selecting a hero
         {
             menu.PartyHeroSelected = null;
-            HideSelectedHeroPanel();
             UnboldButtons();
             menu.PartySelectedHeroType = "";
         }
@@ -40,10 +39,6 @@ public class PartySelectEvents : MonoBehaviour
     {
         if (menu.PartyHeroSelected == null)
         {
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().alpha = 1;
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().interactable = true;
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
-
             BaseHero hoveredHero = GetHeroByID(int.Parse(gameObject.name.Replace("Inactive Hero Button - ID", "")));
             DrawHeroFace(hoveredHero, GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/FacePanel").GetComponent<Image>());
             GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/NameText").GetComponent<Text>().text = hoveredHero.name;
@@ -77,10 +72,6 @@ public class PartySelectEvents : MonoBehaviour
         {
             if (gameObject.name.Contains(" - ID"))
             {
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().alpha = 1;
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().interactable = true;
-                GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().blocksRaycasts = true;
-
                 BaseHero hoveredHero = GetHeroByID(int.Parse(gameObject.name.Replace("Active Hero Panel - ID", "")));
                 DrawHeroFace(hoveredHero, GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/FacePanel").GetComponent<Image>());
                 GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel/NameText").GetComponent<Text>().text = hoveredHero.name;
@@ -103,19 +94,6 @@ public class PartySelectEvents : MonoBehaviour
                 SelectedHeroMenuMPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesMP(hoveredHero), 0, 1), SelectedHeroMenuMPProgressBar.transform.localScale.y);
                 SelectedHeroMenuEXPProgressBar.transform.localScale = new Vector2(Mathf.Clamp(GetProgressBarValuesEXP(hoveredHero), 0, 1), SelectedHeroMenuEXPProgressBar.transform.localScale.y);
             }
-        }
-    }
-
-    /// <summary>
-    /// Hides selected hero panel by manipulating canvas group
-    /// </summary>
-    public void HideSelectedHeroPanel()
-    {
-        if (menu.PartyHeroSelected == null)
-        {
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().alpha = 0;
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().interactable = false;
-            GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/SelectedHeroPanel").GetComponent<CanvasGroup>().blocksRaycasts = false;
         }
     }
 
@@ -221,7 +199,6 @@ public class PartySelectEvents : MonoBehaviour
         menu.DrawInactiveHeroButtons();
 
         menu.PartyHeroSelected = null;
-        HideSelectedHeroPanel();
         UnboldButtons();
         menu.PartySelectedHeroType = "";
     }
@@ -246,7 +223,6 @@ public class PartySelectEvents : MonoBehaviour
         menu.DrawInactiveHeroButtons();
 
         menu.PartyHeroSelected = null;
-        HideSelectedHeroPanel();
         UnboldButtons();
         menu.PartySelectedHeroType = "";
     }
@@ -256,7 +232,7 @@ public class PartySelectEvents : MonoBehaviour
     /// </summary>
     /// <param name="fromHero">First hero selected (from active hero slot) to be switched</param>
     /// <param name="toHero">Second hero selected (from inactive hero slot) to be switched</param>
-    void SwitchActiveToInactive(BaseHero fromHero, BaseHero toHero)
+    public void SwitchActiveToInactive(BaseHero fromHero, BaseHero toHero)
     {
         int activeHeroIndex = GameManager.instance.activeHeroes.IndexOf(fromHero);
         int inactiveHeroIndex = GameManager.instance.inactiveHeroes.IndexOf(toHero);
@@ -271,7 +247,6 @@ public class PartySelectEvents : MonoBehaviour
         menu.DrawInactiveHeroButtons();
 
         menu.PartyHeroSelected = null;
-        HideSelectedHeroPanel();
         UnboldButtons();
         menu.PartySelectedHeroType = "";
     }
@@ -306,7 +281,6 @@ public class PartySelectEvents : MonoBehaviour
         menu.DrawPartyActiveHeroes();
 
         menu.PartyHeroSelected = null;
-        HideSelectedHeroPanel();
         UnboldButtons();
         menu.PartySelectedHeroType = "";
     }
@@ -314,17 +288,9 @@ public class PartySelectEvents : MonoBehaviour
     /// <summary>
     /// Sets all hero button text to normal font
     /// </summary>
-    void UnboldButtons()
+    public void UnboldButtons()
     {
-        foreach (Transform child in GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow1Spacer").transform)
-        {
-            child.Find("NameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
-        }
-        foreach (Transform child in GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow2Spacer").transform)
-        {
-            child.Find("NameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
-        }
-        foreach (Transform child in GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/HeroRow3Spacer").transform)
+        foreach (Transform child in GameObject.Find("GameManager/Menus/PartyMenuCanvas/PartyMenuPanel/InactiveHeroesPanel/InactiveHeroesSpacer").transform)
         {
             child.Find("NameText").GetComponent<Text>().fontStyle = FontStyle.Normal;
         }
@@ -427,7 +393,7 @@ public class PartySelectEvents : MonoBehaviour
         else
         {
             baseLineEXP = (HeroDB.instance.levelEXPThresholds[hero.currentLevel - 1] - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
-            heroEXP = (hero.currentExp - baseLineEXP);
+            heroEXP = (hero.currentExp - HeroDB.instance.levelEXPThresholds[hero.currentLevel - 2]);
             //Debug.Log("baseLine: " + baseLineEXP);
         }
 

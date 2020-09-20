@@ -21,13 +21,52 @@ public class HeroStateMachine : MonoBehaviour
 
     public TurnState currentState;
 
+    public enum CursorStates
+    {
+        MOVING,
+        ACTION,
+        CHOOSINGTARGET,
+        IDLE
+    }
+    public CursorStates cursorState;
+
+    public enum ActionStates
+    {
+        PREACTION,
+        ACTION,
+        MAGIC,
+        ITEM,
+        IDLE
+    }
+    public ActionStates actionState;
+
+    string chosenAction;
+
+    public int cursorOnAction;
+    Transform tileCursor;
+    Transform cursor;
+    float cursorVisibleScale = .82f;
+    float panelItemSpacer = 19.5f;
+    float panelItemScrollSpacer = 19.7f;
+    int tempScrollDiff;
+
+    Text detailsText;
+    GameObject heroDetailsPanel;
+    GameObject enemyDetailsPanel;
+
+    GameObject magicSelected;
+    GameObject itemSelected;
+
+    bool dpadPressed;
+    bool confirmPressed;
+    bool cancelPressed;
+
     public bool waitForDamageToFinish;
 
     //for ProgressBar
     public float cur_cooldown = 0f;
     private float max_cooldown = 5f;
     private Image ProgressBar;
-    public GameObject Selector;
 
     public GameObject ActionTarget; //target to be actioned on
     private bool actionStarted = false;
@@ -82,9 +121,15 @@ public class HeroStateMachine : MonoBehaviour
         }
         heroTurn = 1;
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>(); //make connection to the global battle state manager
-        BSM.HideSelector(Selector); //hide hero selector cursor
         startPosition = transform.position; //sets start position to hero's position for animation purposes
         playerMove = GetComponent<PlayerMove>();
+        tileCursor = GameObject.Find("GridMap/TileCursor").transform;
+        cursor = GameObject.Find("BattleCanvas/Cursor").transform;
+        detailsText = GameObject.Find("BattleCanvas/BattleUI/BattleDetailsPanel/BattleDetailsText").GetComponent<Text>();
+        heroDetailsPanel = GameObject.Find("BattleCanvas/HeroDetailsPanel");
+        enemyDetailsPanel = GameObject.Find("BattleCanvas/EnemyDetailsPanel");
+        actionState = ActionStates.IDLE;
+        HideTileCursor();
     }
 
     void Update()
@@ -119,6 +164,12 @@ public class HeroStateMachine : MonoBehaviour
                 playerMove.BeginTurn();
                 BSM.HeroesToManage.Add(this.gameObject); //adds hero to heros who can make selection
 
+                playerMove.GetCurrentTile();
+                tileCursor.position = playerMove.currentTile.transform.position;
+                ShowTileCursor();
+                HideBattleUI();
+                cursorState = CursorStates.MOVING;
+
                 currentState = TurnState.WAITING;
             break;
 
@@ -141,7 +192,6 @@ public class HeroStateMachine : MonoBehaviour
                     BSM.HeroesInBattle.Remove(this.gameObject); //not hero attackable by enemy
                     BSM.HeroesToManage.Remove(this.gameObject); //not able to manage hero with player
                     
-                    BSM.HideSelector(Selector); //hide the selector cursor for the hero
                     //reset GUI
                     BSM.HidePanel(BSM.actionPanel);
                     BSM.HidePanel(BSM.enemySelectPanel);
@@ -177,6 +227,1079 @@ public class HeroStateMachine : MonoBehaviour
                 }
             break;
         }
+
+        if (BSM.HeroesToManage.Count > 0 && this.gameObject == BSM.HeroesToManage[0])
+        {
+            switch (cursorState)
+            {
+                case (CursorStates.MOVING):
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1 && !dpadPressed) //left
+                    {
+                        dpadPressed = true;
+                        if (IfTileExists(new Vector3(tileCursor.position.x - 1f, tileCursor.position.y, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x - 1f, tileCursor.position.y, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1 && !dpadPressed) //right
+                    {
+                        dpadPressed = true;
+                        if (IfTileExists(new Vector3(tileCursor.position.x + 1f, tileCursor.position.y, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x + 1f, tileCursor.position.y, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1 && !dpadPressed) //up
+                    {
+                        dpadPressed = true;
+                        if (IfTileExists(new Vector3(tileCursor.position.x, tileCursor.position.y + 1f, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x, tileCursor.position.y + 1f, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed) //down
+                    {
+                        dpadPressed = true;
+                        if (IfTileExists(new Vector3(tileCursor.position.x, tileCursor.position.y - 1f, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x, tileCursor.position.y - 1f, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }                        
+                    }
+
+                    if (GetUnitOnTile() != null)
+                    {
+                        if (GetUnitOnTile().tag == "Hero")
+                        {
+                            heroDetailsPanel.transform.Find("NameText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.name;
+                            heroDetailsPanel.transform.Find("LevelText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.currentLevel.ToString();
+
+                            heroDetailsPanel.transform.Find("HPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.curHP.ToString() + "/" 
+                                + GetUnitOnTile().GetComponent<HeroStateMachine>().hero.finalMaxHP.ToString();
+
+                            heroDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale = 
+                                new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GetUnitOnTile().GetComponent<HeroStateMachine>().hero), 0, 1), 
+                                heroDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale.y);
+
+                            heroDetailsPanel.transform.Find("MPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.curMP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<HeroStateMachine>().hero.finalMaxMP.ToString();
+                            heroDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale = 
+                                new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GetUnitOnTile().GetComponent<HeroStateMachine>().hero), 0, 1),
+                                heroDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale.y);
+
+                            BSM.HidePanel(enemyDetailsPanel);
+                            BSM.ShowPanel(heroDetailsPanel);
+                        } else if (GetUnitOnTile().tag == "Enemy")
+                        {
+                            enemyDetailsPanel.transform.Find("NameText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.name;
+                            enemyDetailsPanel.transform.Find("LevelText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.level.ToString();
+
+                            enemyDetailsPanel.transform.Find("HPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.curHP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.baseHP.ToString();
+
+                            enemyDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale =
+                                new Vector2(Mathf.Clamp(GetEnemyProgressBarValuesHP(GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy), 0, 1),
+                                enemyDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale.y);
+
+                            enemyDetailsPanel.transform.Find("MPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.curMP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.baseMP.ToString();
+                            enemyDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale =
+                                new Vector2(Mathf.Clamp(GetEnemyProgressBarValuesMP(GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy), 0, 1),
+                                enemyDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale.y);
+
+                            DrawThreatBar(GetUnitOnTile().GetComponent<EnemyBehavior>());
+
+                            BSM.HidePanel(heroDetailsPanel);
+                            BSM.ShowPanel(enemyDetailsPanel);
+                        }
+                    } else
+                    {
+                        BSM.HidePanel(heroDetailsPanel);
+                        BSM.HidePanel(enemyDetailsPanel);
+                    }
+
+                    if (Input.GetButtonDown("Cancel") && !cancelPressed)
+                    {
+                        cancelPressed = true;
+                        /*if (tileCursor.position.x == playerMove.currentTile.transform.position.x && tileCursor.position.y == playerMove.currentTile.transform.position.y)
+                        {
+                            HideTileCursor();
+                            BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
+                            ShowBattleUI();
+                            cursorOnAction = 0;
+                            ShowCursor();
+                            cursorState = CursorStates.ACTION;
+                            actionState = ActionStates.PREACTION;
+
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            BSM.HidePanel(heroDetailsPanel);
+                            BSM.HidePanel(enemyDetailsPanel);
+                        } else
+                        {*/
+                        AudioManager.instance.PlaySE(AudioManager.instance.backSE);
+                        playerMove.GetCurrentTile();
+                        tileCursor.position = new Vector3(playerMove.currentTile.transform.position.x, playerMove.currentTile.transform.position.y, 0);
+                        //}
+                    }
+
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        confirmPressed = true;
+                        playerMove.GetCurrentTile();
+
+                        if (tileCursor.position.x == playerMove.currentTile.transform.position.x && tileCursor.position.y == playerMove.currentTile.transform.position.y)
+                        {
+                            HideTileCursor();
+                            BattleCameraManager.instance.camState = camStates.CHOOSEACTION;
+                            ShowBattleUI();
+                            cursorOnAction = 0;
+                            ShowCursor();
+                            cursorState = CursorStates.ACTION;
+                            actionState = ActionStates.PREACTION;
+
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            BSM.HidePanel(heroDetailsPanel);
+                            BSM.HidePanel(enemyDetailsPanel);
+                        } else
+                        {
+                            if (GetTileOnCursor().selectable && GetUnitOnTile() == null)
+                            {
+                                playerMove.currentTile.SelectMoveTile(playerMove);
+                            } else
+                            {
+                                AudioManager.instance.PlaySE(AudioManager.instance.cantActionSE);
+                            }                            
+                        }
+                    }
+
+                    //show unit details window based on cursor position here
+
+                    break;
+
+                case (CursorStates.ACTION):
+                    if (actionState == ActionStates.PREACTION)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed && cursorOnAction == 0) //down
+                        {
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            cursorOnAction = 1;
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == 1 && !dpadPressed && cursorOnAction == 1) //up
+                        {
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            cursorOnAction = 0;
+                        }
+
+                        if (Input.GetButtonDown("Cancel") && !cancelPressed)
+                        {
+                            cancelPressed = true;
+
+                            AudioManager.instance.PlaySE(AudioManager.instance.backSE);
+                            playerMove.GetCurrentTile();
+                            tileCursor.position = playerMove.currentTile.transform.position;
+                            HideCursor();
+                            ShowTileCursor();
+                            HideBattleUI();
+                            cursorState = CursorStates.MOVING;
+                            BattleCameraManager.instance.camState = camStates.HEROTURN;
+                        }
+
+                        if (cursorOnAction == 0)
+                        {
+                            cursor.transform.localPosition = new Vector3(-348f, -145f, 0f);
+                            detailsText.text = "Perform an attack, cast magic, or use an item";
+                        }
+                        else if (cursorOnAction == 1)
+                        {
+                            cursor.transform.localPosition = new Vector3(-348f, -199f, 0f);
+                            detailsText.text = "Take 50% damage until next turn";
+                        }
+
+                        if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                        {
+                            confirmPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            if (cursorOnAction == 0)
+                            {
+                                BSM.ActionInput();
+                                actionState = ActionStates.ACTION;
+                            }
+                            else if (cursorOnAction == 1)
+                            {
+                                BSM.DefendInput();
+                                detailsText.text = "";
+                                cursorState = CursorStates.IDLE;
+                                actionState = ActionStates.IDLE;
+                                HideCursor();
+                            }
+                        }
+                    }
+                    
+                    if (actionState == ActionStates.ACTION)
+                    {
+                        if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed && cursorOnAction >= 0 && cursorOnAction <= 1) //down
+                        {
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            cursorOnAction = cursorOnAction + 1;
+                        }
+
+                        if (Input.GetAxisRaw("DpadVertical") == 1 && !dpadPressed && cursorOnAction <= 2 && cursorOnAction >= 1) //up
+                        {
+                            dpadPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            cursorOnAction = cursorOnAction - 1;
+                        }
+
+                        if (Input.GetButtonDown("Cancel") && !cancelPressed)
+                        {
+                            cancelPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.backSE);
+
+                            cursorOnAction = 0;
+                            BSM.HidePanel(GameObject.Find("BattleCanvas/BattleUI/ActionPanel"));
+                            BSM.ShowPanel(GameObject.Find("BattleCanvas/BattleUI/MoveActionPanel"));
+                            actionState = ActionStates.PREACTION;
+                        }
+
+                        if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                        {
+                            confirmPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            if (cursorOnAction == 0) //attack
+                            {
+                                BSM.AttackInput();
+                                HideCursor();
+                                ShowTileCursor();
+                                HideBattleUI();
+                                chosenAction = "Attack";
+                                cursorState = CursorStates.CHOOSINGTARGET;
+                            }
+                            else if (cursorOnAction == 1) //magic
+                            {
+                                BSM.MagicInput();
+                                cursorOnAction = 0;
+                                chosenAction = "Magic";
+                                actionState = ActionStates.MAGIC;
+                            }
+                            else if (cursorOnAction == 2) //item
+                            {
+                                BSM.ItemInput();
+                                cursorOnAction = 0;
+                                chosenAction = "Item";
+                                actionState = ActionStates.ITEM;
+                            }
+                        }
+
+                        if (cursorOnAction == 0)
+                        {
+                            cursor.localPosition = new Vector3(-348f, -136f, 0f);
+                            detailsText.text = "Perform a physical attack";
+                        } else if (cursorOnAction == 1)
+                        {
+                            cursor.localPosition = new Vector3(-348f, -172f, 0f);
+                            detailsText.text = "Perform a magic attack";
+                        } else if (cursorOnAction == 2)
+                        {
+                            cursor.localPosition = new Vector3(-348f, -208f, 0f);
+                            detailsText.text = "Use an item from your inventory";
+                        }
+                    }
+
+                    if (actionState == ActionStates.MAGIC)
+                    {
+                        int magicCount = GameObject.Find("BattleCanvas/BattleUI/MagicPanel/MagicScroller/MagicSpacer").transform.childCount;
+
+                        int scrollDiff = magicCount - 5;
+
+                        if (magicCount <= 5)
+                        {
+                            tempScrollDiff = 0;
+                        }
+
+                        RectTransform spacerScroll = GameObject.Find("BattleCanvas/BattleUI/MagicPanel/MagicScroller/MagicSpacer").GetComponent<RectTransform>();
+
+                        //Debug.Log(cursorOnItem);
+
+                        if (!dpadPressed && cursorOnAction == 0 && tempScrollDiff == 0)
+                        {
+                            if (magicCount > 1)
+                            {
+                                if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                                {
+                                    cursorOnAction = cursorOnAction + 1;
+                                    dpadPressed = true;
+                                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                                }
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 0 && tempScrollDiff > 0)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                cursorOnAction = cursorOnAction + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                spacerScroll.anchoredPosition = new Vector3(0.0f, (panelItemScrollSpacer * (tempScrollDiff - 1)), 0.0f);
+
+                                tempScrollDiff = tempScrollDiff - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction > 0 && cursorOnAction < 4)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = cursorOnAction - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                cursorOnAction = cursorOnAction + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff == 0 && scrollDiff > 0)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = cursorOnAction - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                spacerScroll.anchoredPosition = new Vector3(0.0f, panelItemScrollSpacer, 0.0f);
+
+                                tempScrollDiff = tempScrollDiff + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff == 0 && scrollDiff == 0)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = cursorOnAction - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff > 0 && (cursorOnAction + tempScrollDiff) < (magicCount - 1))
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = 3;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                spacerScroll.anchoredPosition = new Vector3(0.0f, (panelItemScrollSpacer * (tempScrollDiff + 1)), 0.0f); //and use tempScrollDiff - 1 to go up
+
+                                tempScrollDiff = tempScrollDiff + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff > 0 && (cursorOnAction + tempScrollDiff) == (magicCount - 1))
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = 3;
+
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+
+                        if (magicCount != 0)
+                        {
+                            if (cursorOnAction == magicCount)
+                            {
+                                cursorOnAction = magicCount - 1;
+                            }
+
+                            if (cursorOnAction == 0 && tempScrollDiff == 0)
+                            {
+                                cursor.localPosition = new Vector3(-377f, -132.5f, 0f);
+                                magicSelected = GameObject.Find("BattleCanvas/BattleUI/MagicPanel/MagicScroller/MagicSpacer").transform.GetChild(0).gameObject;
+                            }
+                            else if (cursorOnAction == 0 && tempScrollDiff > 0)
+                            {
+                                cursor.localPosition = new Vector3(-377f, -132.5f, 0f);
+                                magicSelected = GameObject.Find("BattleCanvas/BattleUI/MagicPanel/MagicScroller/MagicSpacer").transform.GetChild(tempScrollDiff).gameObject;
+                            }
+                            else if (cursorOnAction > 0 && tempScrollDiff > 0)
+                            {
+                                cursor.localPosition = new Vector3(-377f, (-132.5f - (panelItemSpacer * cursorOnAction)), 0f);
+                                magicSelected = GameObject.Find("BattleCanvas/BattleUI/MagicPanel/MagicScroller/MagicSpacer").transform.GetChild(cursorOnAction + tempScrollDiff).gameObject;
+                            }
+                            else
+                            {
+                                cursor.localPosition = new Vector3(-377f, (-132.5f - (panelItemSpacer * cursorOnAction)), 0f);
+                                magicSelected = GameObject.Find("BattleCanvas/BattleUI/MagicPanel/MagicScroller/MagicSpacer").transform.GetChild(cursorOnAction).gameObject;
+                            }
+
+
+                            detailsText.text = AttackDB.instance.GetAttack(int.Parse(magicSelected.name.Replace("MagicButton - ID ", ""))).description;
+                        }
+
+                        if (Input.GetButtonDown("Cancel") && !cancelPressed)
+                        {
+                            cancelPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.backSE);
+
+                            cursorOnAction = 1;
+                            BSM.HidePanel(GameObject.Find("BattleCanvas/BattleUI/MagicPanel"));
+                            BSM.ShowPanel(GameObject.Find("BattleCanvas/BattleUI/ActionPanel"));
+                            actionState = ActionStates.ACTION;
+                        }
+
+                        if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                        {
+                            confirmPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            Debug.Log("cast: " + magicSelected.transform.Find("ButtonCanvas/AttackName").GetComponent<Text>().text);
+                            magicSelected.GetComponent<MagicAttackButton>().CastMagicAttack();
+
+                            playerMove.GetCurrentTile();
+                            tileCursor.position = new Vector3(playerMove.currentTile.transform.position.x, playerMove.currentTile.transform.position.y, 0f);
+
+                            HideCursor();
+                            ShowTileCursor();
+                            HideBattleUI();
+
+                            cursorState = CursorStates.CHOOSINGTARGET;
+                        }
+
+                    }
+
+                    if (actionState == ActionStates.ITEM)
+                    {
+                        int itemCount = GameObject.Find("BattleCanvas/BattleUI/ItemPanel/ItemScroller/ItemSpacer").transform.childCount;
+
+                        int scrollDiff = itemCount - 5;
+
+                        if (itemCount <= 5)
+                        {
+                            tempScrollDiff = 0;
+                        }
+
+                        RectTransform spacerScroll = GameObject.Find("BattleCanvas/BattleUI/ItemPanel/ItemScroller/ItemSpacer").GetComponent<RectTransform>();
+
+                        //Debug.Log(cursorOnItem);
+
+                        if (!dpadPressed && cursorOnAction == 0 && tempScrollDiff == 0)
+                        {
+                            if (itemCount > 1)
+                            {
+                                if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                                {
+                                    cursorOnAction = cursorOnAction + 1;
+                                    dpadPressed = true;
+                                    AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                                }
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 0 && tempScrollDiff > 0)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                cursorOnAction = cursorOnAction + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                spacerScroll.anchoredPosition = new Vector3(0.0f, (panelItemScrollSpacer * (tempScrollDiff - 1)), 0.0f);
+
+                                tempScrollDiff = tempScrollDiff - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction > 0 && cursorOnAction < 4)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = cursorOnAction - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                cursorOnAction = cursorOnAction + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff == 0 && scrollDiff > 0)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = cursorOnAction - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                spacerScroll.anchoredPosition = new Vector3(0.0f, panelItemScrollSpacer, 0.0f);
+
+                                tempScrollDiff = tempScrollDiff + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff == 0 && scrollDiff == 0)
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = cursorOnAction - 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff > 0 && (cursorOnAction + tempScrollDiff) < (itemCount - 1))
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = 3;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+
+                            if (Input.GetAxisRaw("DpadVertical") == -1) //down
+                            {
+                                spacerScroll.anchoredPosition = new Vector3(0.0f, (panelItemScrollSpacer * (tempScrollDiff + 1)), 0.0f); //and use tempScrollDiff - 1 to go up
+
+                                tempScrollDiff = tempScrollDiff + 1;
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+                        else if (!dpadPressed && cursorOnAction == 4 && tempScrollDiff > 0 && (cursorOnAction + tempScrollDiff) == (itemCount - 1))
+                        {
+                            if (Input.GetAxisRaw("DpadVertical") == 1) //up
+                            {
+                                cursorOnAction = 3;
+
+                                dpadPressed = true;
+                                AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            }
+                        }
+
+                        if (itemCount != 0)
+                        {
+                            if (cursorOnAction == itemCount)
+                            {
+                                cursorOnAction = itemCount - 1;
+                            }
+
+                            if (cursorOnAction == 0 && tempScrollDiff == 0)
+                            {
+                                cursor.localPosition = new Vector3(-377f, -132.5f, 0f);
+                                itemSelected = GameObject.Find("BattleCanvas/BattleUI/ItemPanel/ItemScroller/ItemSpacer").transform.GetChild(0).gameObject;
+                            }
+                            else if (cursorOnAction == 0 && tempScrollDiff > 0)
+                            {
+                                cursor.localPosition = new Vector3(-377f, -132.5f, 0f);
+                                itemSelected = GameObject.Find("BattleCanvas/BattleUI/ItemPanel/ItemScroller/ItemSpacer").transform.GetChild(tempScrollDiff).gameObject;
+                            }
+                            else if (cursorOnAction > 0 && tempScrollDiff > 0)
+                            {
+                                cursor.localPosition = new Vector3(-377f, (-132.5f - (panelItemSpacer * cursorOnAction)), 0f);
+                                itemSelected = GameObject.Find("BattleCanvas/BattleUI/ItemPanel/ItemScroller/ItemSpacer").transform.GetChild(cursorOnAction + tempScrollDiff).gameObject;
+                            }
+                            else
+                            {
+                                cursor.localPosition = new Vector3(-377f, (-132.5f - (panelItemSpacer * cursorOnAction)), 0f);
+                                itemSelected = GameObject.Find("BattleCanvas/BattleUI/ItemPanel/ItemScroller/ItemSpacer").transform.GetChild(cursorOnAction).gameObject;
+                            }
+
+                            detailsText.text = ItemDB.instance.GetItem(int.Parse(itemSelected.name.Replace("ItemButton - ID ", ""))).item.description;
+                        }
+
+                        if (Input.GetButtonDown("Cancel") && !cancelPressed)
+                        {
+                            cancelPressed = true;
+
+                            AudioManager.instance.PlaySE(AudioManager.instance.backSE);
+                            cursorOnAction = 2;
+                            BSM.HidePanel(GameObject.Find("BattleCanvas/BattleUI/ItemPanel"));
+                            BSM.ShowPanel(GameObject.Find("BattleCanvas/BattleUI/ActionPanel"));
+                            actionState = ActionStates.ACTION;
+                        }
+
+                        if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                        {
+                            confirmPressed = true;
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+
+                            Debug.Log("use: " + itemSelected.transform.Find("ButtonCanvas/ItemName").GetComponent<Text>().text);
+                            itemSelected.GetComponent<ItemBattleMenuButton>().UseItem();
+
+                            playerMove.GetCurrentTile();
+                            tileCursor.position = new Vector3(playerMove.currentTile.transform.position.x, playerMove.currentTile.transform.position.y, 0f);
+
+                            HideCursor();
+                            ShowTileCursor();
+                            HideBattleUI();
+
+                            cursorState = CursorStates.CHOOSINGTARGET;
+                        }
+                    }
+
+                    break;
+
+                case (CursorStates.CHOOSINGTARGET):
+
+                    RaycastHit2D[] resetHits = Physics2D.RaycastAll(tileCursor.position, Vector2.zero);
+
+                    Tile tileToAttack = null;
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == -1 && !dpadPressed) //left
+                    {
+                        dpadPressed = true;
+                        foreach (RaycastHit2D hit in resetHits)
+                        {
+                            if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+                            {
+                                hit.collider.gameObject.GetComponent<Tile>().ResetTilesInRange();
+                            }
+                        }
+
+                        if (IfTileExists(new Vector3(tileCursor.position.x - 1f, tileCursor.position.y, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x - 1f, tileCursor.position.y, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadHorizontal") == 1 && !dpadPressed) //right
+                    {
+                        dpadPressed = true;
+                        foreach (RaycastHit2D hit in resetHits)
+                        {
+                            if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+                            {
+                                hit.collider.gameObject.GetComponent<Tile>().ResetTilesInRange();
+                            }
+                        }
+
+                        if (IfTileExists(new Vector3(tileCursor.position.x + 1f, tileCursor.position.y, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x + 1f, tileCursor.position.y, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == 1 && !dpadPressed) //up
+                    {
+                        dpadPressed = true;
+                        foreach (RaycastHit2D hit in resetHits)
+                        {
+                            if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+                            {
+                                hit.collider.gameObject.GetComponent<Tile>().ResetTilesInRange();
+                            }
+                        }
+
+                        if (IfTileExists(new Vector3(tileCursor.position.x, tileCursor.position.y + 1f, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x, tileCursor.position.y + 1f, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (Input.GetAxisRaw("DpadVertical") == -1 && !dpadPressed) //down
+                    {
+                        dpadPressed = true;
+                        foreach (RaycastHit2D hit in resetHits)
+                        {
+                            if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+                            {
+                                hit.collider.gameObject.GetComponent<Tile>().ResetTilesInRange();
+                            }
+                        }
+
+                        if (IfTileExists(new Vector3(tileCursor.position.x, tileCursor.position.y - 1f, 0)))
+                        {
+                            tileCursor.position = new Vector3(tileCursor.position.x, tileCursor.position.y - 1f, 0);
+                            AudioManager.instance.PlaySE(AudioManager.instance.moveTileCursorSE);
+                        }
+                    }
+
+                    if (GetUnitOnTile() != null)
+                    {
+                        if (GetUnitOnTile().tag == "Hero")
+                        {
+                            heroDetailsPanel.transform.Find("NameText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.name;
+                            heroDetailsPanel.transform.Find("LevelText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.currentLevel.ToString();
+
+                            heroDetailsPanel.transform.Find("HPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.curHP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<HeroStateMachine>().hero.finalMaxHP.ToString();
+
+                            heroDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale =
+                                new Vector2(Mathf.Clamp(GetProgressBarValuesHP(GetUnitOnTile().GetComponent<HeroStateMachine>().hero), 0, 1),
+                                heroDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale.y);
+
+                            heroDetailsPanel.transform.Find("MPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<HeroStateMachine>().hero.curMP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<HeroStateMachine>().hero.finalMaxMP.ToString();
+                            heroDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale =
+                                new Vector2(Mathf.Clamp(GetProgressBarValuesMP(GetUnitOnTile().GetComponent<HeroStateMachine>().hero), 0, 1),
+                                heroDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale.y);
+
+                            BSM.HidePanel(enemyDetailsPanel);
+                            BSM.ShowPanel(heroDetailsPanel);
+                        }
+                        else if (GetUnitOnTile().tag == "Enemy")
+                        {
+                            enemyDetailsPanel.transform.Find("NameText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.name;
+                            enemyDetailsPanel.transform.Find("LevelText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.level.ToString();
+
+                            enemyDetailsPanel.transform.Find("HPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.curHP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.baseHP.ToString();
+
+                            enemyDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale =
+                                new Vector2(Mathf.Clamp(GetEnemyProgressBarValuesHP(GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy), 0, 1),
+                                enemyDetailsPanel.transform.Find("HPProgressBarBG/HPProgressBar").transform.localScale.y);
+
+                            enemyDetailsPanel.transform.Find("MPText").GetComponent<Text>().text = GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.curMP.ToString() + "/"
+                                + GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy.baseMP.ToString();
+                            enemyDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale =
+                                new Vector2(Mathf.Clamp(GetEnemyProgressBarValuesMP(GetUnitOnTile().GetComponent<EnemyStateMachine>().enemy), 0, 1),
+                                enemyDetailsPanel.transform.Find("MPProgressBarBG/MPProgressBar").transform.localScale.y);
+
+                            DrawThreatBar(GetUnitOnTile().GetComponent<EnemyBehavior>());
+
+                            BSM.HidePanel(heroDetailsPanel);
+                            BSM.ShowPanel(enemyDetailsPanel);
+                        }
+                    }
+                    else
+                    {
+                        BSM.HidePanel(heroDetailsPanel);
+                        BSM.HidePanel(enemyDetailsPanel);
+                    }
+
+                    if (Input.GetButtonDown("Cancel") && !cancelPressed)
+                    {
+                        cancelPressed = true;
+                        AudioManager.instance.PlaySE(AudioManager.instance.backSE);
+                        if (chosenAction == "Attack")
+                        {
+                            cursorOnAction = 0;
+                            BSM.ShowPanel(GameObject.Find("BattleCanvas/BattleUI/ActionPanel"));
+
+                            playerMove.GetCurrentTile();
+                            tileCursor.position = new Vector3(playerMove.currentTile.transform.position.x, playerMove.currentTile.transform.position.y, 0);
+
+                            HideTileCursor();
+                            ShowCursor();
+                            ShowBattleUI();
+
+                            cursorState = CursorStates.ACTION;
+                            actionState = ActionStates.ACTION;
+                        }
+                        else if (chosenAction == "Magic")
+                        {
+                            BSM.ShowPanel(GameObject.Find("BattleCanvas/BattleUI/MagicPanel"));
+
+                            HideTileCursor();
+                            ShowCursor();
+                            ShowBattleUI();
+
+                            cursorState = CursorStates.ACTION;
+                            actionState = ActionStates.MAGIC;
+                        }
+                        else if (chosenAction == "Item")
+                        {
+                            BSM.ShowPanel(GameObject.Find("BattleCanvas/BattleUI/ItemPanel"));
+
+                            HideTileCursor();
+                            ShowCursor();
+                            ShowBattleUI();
+
+                            cursorState = CursorStates.ACTION;
+                            actionState = ActionStates.ITEM;
+                        }
+
+                        break;
+                    }
+
+                    RaycastHit2D[] updateHits = Physics2D.RaycastAll(tileCursor.position, Vector2.zero);
+
+                    foreach (RaycastHit2D hit in updateHits)
+                    {
+                        if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+                        {
+                            tileToAttack = hit.collider.gameObject.GetComponent<Tile>();
+                            tileToAttack.UpdateTilesInRange();
+                        }
+                    }
+
+                    if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                    {
+                        confirmPressed = true;
+                        if (!GetTileOnCursor().IfTargetsInRange())
+                        {
+                            AudioManager.instance.PlaySE(AudioManager.instance.cantActionSE);
+                        } else
+                        {
+                            AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
+                            tileToAttack.SelectActionTile();
+
+                            BSM.HidePanel(heroDetailsPanel);
+                            BSM.HidePanel(enemyDetailsPanel);
+                            HideCursor();
+                            HideTileCursor();
+                            ShowBattleUI();
+
+                            cursorState = CursorStates.IDLE;
+                            actionState = ActionStates.IDLE;
+                        }
+                    }                 
+
+                break;
+
+                case (CursorStates.IDLE):
+
+                break;
+            }
+        }
+        
+        if (Input.GetButtonUp("Confirm"))
+        {
+            confirmPressed = false;
+        }
+
+        if (Input.GetButtonUp("Cancel"))
+        {
+            cancelPressed = false;
+        }
+
+        if (Input.GetAxisRaw("DpadVertical") == 0 && Input.GetAxisRaw("DpadHorizontal") == 0)
+        {
+            dpadPressed = false;
+        }
+    }
+
+    void HideTileCursor()
+    {
+        tileCursor.localScale = new Vector3(0.0f, 0.0f, 1.0f);
+    }
+
+    void ShowTileCursor()
+    {
+        tileCursor.localScale = new Vector3(cursorVisibleScale, cursorVisibleScale, 1.0f);
+    }
+
+    void HideCursor()
+    {
+        cursor.gameObject.GetComponent<CanvasGroup>().alpha = 0;
+    }
+
+    void ShowCursor()
+    {
+        cursor.gameObject.GetComponent<CanvasGroup>().alpha = 1;
+    }
+
+    void HideBattleUI()
+    {
+        GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().alpha = 0;
+        GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().interactable = false;
+        GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().blocksRaycasts = false;
+    }
+
+    void ShowBattleUI()
+    {
+        GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().alpha = 1;
+        GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().interactable = true;
+        GameObject.Find("BattleCanvas/BattleUI").GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    bool IfTileExists(Vector3 checkPos)
+    {
+        RaycastHit2D[] updateHits = Physics2D.RaycastAll(checkPos, Vector2.zero);
+
+        foreach (RaycastHit2D hit in updateHits)
+        {
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Tile GetTileOnCursor()
+{
+        RaycastHit2D[] updateHits = Physics2D.RaycastAll(tileCursor.transform.position, Vector2.zero);
+
+        foreach (RaycastHit2D hit in updateHits)
+        {
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tile")
+            {
+                return hit.collider.gameObject.GetComponent<Tile>();
+            }
+        }
+
+        return null;
+    }
+
+    GameObject GetUnitOnTile()
+    {
+        RaycastHit2D[] updateHits = Physics2D.RaycastAll(tileCursor.transform.position, Vector3.forward);
+
+        foreach (RaycastHit2D hit in updateHits)
+        {
+            if (hit.collider != null && (hit.collider.gameObject.tag == "Enemy" || hit.collider.gameObject.tag == "Hero"))
+            {
+                return hit.collider.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Calculates the HP for progress bar for given hero - returns their current HP / their max HP
+    /// </summary>
+    /// <param name="hero">Hero to gather HP data from</param>
+    float GetProgressBarValuesHP(BaseHero hero)
+    {
+        float heroHP = hero.curHP;
+        float heroBaseHP = hero.finalMaxHP;
+        float calc_HP;
+
+        calc_HP = heroHP / heroBaseHP;
+
+        return calc_HP;
+    }
+
+    /// <summary>
+    /// Calculates the MP for progress bar for given hero - returns their current MP / their max MP
+    /// </summary>
+    /// <param name="hero">Hero to gather MP data from</param>
+    float GetProgressBarValuesMP(BaseHero hero)
+    {
+        float heroMP = hero.curMP;
+        float heroBaseMP = hero.finalMaxMP;
+        float calc_MP;
+
+        calc_MP = heroMP / heroBaseMP;
+
+        return calc_MP;
+    }
+
+    /// <summary>
+    /// Calculates the HP for progress bar for given enemy - returns their current HP / their max HP
+    /// </summary>
+    /// <param name="enemy">Enemy to gather HP data from</param>
+    float GetEnemyProgressBarValuesHP(BaseEnemy enemy)
+    {
+        float enemyHP = enemy.curHP;
+        float enemyBaseHP = enemy.baseHP;
+        float calc_HP;
+
+        calc_HP = enemyHP / enemyBaseHP;
+
+        return calc_HP;
+    }
+
+    /// <summary>
+    /// Calculates the MP for progress bar for given enemy - returns their current MP / their max MP
+    /// </summary>
+    /// <param name="enemy">Enemy to gather MP data from</param>
+    float GetEnemyProgressBarValuesMP(BaseEnemy enemy)
+    {
+        float enemyMP = enemy.curMP;
+        float enemyBaseMP = enemy.baseMP;
+        float calc_MP;
+
+        calc_MP = enemyMP / enemyBaseMP;
+
+        return calc_MP;
+    }
+
+    /// <summary>
+    /// Sets Threat Bar on enemyDetailsPanel
+    /// </summary>
+    public void DrawThreatBar(EnemyBehavior eb)
+    {
+        GameObject hero = BSM.HeroesToManage[0];
+
+        Image threatBar = enemyDetailsPanel.transform.Find("ThreatProgressBarBG/ThreatProgressBar").GetComponent<Image>();
+
+        foreach (BaseThreat threat in eb.threatList)
+        {
+            if (threat.heroObject == hero && threat.threat > 0)
+            {
+                float threatVal = threat.threat;
+                float calc_Threat = threatVal / eb.maxThreat; //does math of % of ATB gauge to be filled
+                threatBar.transform.localScale = new Vector2(Mathf.Clamp(calc_Threat, 0, 1), threatBar.transform.localScale.y); //shows graphic of threat gauge increasing
+
+                if (calc_Threat == 1)
+                {
+                    threatBar.color = eb.maxThreatColor;
+                }
+                else if (calc_Threat >= .75f && calc_Threat <= .99f)
+                {
+                    threatBar.color = eb.highThreatColor;
+                }
+                else if (calc_Threat >= .50f && calc_Threat <= .75f)
+                {
+                    threatBar.color = eb.moderateThreatcolor;
+                }
+                else if (calc_Threat >= .25f && calc_Threat <= .50f)
+                {
+                    threatBar.color = eb.lowThreatcolor;
+                }
+                else
+                {
+                    threatBar.color = eb.veryLowThreatColor;
+                }
+
+                enemyDetailsPanel.transform.Find("ThreatText").GetComponent<Text>().text = threat.threat.ToString();
+
+                return;
+            }
+        }
+
+        //if hero is not in threat list
+        threatBar.color = Color.clear;
+        enemyDetailsPanel.transform.Find("ThreatText").GetComponent<Text>().text = "0";
     }
 
     /// <summary>

@@ -29,7 +29,6 @@ public class PlayerMove : BaseMove
         if (!readyForMove)
         {            
             FindSelectableTiles();
-            CheckMouse();
         }
         else
         {
@@ -214,32 +213,6 @@ public class PlayerMove : BaseMove
                         tile.visited = true;
                         tile.distance = 1 + t.distance;
                         process.Enqueue(tile);
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// If mouse button is clicked, moves to selected tile
-    /// </summary>
-    void CheckMouse()
-    {
-        if (Input.GetMouseButtonUp(0))
-        {
-            
-         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            
-        if (hit.collider != null)
-            {
-                if (hit.collider.tag == "Tile")
-                {
-                    Tile t = hit.collider.GetComponent<Tile>();
-
-                    if (t.selectable)
-                    {
-                        AudioManager.instance.PlaySE(AudioManager.instance.confirmSE);
-                        MoveToTile(t);
                     }
                 }
             }

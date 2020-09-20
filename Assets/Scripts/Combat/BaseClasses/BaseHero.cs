@@ -162,6 +162,40 @@ public class BaseHero : BaseClass
     [ReadOnly] public int finalParryRating;
     [ReadOnly] public int finalThreatRating;
 
+    [ReadOnly] public int fireEff;
+    [ReadOnly] public int fireDef;
+    [ReadOnly] public int frostEff;
+    [ReadOnly] public int frostDef;
+    [ReadOnly] public int lightningEff;
+    [ReadOnly] public int lightningDef;
+    [ReadOnly] public int waterEff;
+    [ReadOnly] public int waterDef;
+    [ReadOnly] public int natureEff;
+    [ReadOnly] public int natureDef;
+    [ReadOnly] public int earthEff;
+    [ReadOnly] public int earthDef;
+    [ReadOnly] public int holyEff;
+    [ReadOnly] public int holyDef;
+    [ReadOnly] public int darkEff;
+    [ReadOnly] public int darkDef;
+
+    [ReadOnly] public int blindEff;
+    [ReadOnly] public int blindDef;
+    [ReadOnly] public int silenceEff;
+    [ReadOnly] public int silenceDef;
+    [ReadOnly] public int sleepEff;
+    [ReadOnly] public int sleepDef;
+    [ReadOnly] public int confuseEff;
+    [ReadOnly] public int confuseDef;
+    [ReadOnly] public int poisonEff;
+    [ReadOnly] public int poisonDef;
+    [ReadOnly] public int petrifyEff;
+    [ReadOnly] public int petrifyDef;
+    [ReadOnly] public int slowEff;
+    [ReadOnly] public int slowDef;
+    [ReadOnly] public int zombieEff;
+    [ReadOnly] public int zombieDef;
+
     [HideInInspector] public int levelBeforeExp;
     [HideInInspector] public int expBeforeAddingExp;
 
@@ -572,7 +606,7 @@ public class BaseHero : BaseClass
 
     public int GetMATK(int intelligence, int magicAttack)
     {
-        int MATK = Mathf.RoundToInt(magicAttack + intelligence * .5f);
+        int MATK = Mathf.RoundToInt(magicAttack + (intelligence * .5f));
 
         return MATK;
     }
@@ -600,7 +634,7 @@ public class BaseHero : BaseClass
 
     public int GetMaxMP(int intelligence, int mp)
     {
-        int MP = Mathf.RoundToInt(mp + (intelligence * .5f));
+        int MP = Mathf.RoundToInt(mp + (intelligence * .75f));
 
         return MP;
     }

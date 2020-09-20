@@ -141,6 +141,119 @@ public class TalentsMouseEvents : MonoBehaviour
         GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = "";
     }
 
+    public void ShowTalentDetails()
+    {
+        hero = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>().heroToCheck;
+        if (gameObject.transform.parent.name == "Talent1")
+        {
+            if (gameObject.name == "Talent1Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level1Talents[0].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level1Talents[0].description;
+            }
+            if (gameObject.name == "Talent2Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level1Talents[1].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level1Talents[1].description;
+            }
+            if (gameObject.name == "Talent3Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level1Talents[2].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level1Talents[2].description;
+            }
+        }
+        if (gameObject.transform.parent.name == "Talent2")
+        {
+            if (gameObject.name == "Talent1Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level2Talents[0].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level2Talents[0].description;
+            }
+            if (gameObject.name == "Talent2Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level2Talents[1].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level2Talents[1].description;
+            }
+            if (gameObject.name == "Talent3Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level2Talents[2].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level2Talents[2].description;
+            }
+        }
+        if (gameObject.transform.parent.name == "Talent3")
+        {
+            if (gameObject.name == "Talent1Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level3Talents[0].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level3Talents[0].description;
+            }
+            if (gameObject.name == "Talent2Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level3Talents[1].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level3Talents[1].description;
+            }
+            if (gameObject.name == "Talent3Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level3Talents[2].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level3Talents[2].description;
+            }
+        }
+        if (gameObject.transform.parent.name == "Talent4")
+        {
+            if (gameObject.name == "Talent1Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level4Talents[0].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level4Talents[0].description;
+            }
+            if (gameObject.name == "Talent2Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level4Talents[1].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level4Talents[1].description;
+            }
+            if (gameObject.name == "Talent3Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level4Talents[2].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level4Talents[2].description;
+            }
+        }
+        if (gameObject.transform.parent.name == "Talent5")
+        {
+            if (gameObject.name == "Talent1Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level5Talents[0].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level5Talents[0].description;
+            }
+            if (gameObject.name == "Talent2Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level5Talents[1].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level5Talents[1].description;
+            }
+            if (gameObject.name == "Talent3Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level5Talents[2].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level5Talents[2].description;
+            }
+        }
+        if (gameObject.transform.parent.name == "Talent6")
+        {
+            if (gameObject.name == "Talent1Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level6Talents[0].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level6Talents[0].description;
+            }
+            if (gameObject.name == "Talent2Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level6Talents[1].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level6Talents[1].description;
+            }
+            if (gameObject.name == "Talent3Button")
+            {
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentNameText").GetComponent<Text>().text = hero.level6Talents[2].name;
+                GameObject.Find("GameManager/Menus/TalentsMenuCanvas/TalentsMenuPanel/TalentDetailsPanel/TalentDescText").GetComponent<Text>().text = hero.level6Talents[2].description;
+            }
+        }
+    }
+
     /// <summary>
     /// Sets talent object clicked as selected talent so OnMouseOver and OnMouseExit do not trigger
     /// </summary>

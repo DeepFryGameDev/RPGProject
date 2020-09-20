@@ -42,6 +42,8 @@ public class DialogueEvents : MonoBehaviour
 
     AudioSource voiceAudioSource;
 
+    GameMenu menu;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -53,6 +55,8 @@ public class DialogueEvents : MonoBehaviour
         audioSource = GameObject.Find("GameManager/DialogueCanvas").GetComponent<AudioSource>();
         openWindowSE = Resources.Load<AudioClip>("Sounds/OpenMenu");
         confirmSE = Resources.Load<AudioClip>("Sounds/000 - Cursor Move");
+
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
 
         voiceAudioSource = GameObject.Find("GameManager/DialogueCanvas/VoiceAudio").GetComponent<AudioSource>();
 
@@ -91,56 +95,58 @@ public class DialogueEvents : MonoBehaviour
         for (int i = 0; i < eventsToRun.Count; i++)
         {
             BaseDialogueEvent eventToRun = eventsToRun[i]; //pass which event to run to ProcessEvents()
-
-            //if confirm button pressed and trigger is ONACTION
-            if (Input.GetButtonDown("Confirm") && dialogueStarted == false && buttonPressed == false && eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.ONACTION)
+            if (!menu.inMenu)
             {
-                //checks that player is touching collider with this object
-                if (thisCollider.IsTouching(playerCollider))
+                //if confirm button pressed and trigger is ONACTION
+                if (Input.GetButtonDown("Confirm") && dialogueStarted == false && buttonPressed == false && eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.ONACTION)
                 {
-                    //Debug.Log("ONACTION - event: " + i);
-                    //CheckConfirmButtonStatus(); //keeps checking on button status to make sure event only triggers once
+                    //checks that player is touching collider with this object
+                    if (thisCollider.IsTouching(playerCollider))
+                    {
+                        //Debug.Log("ONACTION - event: " + i);
+                        //CheckConfirmButtonStatus(); //keeps checking on button status to make sure event only triggers once
+                        pauseParallel = true;
+                        yield return ProcessEvent(eventToRun);
+                        pauseParallel = false;
+                    }
+                }
+
+                //if player and this collider are touching, and trigger is ONTOUCH
+                if (eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.ONTOUCH && thisCollider.IsTouching(playerCollider))
+                {
+                    runOnce = false; //keeps from running multiple times if touching
                     pauseParallel = true;
-                    yield return ProcessEvent(eventToRun);
+                    StartCoroutine(ProcessEvent(eventToRun)); //displays dialogue
                     pauseParallel = false;
                 }
-            }
 
-            //if player and this collider are touching, and trigger is ONTOUCH
-            if (eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.ONTOUCH && thisCollider.IsTouching(playerCollider))
-            {
-                runOnce = false; //keeps from running multiple times if touching
-                pauseParallel = true;
-                StartCoroutine(ProcessEvent(eventToRun)); //displays dialogue
-                pauseParallel = false;
-            }
+                //if trigger is AUTOSTART (this could maybe be updated)
+                if (eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.AUTOSTART)
+                {
+                    startAutomatically = true;
+                }
+                else
+                {
+                    startAutomatically = false;
+                }
 
-            //if trigger is AUTOSTART (this could maybe be updated)
-            if (eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.AUTOSTART)
-            {
-                startAutomatically = true;
-            }
-            else
-            {
-                startAutomatically = false;
-            }
+                if (startAutomatically && runOnce)
+                {
+                    runOnce = false;
+                    startAutomatically = false;
+                    pauseParallel = true;
+                    StartCoroutine(ProcessEvent(eventToRun));
+                    pauseParallel = false;
+                }
 
-            if (startAutomatically && runOnce)
-            {
-                runOnce = false;
-                startAutomatically = false;
-                pauseParallel = true;
-                StartCoroutine(ProcessEvent(eventToRun));
-                pauseParallel = false;
+                //if trigger is PARALLEL
+                if (eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.PARALLEL && pauseParallel == false)
+                {
+                    //Debug.Log("PARALLEL - event: " + i);
+                    StartCoroutine(ProcessEvent(eventToRun));
+                }
             }
-
-            //if trigger is PARALLEL
-            if (eventToRun.triggerAction == BaseDialogueEvent.TriggerActions.PARALLEL && pauseParallel == false)
-            {
-                //Debug.Log("PARALLEL - event: " + i);
-                StartCoroutine(ProcessEvent(eventToRun));
-            }
-        }
+        }            
 
         //checks if confirm button is pressed
         CheckConfirmButtonStatus();

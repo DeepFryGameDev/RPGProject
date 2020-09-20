@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    public float crossfadeTransitionTime = .5f;
+    public float crossfadeTransitionTime = 1f;
     public Animator crossfadeTransition;
 
 
@@ -34,11 +34,19 @@ public class SceneLoader : MonoBehaviour
     /// <param name="sceneName">Name of scene to be loaded after animation</param>
     IEnumerator SceneTransition(string sceneName)
     {
-        crossfadeTransition.SetTrigger("Start");        
+        GameObject.Find("Player").GetComponent<PlayerController2D>().enabled = false;
 
+        crossfadeTransition.SetTrigger("Start");
+        
         yield return new WaitForSeconds(crossfadeTransitionTime);
-
         SceneManager.LoadScene(sceneName);
+
+        yield return new WaitForSeconds(.1f);
+        GameObject.Find("Player").GetComponent<PlayerController2D>().enabled = false;
+
+        yield return new WaitForSeconds(1.5f);
+
+        GameObject.Find("Player").GetComponent<PlayerController2D>().enabled = true;
     }
 
     /// <summary>
@@ -60,7 +68,7 @@ public class SceneLoader : MonoBehaviour
 
 
     //-----Tools for above methods-----
-
+    
     /// <summary>
     /// Returns index from given scene name
     /// </summary>

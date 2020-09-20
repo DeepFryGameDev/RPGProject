@@ -58,7 +58,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         return raysastResults;
     }
 
-    void IncreaseQuantity(string mode)
+    public void IncreaseQuantity(string mode)
     {
         int itemCount = 0;
         foreach (Item item in Inventory.instance.items)
@@ -105,7 +105,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         }        
     }
 
-    void DecreaseQuantity(string mode)
+    public void DecreaseQuantity(string mode)
     {
         if (mode == "Buy")
         {
@@ -139,7 +139,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         }
     }
 
-    bool HasEnoughGold(int quantity)
+    public bool HasEnoughGold(int quantity)
     {
         bool hasEnoughGold = true;
         
@@ -182,13 +182,13 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
     }
 
-    void CancelPurchase()
+    public void CancelPurchase()
     {
         HideBuyConfirmationPanel();
         GameManager.instance.inConfirmation = false;
     }
 
-    void HideBuyConfirmationPanel()
+    public void HideBuyConfirmationPanel()
     {
         GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().alpha = 0;
         GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel").GetComponent<CanvasGroup>().interactable = false;
@@ -201,7 +201,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         GameManager.instance.inConfirmation = false;
     }
 
-    void ConfirmPurchase()
+    public void ConfirmPurchase()
     {
         if (HasEnoughGold(int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text)))
         {
@@ -222,7 +222,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         }
     }
 
-    void ConfirmSell()
+    public void ConfirmSell()
     {
         //play buy sound effect
         AudioManager.instance.PlaySE(AudioManager.instance.purchaseSE);
@@ -243,7 +243,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
         UpdateSellPanel();
     }
 
-    void CancelSell()
+    public void CancelSell()
     {
         HideSellConfirmationPanel();
         GameManager.instance.inConfirmation = false;
@@ -299,7 +299,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
                     shopItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
                     shopItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
                     shopItemPanel.transform.GetChild(2).GetComponent<Text>().text = itemCount.ToString();
-                    shopItemPanel.transform.SetParent(GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer, false);
+                    shopItemPanel.transform.SetParent(GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer, false);
 
                     itemsAccountedFor.Add(item);
                 }
@@ -313,7 +313,7 @@ public class EquipShopConfirmationMouseEvents : MonoBehaviour, IPointerClickHand
 
     void ClearSellList()
     {
-        foreach (Transform child in GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer.transform)
+        foreach (Transform child in GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer.transform)
         {
             Destroy(child.gameObject);
         }

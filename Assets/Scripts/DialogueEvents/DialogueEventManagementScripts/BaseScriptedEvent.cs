@@ -24,6 +24,8 @@ public class BaseScriptedEvent : MonoBehaviour
     [System.NonSerialized] public bool otherEventRunning = false;
     [System.NonSerialized] public bool inMenu = false;
 
+    GameMenu menu;
+
     //For Dialog Choice
     public delegate void RunDialogueChoice();
     GameObject DialogueChoicePanel;
@@ -32,6 +34,19 @@ public class BaseScriptedEvent : MonoBehaviour
     Button Choice3Button;
     Button Choice4Button;
     string choiceMade;
+    int choiceMode;
+    int cursorOnChoice;
+    float choiceSpacer = 32.5f;
+
+    Transform cursor;
+    bool dpadPressed;
+
+    enum cursorModes
+    {
+        DIALOGUECHOICE,
+        IDLE
+    }
+    cursorModes cursorMode;
 
     [HideInInspector] public bool confirmPressed;
     bool checkForConfirmPressed;
@@ -70,6 +85,11 @@ public class BaseScriptedEvent : MonoBehaviour
         confirmSE = Resources.Load<AudioClip>("Sounds/000 - Cursor Move");
         voiceAudioSource = GameObject.Find("GameManager/DialogueCanvas/VoiceAudio").GetComponent<AudioSource>();
 
+        cursor = GameObject.Find("GameManager/Cursor").transform;
+        cursorMode = cursorModes.IDLE;
+
+        menu = GameObject.Find("GameManager/Menus").GetComponent<GameMenu>();
+
         messageFinished = true;
     }
 
@@ -79,6 +99,88 @@ public class BaseScriptedEvent : MonoBehaviour
         {
             CheckConfirmButtonStatus();
         }        
+
+        if (cursorMode != cursorModes.IDLE && cursor.gameObject.GetComponent<CanvasGroup>().alpha == 0 && !menu.inMenu && !GameManager.instance.inShop)
+        {
+            //cursor.gameObject.GetComponent<CanvasGroup>().alpha = 1;
+        } else if (cursorMode == cursorModes.IDLE && cursor.gameObject.GetComponent<CanvasGroup>().alpha == 1 && !menu.inMenu && !GameManager.instance.inShop)
+        {
+            //cursor.gameObject.GetComponent<CanvasGroup>().alpha = 0;
+        }
+
+        if (cursorMode == cursorModes.DIALOGUECHOICE)
+        {
+            if (cursor.parent != GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel").transform)
+            {
+                cursor.SetParent(GameObject.Find("GameManager/DialogueCanvas/DialogueChoicePanel").transform);
+            }
+
+            if (cursor.gameObject.GetComponent<CanvasGroup>().alpha == 0)
+            {
+                cursor.gameObject.GetComponent<CanvasGroup>().alpha = 1;
+            }
+
+            if (!dpadPressed)
+            {
+                if (Input.GetAxisRaw("DpadVertical") == -1 && cursorOnChoice < choiceMode) //down
+                {
+                    dpadPressed = true;
+                    cursorOnChoice = cursorOnChoice + 1;
+                }
+
+                if (Input.GetAxisRaw("DpadVertical") == 1 && cursorOnChoice <= choiceMode && cursorOnChoice != 1) //up
+                {
+                    dpadPressed = true;
+                    cursorOnChoice = cursorOnChoice - 1;
+                }
+
+                if (Input.GetButtonDown("Confirm") && !confirmPressed)
+                {
+                    confirmPressed = true;
+                    PlaySE(AudioManager.instance.confirmSE);
+
+                    if (cursorOnChoice == 1)
+                    {
+                        Choice1ButtonClicked();
+                    } else if (cursorOnChoice == 2)
+                    {
+                        Choice2ButtonClicked();
+                    } else if (cursorOnChoice == 3)
+                    {
+                        Choice3ButtonClicked();
+                    } else if (cursorOnChoice == 4)
+                    {
+                        Choice4ButtonClicked();
+                    }
+
+                    cursorMode = cursorModes.IDLE;
+                }
+            }
+
+            if (choiceMode == 2)
+            {
+                cursor.localPosition = new Vector3(-109f, -12.5f - ((cursorOnChoice - 1) * choiceSpacer), 0f);
+            } else if (choiceMode == 3)
+            {
+                cursor.localPosition = new Vector3(-109f, 20f - ((cursorOnChoice - 1) * choiceSpacer), 0f);
+            } else if (choiceMode == 4)
+            {
+                cursor.localPosition = new Vector3(-109f, 52.5f - ((cursorOnChoice - 1) * choiceSpacer), 0f);
+            }
+        }
+
+        if (cursorMode == cursorModes.IDLE && !menu.inMenu && !GameManager.instance.inShop && !GameManager.instance.inBattle)
+        {
+            if (cursor.parent != GameObject.Find("GameManager").transform)
+            {
+                cursor.SetParent(GameObject.Find("GameManager").transform);
+            }
+        }
+
+        if (Input.GetAxisRaw("DpadVertical") == 0 && Input.GetAxisRaw("DpadHorizontal") == 0)
+        {
+            dpadPressed = false;
+        }
     }
 
     //DIFFERENT FUNCTIONS THAT CAN BE RUN BY ANY EVENT SCRIPT
@@ -1145,6 +1247,11 @@ public class BaseScriptedEvent : MonoBehaviour
             GameManager.instance.itemShopList = itemShop.itemShopList;
             itemShop.ShowItemListInBuyGUI();
             itemShop.DisplayItemShopGUI();
+            itemShop.shopMode = "Buy";
+            itemShop.itemShopCursorState = ItemShop.ItemShopCursorStates.ITEMLIST;
+            itemShop.inShop = true;
+
+            GameManager.instance.inShop = true;
         }
 
         if (type == "Equip")
@@ -1153,6 +1260,11 @@ public class BaseScriptedEvent : MonoBehaviour
             GameManager.instance.equipShopList = equipShop.equipShopList;
             equipShop.ShowEquipListInBuyGUI();
             equipShop.DisplayEquipShopGUI();
+            equipShop.shopMode = "Buy";
+            equipShop.equipShopCursorState = EquipShop.EquipShopCursorStates.ITEMLIST;
+            equipShop.inShop = true;
+
+            GameManager.instance.inShop = true;
         }
         DisablePlayerMovement();
     }
@@ -2221,6 +2333,10 @@ public class BaseScriptedEvent : MonoBehaviour
         DialogueChoicePanel.GetComponent<CanvasGroup>().interactable = true;
         DialogueChoicePanel.GetComponent<CanvasGroup>().alpha = 1;
         DialogueChoicePanel.GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+        choiceMode = choices;
+        cursorOnChoice = 1;
+        cursorMode = cursorModes.DIALOGUECHOICE;
     }
 
     /// <summary>
@@ -2277,6 +2393,8 @@ public class BaseScriptedEvent : MonoBehaviour
             PlaySE(confirmSE);
             choiceMade = "button1";
         }
+
+        cursorMode = cursorModes.IDLE;
     }
 
     /// <summary>
@@ -2290,6 +2408,8 @@ public class BaseScriptedEvent : MonoBehaviour
             PlaySE(confirmSE);
             choiceMade = "button2";
         }
+
+        cursorMode = cursorModes.IDLE;
     }
 
     /// <summary>
@@ -2303,6 +2423,8 @@ public class BaseScriptedEvent : MonoBehaviour
             PlaySE(confirmSE);
             choiceMade = "button3";
         }
+
+        cursorMode = cursorModes.IDLE;
     }
 
     /// <summary>
@@ -2316,6 +2438,8 @@ public class BaseScriptedEvent : MonoBehaviour
             PlaySE(confirmSE);
             choiceMade = "button4";
         }
+
+        cursorMode = cursorModes.IDLE;
     }
 
     /// <summary>

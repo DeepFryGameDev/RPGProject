@@ -34,6 +34,22 @@ public class EquipShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointe
         }
     }
 
+    public void ShowEquipDetails()
+    {
+        if (gameObject.name.Contains("ShopBuyEquipPanel") && !GameManager.instance.inConfirmation)
+        {
+            itemDesc.text = GetEquip(gameObject.transform.Find("BuyShopEquipNameText").GetComponent<Text>().text).description;
+            ownedText.text = GetEquipCount(gameObject.transform.Find("BuyShopEquipNameText").GetComponent<Text>().text).ToString();
+            UpdateStatPanels(GetEquip(gameObject.transform.Find("BuyShopEquipNameText").GetComponent<Text>().text));
+        }
+
+        if (gameObject.name.Contains("ShopSellEquipPanel") && !GameManager.instance.inConfirmation)
+        {
+            itemDesc.text = GetEquip(gameObject.transform.Find("SellShopEquipNameText").GetComponent<Text>().text).description;
+            UpdateStatPanels(GetEquip(gameObject.transform.Find("SellShopEquipNameText").GetComponent<Text>().text));
+        }
+    }
+
     public void OnPointerExit(PointerEventData eventData) //clears item description panel
     {
         if (!GameManager.instance.inConfirmation)
@@ -88,6 +104,40 @@ public class EquipShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointe
         }
     }
 
+    public void ProcessShop()
+    {
+        if (gameObject.name.Contains("ShopBuyEquipPanel") && !GameManager.instance.inConfirmation)
+        {
+            //show 'How Many' window with 'buy' button that finalizes transaction
+            GameManager.instance.equipShopItem = GetEquip(gameObject.transform.Find("BuyShopEquipNameText").GetComponent<Text>().text);
+            GameManager.instance.equipShopCost = GetEquipCost(gameObject.transform.Find("BuyShopEquipNameText").GetComponent<Text>().text);
+            
+            if (CanMakeTransaction())
+            {
+                GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+                GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.equipShopCost.ToString();
+                GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold - int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopBuyPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
+
+                DisplayBuyConfirmationPanel();
+                GameManager.instance.inConfirmation = true;
+            }
+        }
+
+        if (gameObject.name.Contains("ShopSellEquipPanel") && !GameManager.instance.inConfirmation)
+        {
+            //show 'How Many' window with 'sell' button that finalizes transaction
+            GameManager.instance.equipShopItem = GetEquip(gameObject.transform.Find("SellShopEquipNameText").GetComponent<Text>().text);
+            GameManager.instance.equipShopCost = GetEquip(gameObject.transform.Find("SellShopEquipNameText").GetComponent<Text>().text).sellValue;
+
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/QuantityText").GetComponent<Text>().text = "1";
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text = GameManager.instance.equipShopCost.ToString();
+            GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/RemainingText").GetComponent<Text>().text = (GameManager.instance.gold + int.Parse(GameObject.Find("GameManager/ShopCanvases/EquipShopCanvas/EquipShopSellPanel/ConfirmationPanel/TotalGoldText").GetComponent<Text>().text)).ToString();
+
+            DisplaySellConfirmationPanel();
+            GameManager.instance.inConfirmation = true;
+        }
+    }
+
 
     bool CanMakeTransaction()
     {
@@ -131,20 +181,17 @@ public class EquipShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointe
         //menu.DrawItemList();
     }
 
-    Equipment GetEquip(string name)
+    public Equipment GetEquip(string name)
     {
-        Equipment equip = null;
-
-        foreach (BaseShopEquipment BSE in GameManager.instance.equipShopList)
+        foreach (BaseEquipment BSE in EquipmentDB.instance.equipment)
         {
             if (BSE.equipment.name == name)
             {
-                equip = BSE.equipment;
-                break;
+                return BSE.equipment;
             }
         }
 
-        return equip;
+        return null;
     }
 
     int GetEquipCost(string name)
@@ -228,7 +275,7 @@ public class EquipShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointe
                     shopItemPanel.transform.GetChild(0).GetComponent<Text>().text = item.name;
                     shopItemPanel.transform.GetChild(1).GetComponent<Image>().sprite = item.icon;
                     shopItemPanel.transform.GetChild(2).GetComponent<Text>().text = itemCount.ToString();
-                    shopItemPanel.transform.SetParent(GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer, false);
+                    shopItemPanel.transform.SetParent(GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer, false);
 
                     itemsAccountedFor.Add(item);
                 }
@@ -238,7 +285,7 @@ public class EquipShopMouseEvents : MonoBehaviour, IPointerEnterHandler, IPointe
 
     void ClearSellList()
     {
-        foreach (Transform child in GameObject.Find("GameManager/Shops").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer.transform)
+        foreach (Transform child in GameObject.Find("GameManager/ShopCanvases").GetComponent<ShopObjectHolder>().shopEquipSellListSpacer.transform)
         {
             Destroy(child.gameObject);
         }

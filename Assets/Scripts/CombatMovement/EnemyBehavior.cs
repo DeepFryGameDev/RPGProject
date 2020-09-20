@@ -54,11 +54,11 @@ public class EnemyBehavior : EnemyMove
     public List<BaseThreat> threatList = new List<BaseThreat>();
     [HideInInspector] public int maxThreat;
     public Image threatBar;
-    protected Color maxThreatColor = Color.red;
-    protected Color highThreatColor = Color.yellow;
-    protected Color moderateThreatcolor = Color.green;
-    protected Color lowThreatcolor = Color.blue;
-    protected Color veryLowThreatColor = Color.grey;
+    public Color maxThreatColor = Color.red;
+    public Color highThreatColor = Color.yellow;
+    public Color moderateThreatcolor = Color.green;
+    public Color lowThreatcolor = Color.blue;
+    public Color veryLowThreatColor = Color.grey;
 
     protected BehaviorStates behaviorStates;
 
@@ -1145,15 +1145,6 @@ public class EnemyBehavior : EnemyMove
         //Debug.Log("shielding " + tileObj.name);
         tileObj.GetComponent<Tile>().shielded = true;
         tileObj.GetComponent<Tile>().inAffect = false;
-
-        RaycastHit2D[] hits = Physics2D.RaycastAll(tileObj.transform.position, Vector3.forward, 1);
-        foreach (RaycastHit2D hit in hits)
-        {
-            if (hit.collider.gameObject.tag == "Enemy" || hit.collider.gameObject.tag == "Hero")
-            {
-                BSM.HideSelector(hit.collider.gameObject.transform.Find("Selector").gameObject);
-            }
-        }
     }
 
     string DirectionFromCenterTile(Tile tileToCheck)
@@ -1391,55 +1382,6 @@ public class EnemyBehavior : EnemyMove
 
         if (BattleCameraManager.instance.camState != camStates.LOSS)
             BattleCameraManager.instance.camState = camStates.IDLE;
-    }
-
-    /// <summary>
-    /// Draws threat bar UI above the enemy graphic
-    /// </summary>
-    public void DrawThreatBar()
-    {
-        GameObject hero = BSM.HeroesToManage[0];
-
-        foreach (BaseThreat threat in threatList)
-        {
-            if (threat.heroObject == hero && threat.threat > 0)
-            {
-                float threatVal = threat.threat;
-                float calc_Threat = threatVal / maxThreat; //does math of % of ATB gauge to be filled
-                threatBar.transform.localScale = new Vector2(Mathf.Clamp(calc_Threat, 0, 1), threatBar.transform.localScale.y); //shows graphic of threat gauge increasing
-
-                if (calc_Threat == 1)
-                {
-                    threatBar.color = maxThreatColor;
-                } else if (calc_Threat >= .75f && calc_Threat <= .99f)
-                {
-                    threatBar.color = highThreatColor;
-                } else if (calc_Threat >= .50f && calc_Threat <= .75f)
-                {
-                    threatBar.color = moderateThreatcolor;
-                } else if (calc_Threat >= .25f && calc_Threat <= .50f)
-                {
-                    threatBar.color = lowThreatcolor;
-                } else
-                {
-                    threatBar.color = veryLowThreatColor;
-                }
-
-                return;
-            }
-        }
-
-        //if hero is not in threat list
-        threatBar.color = Color.clear;
-
-    }
-
-    /// <summary>
-    /// Hides threat bar
-    /// </summary>
-    public void ClearThreatBar()
-    {
-        threatBar.color = Color.clear;
     }
 
     /// <summary>

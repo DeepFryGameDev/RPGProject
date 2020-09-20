@@ -2,7 +2,17 @@ Thank you for visiting my Github! Here you will see the repository of the projec
 
 You can watch a preview of the game at the below link, where you will see the various functionalities and systems I've created for my game: https://youtu.be/7T1-SSUKyTM
 
-Please note, the music was taken from an already existing game, Final Fantasy 7, and is simply a placeholder. The sound effects and graphics were all largely taken from the Unity Asset Store, which you can find more details from below. All existing assets are placeholders which will be replaced when the permanent solution has been found.
+Please note, the victory music was taken from an already existing game, Final Fantasy 7, and is simply a placeholder. The sound effects and graphics were all largely taken from the Unity Asset Store, which you can find more details from below. All existing assets are placeholders which will be replaced when the permanent solution has been found.
+
+Updates:
+- Game is now fully functional using a controller.  If you have a spare Xbox360 controller handy, you can use this.  I have not tested it with any other controller.
+
+Keys (Xbox360 buttons in parentheses):
+Tab (Y) - Open Menu
+E (B) - Confirm
+Escape (A) - Cancel/Sprint
+WASD (Left Joystick) - Player Movement
+Up, Down, Left, Right (Dpad) - Cursor movement
 
 -----
 
@@ -47,5 +57,7 @@ Victory theme - Final Fantasy 7: Fanfare
 Menu transition SE - ripped from Shining Force 2
 
 -----
+
+
 
 You can also visit my portfolio containing previous projects I have developed: https://github.com/DeepFryGameDev/portfolio

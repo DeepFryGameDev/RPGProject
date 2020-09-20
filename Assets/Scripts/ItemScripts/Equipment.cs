@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Equipment", menuName = "Inventory/Equipment")]
@@ -38,4 +38,4 @@ public class Equipment : Item
     public int block;
 }
 
-public enum EquipmentSlot { HEAD, CHEST, WRISTS, LEGS, FEET, RELIC, RIGHTHAND, LEFTHAND }
+public enum EquipmentSlot { HEAD, CHEST, HANDS, LEGS, FEET, RELIC, RIGHTARM, LEFTARM }

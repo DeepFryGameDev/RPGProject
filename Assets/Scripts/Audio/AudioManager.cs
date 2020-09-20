@@ -12,6 +12,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip equipSE; //not the correct equip SE but ok for now
     public AudioClip openMenuSE;
 
+    public AudioClip moveTileCursorSE;
+
     public AudioClip purchaseSE;
 
     public AudioClip battleTransition;
