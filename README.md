@@ -8,10 +8,15 @@ Updates:
 - Game is now fully functional using a controller.  If you have a spare Xbox360 controller handy, you can use this.  I have not tested it with any other controller.
 
 Keys (Xbox360 buttons in parentheses):
+
 Tab (Y) - Open Menu
+
 E (B) - Confirm
+
 Escape (A) - Cancel/Sprint
+
 WASD (Left Joystick) - Player Movement
+
 Up, Down, Left, Right (Dpad) - Cursor movement
 
 -----
