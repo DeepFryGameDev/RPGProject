@@ -13,7 +13,9 @@ Tab (Y) - Open Menu
 
 E (B) - Confirm
 
-Escape (A) - Cancel/Sprint
+Escape (A) - Cancel
+
+Shift (A) - Sprint
 
 WASD (Left Joystick) - Player Movement
 
